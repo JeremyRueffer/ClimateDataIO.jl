@@ -54,3 +54,14 @@ TimeStr,DataStr,TimeStc,DataStc = ClimateDataIO.aerodyne_load(src,verbose=true)
 @test size(DataStc) == (14391,26) || "AERODYNE_LOAD: DataStc output size incorrect, should be (14391,26)"
 
 println("All Tests Complete Successfully")
+
+# CSCI_TEXTREAD: Load one file
+src = splitdir(@__FILE__)[1]
+src = joinpath(src,"CampbellScientific_HC2S3.dat")
+Data = ClimateDataIO.csci_textread(src,verbose=true)
+
+@test Data[:Timestamp][1] == DateTime(2016,12,10,0,0,0,622) || "CSCI_TEXTREAD: TimeStr first timestamp should be 2016-12-10T00:00:00.622"
+
+@test Data[:Timestamp][end] == DateTime(2016,12,10,3,59,59,917) || "CSCI_TEXTREAD: TimeStr last timestamp should be 2016-12-10T03:59:59.917"
+
+@test size(Data) == (11520,10) || "CSCI_TEXTREAD: DataStc output size incorrect, should be (11520,10)"
