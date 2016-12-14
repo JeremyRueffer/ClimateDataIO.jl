@@ -9,13 +9,17 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 13.12.2016
+# Last Edit: 14.12.2016
 
 __precompile__(true)
 
 """# ClimateDataIO
 
-Tools for loading various file types common to soil, atmosphereic, and climate sciences. This includes SLT files from EddyMeas, CampbellScientific TOA5 DAT files, Los Gatos Research data files, and Licor GHG files.
+Tools for loading various file types common to soil, atmosphereic, and climate sciences. This includes SLT files from EddyMeas, Aerodyne QCL data, CampbellScientific TOA5 DAT files, Los Gatos Research data files, and Licor GHG files.
+
+`aerodyne_load`: Load STR and STC files
+
+`AerodyneStatus`: Convert the StatusW column in STC files into boolean values
 
 `sltload`: Load SLT files based on dates
 
@@ -53,7 +57,9 @@ module ClimateDataIO
 	using DataFrames
 	using ZipFile # Only needed for ziptextfiles.jl (licor_split.jl)
 	
-	export sltread,
+	export aerodyne_load,
+		AerodyneStatus,
+		sltread,
 		sltload,
 		sltheader,
 		sltconfig,
@@ -67,6 +73,9 @@ module ClimateDataIO
 		licor_split
 	
 	dir = splitdir(@__FILE__)[1]
+	include(joinpath(dir,"aerodyne_load.jl"))
+	include(joinpath(dir,"aerodyne_parsetime.jl"))
+	include(joinpath(dir,"AerodyneStatus.jl"))
 	include(joinpath(dir,"sltread.jl"))
 	include(joinpath(dir,"sltload.jl"))
 	include(joinpath(dir,"sltheader.jl"))

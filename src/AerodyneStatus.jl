@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 13.12.2016
-# Last Edit: 13.12.2016
+# Last Edit: 14.12.2016
 
 """# AerodyneStatus
 
