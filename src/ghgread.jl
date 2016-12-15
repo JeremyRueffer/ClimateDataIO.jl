@@ -20,6 +20,9 @@
 #### Keywords:\n
 * verbose::Bool = Display information as the function runs, TRUE is default\n\n"
 function ghgread(source::String;verbose::Bool=false)
+	
+	epoch = DateTime(1970,1,1,1) # Licor epoch
+	
 	##################
 	##  Initialize  ##
 	##################
@@ -91,15 +94,7 @@ function ghgread(source::String;verbose::Bool=false)
 	names!(D,new_names)
 	
 	# Convert Time
-	t = Array(DateTime,length(D[:Seconds]))
-	t0 = D[:Seconds][1] # Initial seconds offset
-	d0 = DateTime(D[:Date][1] * " " * D[:Time][1],"yyyy-mm-dd HH:MM:SS:sss") # Initial date and time
-	for j=1:1:length(t)
-		t[j] = d0 + Dates.Second(D[:Seconds][j] - t0) + Dates.Millisecond(Int64(D[:Nanoseconds][j]/10^6))
-	end
-	#for j=1:1:length(t)
-	#	t[j] = epoch + Dates.Second(D[:Seconds][j]) + Dates.Millisecond(Int64(D[:Nanoseconds][j]/10^6))
-	#end
+	t = epoch + map(Dates.Second,Array(Data[:Seconds])) + map(Dates.Millisecond,Array(Data[:Nanoseconds])./1e6)
 	
 	return t,D,cols
 end
