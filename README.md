@@ -68,7 +68,42 @@ SLT files are binary but all other related files are ASCII text. All other files
 | CSR | ? |
 | CSV | ? |
 
-Timestamps for SLT data are generated based on the initial timestamp found in the file header and the sample frequency assuming consistent timing, `To + n*(1/F) - (1/F)` where `To` is the initial time, `F` is the sample frequency (Hz), and `n` is the sample number. 
+Timestamps for SLT data are generated based on the initial timestamp found in the file header and the sample frequency assuming consistent timing, `To + n*(1/F) - (1/F)` where `To` is the initial time, `F` is the sample frequency (Hz), and `n` is the sample number.
+
+## Licor
+
+GHG files are ZIP archives of ASCII text files, normally one tab-separated DATA file and one METADATA settings file. Each DATA file has eight header lines, the last of which is a list of column names.
+
+### DATA Header
+```
+Model:	LI-7200 Enclosed CO2/H2O Analyzer
+SN:	72H-0616
+Instrument:	AIU-1359
+File Type:	2
+Software Version:	8.0.0
+Timestamp:	22:00:00
+Timezone:	Europe/Berlin
+DATAH	Seconds	Nanoseconds	Sequence Number	Diagnostic Value	Diagnostic Value 2	Date	Time	CO2 Absorptance	H2O Absorptance	CO2 (mmol/m^3)	CO2 (mg/m^3)	H2O (mmol/m^3)	H2O (g/m^3)	Block Temperature (C)	Total Pressure (kPa)	Box Pressure (kPa)	Head Pressure (kPa)	Aux 1 - U (m/s)	Aux 2 - V (m/s)	Aux 3 - W (m/s)	Aux 4 - SOS (m/s)	Cooler Voltage (V)	Vin SmartFlux (V)	CO2 (umol/mol)	CO2 dry(umol/mol)	H2O (mmol/mol)	H2O dry(mmol/mol)	Dew Point (C)	Cell Temperature (C)	Temperature In (C)	Temperature Out (C)	Average Signal Strength	CO2 Signal Strength	H2O Signal Strength	Delta Signal Strength	Flow Rate (slpm)	Flow Rate (lpm)	Flow Pressure (kPa)	Flow Power (V)	Flow Drive (%)	H2O Sample	H2O Reference	CO2 Sample	CO2 Reference	HIT Power (W)	Vin HIT (V)	CHK
+```
+
+DATA files have two options for a timestamp. The second and third columns are seconds and nanoseconds. Adding both to the January 1, 1970 01:00 epoch will return the correct date and time.
+
+```julia
+epoch = DateTime(1970,1,1,1)
+s = 1481490002 # Seconds
+ms = 550000000 # Milliseconds
+T = epoch + Dates.Second(s) + Dates.Millisecond(ms/1e6)
+# 2016-12-11T22:00:02.05
+```
+
+The second option are columns seven and eight, date and time.
+
+```julia
+datestring = "2016-12-11"
+timestring = "22:00:02:500"
+T = DateTime(datestring * timestring,"yyyy-mm-ddHH:MM:SS:sss")
+# 2016-12-11T22:00:02.5
+```
 
 ## Los Gatos Research
 
