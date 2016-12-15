@@ -94,7 +94,7 @@ function ghgread(source::String;verbose::Bool=false)
 	names!(D,new_names)
 	
 	# Convert Time
-	t = epoch + map(Dates.Second,Array(Data[:Seconds])) + map(Dates.Millisecond,Array(Data[:Nanoseconds])./1e6)
+	t = epoch + map(Dates.Second,Array(D[:Seconds])) + map(Dates.Millisecond,Array(D[:Nanoseconds])./1e6)
 	
 	return t,D,cols
 end

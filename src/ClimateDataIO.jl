@@ -55,7 +55,7 @@ For more information see each function's help.
 
 #### Requirements
 * DataFrames
-* ZipFiles (only for licor_split)"""
+* ZipFiles (only for licor_split and ghgread)"""
 module ClimateDataIO
 
 	using DataFrames

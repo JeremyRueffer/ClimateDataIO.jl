@@ -110,7 +110,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 
 		# Load Each Data File
 		for j=1:1:length(zipfiles)
-			(tempT,tempD,cols) = lgrread(zipfiles[j],verbose=verbose)
+			(tempT,tempD,cols) = lgr_read(zipfiles[j],verbose=verbose)
 			t = [t;tempT]
 			D = [D;tempD]
 		end

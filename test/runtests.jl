@@ -106,4 +106,17 @@ Time,Data = ClimateDataIO.ghgload(src,verbose=true,average=false)
 
 
 
+# GHGLOAD: Load one file
+println("\n====  LGR_LOAD Tests  ====")
+src = splitdir(@__FILE__)[1]
+Time,Data, Cols = ClimateDataIO.lgr_load(src)
+
+@test Time[1] == DateTime(2015,1,30,15,13,47,994) || "LGR_LOAD: Time[1] first timestamp should be 2015-01-30T15:13:47.994"
+
+@test Time[end] == DateTime(2015,1,31,15,13,55,727) || "LGR_LOAD: Time[end] last timestamp should be 2015-01-31T15:13:55.727"
+
+@test size(Data) == (78272,23) || "LGR_LOAD: Data output size incorrect, should be (78272,23)"
+
+
+
 println("All Tests Complete Successfully")
