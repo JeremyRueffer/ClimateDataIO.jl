@@ -9,7 +9,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 14.12.2016
+# Last Edit: 15.12.2016
 
 __precompile__(true)
 
@@ -20,6 +20,10 @@ Tools for loading various file types common to soil, atmosphereic, and climate s
 `aerodyne_load`: Load STR and STC files
 
 `AerodyneStatus`: Convert the StatusW column in STC files into boolean values
+
+`ghgload`: Load Licor GHG files
+
+`ghgread`: Load a Licor GHG file
 
 `sltload`: Load SLT files based on dates
 
@@ -59,6 +63,8 @@ module ClimateDataIO
 	
 	export aerodyne_load,
 		AerodyneStatus,
+		ghgload,
+		ghgread,
 		sltread,
 		sltload,
 		sltheader,
@@ -76,6 +82,8 @@ module ClimateDataIO
 	include(joinpath(dir,"aerodyne_load.jl"))
 	include(joinpath(dir,"aerodyne_parsetime.jl"))
 	include(joinpath(dir,"AerodyneStatus.jl"))
+	include(joinpath(dir,"ghgload.jl"))
+	include(joinpath(dir,"ghgread.jl"))
 	include(joinpath(dir,"sltread.jl"))
 	include(joinpath(dir,"sltload.jl"))
 	include(joinpath(dir,"sltheader.jl"))

@@ -8,6 +8,8 @@ The purpose of ClimateDataIO is not purely to load individual files but to do ot
 
 This is a work in progress. The functions are fully functional but their names will probably changed as things are standardized. Once that is complete this package will then be registered so it can be imported with `Pkg.add("ClimateDataIO")`. After it has been registered, basic reading components will be added to [FileIO](https://github.com/JuliaIO/FileIO.jl) whenever reasonably possible.
 
+Until the 1.0.0 release anyone that wishes to use this will have to install this package by typing `Pkg.clone("git://github.com/JeremyRueffer/ClimateDataIO.jl.git")` into the Julia REPL. Updates are done by typing `Pkg.checkout("ClimateDataIO")`.
+
 ## Aerodyne
 
 Both STR and STC files are simple column-separated ASCII text files. STC files have two header lines whereas the STR have only one.
@@ -65,6 +67,8 @@ SLT files are binary but all other related files are ASCII text. All other files
 | CSU | ? |
 | CSR | ? |
 | CSV | ? |
+
+Timestamps for SLT data are generated based on the initial timestamp found in the file header and the sample frequency assuming consistent timing, `To + n*(1/F) - (1/F)` where `To` is the initial time, `F` is the sample frequency (Hz), and `n` is the sample number. 
 
 ## Los Gatos Research
 
