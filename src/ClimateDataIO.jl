@@ -15,7 +15,7 @@ __precompile__(true)
 
 """# ClimateDataIO
 
-Tools for loading various file types common to soil, atmosphereic, and climate sciences. This includes SLT files from EddyMeas, Aerodyne QCL data, CampbellScientific TOA5 DAT files, Los Gatos Research data files, and Licor GHG files.
+Tools for loading various file types common to soil, atmospheric, and climate sciences. This includes SLT files from EddyMeas, Aerodyne QCL data, CampbellScientific TOA5 DAT files, Los Gatos Research data files, and Licor GHG files.
 
 `AerodyneStatus`: Convert the StatusW column in STC files into boolean values
 

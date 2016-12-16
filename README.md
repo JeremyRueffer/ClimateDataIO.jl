@@ -4,9 +4,9 @@
 [![Coverage Status](https://coveralls.io/repos/JeremyRueffer/ClimateDataIO.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/JeremyRueffer/ClimateDataIO.jl?branch=master)
 [![codecov.io](http://codecov.io/github/JeremyRueffer/ClimateDataIO.jl/coverage.svg?branch=master)](http://codecov.io/github/JeremyRueffer/ClimateDataIO.jl?branch=master)
 
-The purpose of ClimateDataIO is not purely to load individual files but to do other basic tasks involving the data. A LOAD function will work on multiple files and can load files based on a time span. In all cases the timestamps are also generated (SLT files only) or parsed. A few functions exist to correct problems in the data (SLTTRIM, SLTTIMESHIFT, SLTWRITE, LICOR_SPLIT).
+The purpose of ClimateDataIO is not purely to load individual files but to do other basic tasks involving the data. A LOAD function will work on multiple files and can load files based on a time span. In all cases the timestamps are also generated (SLT files only) or parsed. A few functions exist to correct problems with the data (SLTTRIM, SLTTIMESHIFT, SLTWRITE, LICOR_SPLIT).
 
-This is a work in progress. The functions are fully functional but their names will probably changed as things are standardized. Once that is complete this package will then be registered so it can be imported with `Pkg.add("ClimateDataIO")`. After it has been registered, basic reading components will be added to [FileIO](https://github.com/JuliaIO/FileIO.jl) whenever reasonably possible.
+This is a work in progress. The functions are fully functional but their names will probably change as things are standardized. Once that is complete this package will then be registered so it can be imported with `Pkg.add("ClimateDataIO")`. After it has been registered, basic reading components will be added to [FileIO](https://github.com/JuliaIO/FileIO.jl) whenever reasonably possible.
 
 Until the 1.0.0 release anyone that wishes to use this will have to install this package by typing `Pkg.clone("git://github.com/JeremyRueffer/ClimateDataIO.jl.git")` into the Julia REPL. Updates are done by typing `Pkg.checkout("ClimateDataIO")`.
 
