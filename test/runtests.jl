@@ -32,36 +32,56 @@ Time,Data = ClimateDataIO.sltread(src,analog_inputs,sample_frequency)
 
 
 
-# AERODYNE_LOAD: Load one file
-println("\n====  AERODYNE_LOAD Tests  ====")
+# STR_LOAD: Load one Aerodyne STR file
+println("\n====  STR_LOAD Tests  ====")
 src = splitdir(@__FILE__)[1]
 src = joinpath(src,"161210_000000.str")
-Time,Data = ClimateDataIO.aerodyne_load(src,verbose=true)
+Time,Data = ClimateDataIO.str_load(src,verbose=true)
 
-@test Time[1] == DateTime(2016,12,10,0,0,0,622) || "AERODYNE_LOAD: First timestamp should be 2016-12-10T00:00:00.622"
+@test Time[1] == DateTime(2016,12,10,0,0,0,622) || "STR_LOAD: First timestamp should be 2016-12-10T00:00:00.622"
 
-@test Time[end] == DateTime(2016,12,10,0,59,59,922) || "AERODYNE_LOAD: Last timestamp should be 2016-12-10T00:59:59.922"
+@test Time[end] == DateTime(2016,12,10,0,59,59,922) || "STR_LOAD: Last timestamp should be 2016-12-10T00:59:59.922"
 
-@test size(Data) == (35159,2) || "AERODYNE_LOAD: Output size incorrect, should be (35159,2)"
+@test size(Data) == (35159,2) || "STR_LOAD: Output size incorrect, should be (35159,2)"
 
-
-
-# AERODYNE_LOAD: Load all file
-println("\n====  AERODYNE_LOAD Tests  ====")
+println("\nMultiple files")
 src = splitdir(@__FILE__)[1]
-TimeStr,DataStr,TimeStc,DataStc = ClimateDataIO.aerodyne_load(src,verbose=true)
+Time,Data = ClimateDataIO.str_load(src,verbose=true)
+@test Time[1] == DateTime(2016,12,10,0,0,0,622) || "STR_LOAD: First timestamp should be 2016-12-10T00:00:00.622"
 
-@test TimeStr[1] == DateTime(2016,12,10,0,0,0,622) || "AERODYNE_LOAD: TimeStr first timestamp should be 2016-12-10T00:00:00.622"
+@test Time[end] == DateTime(2016,12,10,3,59,59,917) || "STR_LOAD: Last timestamp should be 2016-12-10T03:59:59.917"
 
-@test TimeStr[end] == DateTime(2016,12,10,3,59,59,917) || "AERODYNE_LOAD: TimeStr last timestamp should be 2016-12-10T03:59:59.917"
+@test size(Data) == (140641,2) || "STR_LOAD: Output size incorrect, should be (140641,2)"
 
-@test size(DataStr) == (140641,2) || "AERODYNE_LOAD: DataStr output size incorrect, should be (140641,2)"
 
-@test TimeStc[1] == DateTime(2016,12,10,0,0,2,622) || "AERODYNE_LOAD: TimeStc first timestamp should be 2016-12-10T00:00:02.622"
 
-@test TimeStc[end] == DateTime(2016,12,10,3,59,59,117) || "AERODYNE_LOAD: TimeStc last timestamp should be 2016-12-10T03:59:59.117"
+# STC_LOAD: Load one Aerodyne STC file
+println("\n====  STC_LOAD Tests  ====")
+src = splitdir(@__FILE__)[1]
+src = joinpath(src,"161210_000000.stc")
+Time,Data = ClimateDataIO.stc_load(src,verbose=true)
 
-@test size(DataStc) == (14391,26) || "AERODYNE_LOAD: DataStc output size incorrect, should be (14391,26)"
+@test Time[1] == DateTime(2016,12,10,0,0,2,622) || "STC_LOAD: First timestamp should be 2016-12-10T00:00:02.622"
+
+@test Time[end] == DateTime(2016,12,10,0,59,59,622) || "STC_LOAD: Last timestamp should be 2016-12-10T00:59:59.622"
+
+@test size(Data) == (3598,26) || "STC_LOAD: Output size incorrect, should be (35159,2)"
+
+println("\nMultiple files")
+src = splitdir(@__FILE__)[1]
+Time,Data = ClimateDataIO.stc_load(src,verbose=true)
+
+@test Time[1] == DateTime(2016,12,10,0,0,2,622) || "STC_LOAD: First timestamp should be 2016-12-10T00:00:02.622"
+
+@test Time[end] == DateTime(2016,12,10,3,59,59,117) || "STC_LOAD: Last timestamp should be 2016-12-10T03:59:59.117"
+
+@test size(Data) == (14391,26) || "STC_LOAD: Output size incorrect, should be (14391,2)"
+
+src = splitdir(@__FILE__)[1]
+src = joinpath(src,"161210_000000.stc")
+Time,Data = ClimateDataIO.stc_load(src,verbose=true,cols = ["Praw","time"])
+
+@test names(Data) == [:Praw,:time] || "STC_LOAD: Fields should be [:Praw,:time]"
 
 
 

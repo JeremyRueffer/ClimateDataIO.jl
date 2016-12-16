@@ -9,7 +9,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 15.12.2016
+# Last Edit: 16.12.2016
 
 __precompile__(true)
 
@@ -25,7 +25,11 @@ Tools for loading various file types common to soil, atmosphereic, and climate s
 
 `ghgread`: Load a Licor GHG file
 
-`sltload`: Load SLT files based on dates
+`str_load`: Load Aerodyne STR files
+
+`stc_load`: Load Aerodyne STC files
+
+`sltload`: Load SLT files
 
 `sltheader`: Load SLT header info
 
@@ -61,10 +65,11 @@ module ClimateDataIO
 	using DataFrames
 	using ZipFile # Only needed for ziptextfiles.jl (licor_split.jl)
 	
-	export aerodyne_load,
-		AerodyneStatus,
+	export AerodyneStatus,
 		ghgload,
 		ghgread,
+		str_load,
+		stc_load,
 		sltread,
 		sltload,
 		sltheader,
@@ -79,11 +84,12 @@ module ClimateDataIO
 		licor_split
 	
 	dir = splitdir(@__FILE__)[1]
-	include(joinpath(dir,"aerodyne_load.jl"))
 	include(joinpath(dir,"aerodyne_parsetime.jl"))
 	include(joinpath(dir,"AerodyneStatus.jl"))
 	include(joinpath(dir,"ghgload.jl"))
 	include(joinpath(dir,"ghgread.jl"))
+	include(joinpath(dir,"str_load.jl"))
+	include(joinpath(dir,"stc_load.jl"))
 	include(joinpath(dir,"sltread.jl"))
 	include(joinpath(dir,"sltload.jl"))
 	include(joinpath(dir,"sltheader.jl"))
