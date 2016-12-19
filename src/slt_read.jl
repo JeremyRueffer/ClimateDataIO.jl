@@ -1,4 +1,4 @@
-# sltread.jl
+# slt_read.jl
 #
 # Jeremy Rüffer
 # Thünen Institut
@@ -6,21 +6,21 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 09.12.2016
+# Last Edit: 19.12.2016
 
-"""# sltread
+"""# slt_read
 
 Load a single SLT file
 
-`sltread(F,a_inputs,sample_rate)`\n
+`slt_read(F,a_inputs,sample_rate)`\n
 * **F**::String = File name, including path
 * **a_inputs**::Int = Number of analog channels in the SLT file
 * **sample_rate**::Int or String = Sampling rate of the sonic"""
-function sltread(F::String,AnalogIn::Int,freq::String)
-	return sltread(F,AnallogIn,parse(freq))
-end # sltread(F::String,AnalogIn::Int,freq::String)
+function slt_read(F::String,AnalogIn::Int,freq::String)
+	return slt_read(F,AnallogIn,parse(freq))
+end # slt_read(F::String,AnalogIn::Int,freq::String)
 
-function sltread(F::String,a_inputs::Int,sample_rate::Int)
+function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 	# Arrays to output
 	t = [] # Time
 	d = [] # Data
@@ -83,4 +83,4 @@ function sltread(F::String,a_inputs::Int,sample_rate::Int)
 	close(fid)
 	
 	return t,d
-end # End of sltread(F::String,a_inputs::Int,sample_rate::Int)
+end # End of slt_read(F::String,a_inputs::Int,sample_rate::Int)

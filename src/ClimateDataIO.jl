@@ -9,7 +9,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 16.12.2016
+# Last Edit: 19.12.2016
 
 __precompile__(true)
 
@@ -19,31 +19,33 @@ Tools for loading various file types common to soil, atmospheric, and climate sc
 
 `AerodyneStatus`: Convert the StatusW column in STC files into boolean values
 
-`ghgload`: Load Licor GHG files
+`ghg_load`: Load Licor GHG files
 
-`ghgread`: Load a Licor GHG file
+`ghg_read`: Load a Licor GHG file
 
 `str_load`: Load Aerodyne STR files
 
 `stc_load`: Load Aerodyne STC files
 
-`sltload`: Load SLT files
+`slt_load`: Load SLT files
 
-`sltheader`: Load SLT header info
+`slt_header`: Load SLT header info
 
-`sltread`: Read SLT file converting everything except mV signals
+`slt_read`: Read SLT file converting everything except mV signals
 
-`sltconfig`: Load SLT configuration data files (CFG)
+`slt_config`: Load SLT configuration data files (CFG)
 
-`slttimeshift`: Shift a set of SLT files' time
+`slt_timeshift`: Shift a set of SLT files' time
 
-`sltwrite`: Write data to an SLT file
+`slt_write`: Write data to an SLT file
 
-`slttrim`: Remove columns from SLT files
+`slt_trim`: Remove columns from SLT files
 
 `csci_textload`: Load CampbellScientific text DAT files
 
 `csci_textread`: Load a CampbellScientific text DAT files
+
+`csci_times`: Load the minimum and maximum dates and times in the listed files
 
 `lgr_load`: Load  Los Gatos Research (LGR) text data files
 
@@ -64,19 +66,20 @@ module ClimateDataIO
 	using ZipFile # Only needed for ziptextfiles.jl (licor_split.jl)
 	
 	export AerodyneStatus,
-		ghgload,
-		ghgread,
+		ghg_load,
+		ghg_read,
 		str_load,
 		stc_load,
-		sltread,
-		sltload,
-		sltheader,
-		sltconfig,
-		slttimeshift,
-		sltwrite,
-		slttrim,
+		slt_read,
+		slt_load,
+		slt_header,
+		slt_config,
+		slt_timeshift,
+		slt_write,
+		slt_trim,
 		csci_textload,
 		csci_textread,
+		csci_times,
 		lgr_load,
 		lgr_read,
 		licor_split
@@ -84,18 +87,18 @@ module ClimateDataIO
 	dir = splitdir(@__FILE__)[1]
 	include(joinpath(dir,"aerodyne_parsetime.jl"))
 	include(joinpath(dir,"AerodyneStatus.jl"))
-	include(joinpath(dir,"ghgload.jl"))
-	include(joinpath(dir,"ghgread.jl"))
+	include(joinpath(dir,"ghg_load.jl"))
+	include(joinpath(dir,"ghg_read.jl"))
 	include(joinpath(dir,"str_load.jl"))
 	include(joinpath(dir,"stc_load.jl"))
-	include(joinpath(dir,"sltread.jl"))
-	include(joinpath(dir,"sltload.jl"))
-	include(joinpath(dir,"sltheader.jl"))
-	include(joinpath(dir,"sltconfig.jl"))
-	include(joinpath(dir,"sltconfig_load.jl"))
-	include(joinpath(dir,"slttimeshift.jl"))
-	include(joinpath(dir,"sltwrite.jl"))
-	include(joinpath(dir,"slttrim.jl"))
+	include(joinpath(dir,"slt_read.jl"))
+	include(joinpath(dir,"slt_load.jl"))
+	include(joinpath(dir,"slt_header.jl"))
+	include(joinpath(dir,"slt_config.jl"))
+	include(joinpath(dir,"slt_configload.jl"))
+	include(joinpath(dir,"slt_timeshift.jl"))
+	include(joinpath(dir,"slt_write.jl"))
+	include(joinpath(dir,"slt_trim.jl"))
 	include(joinpath(dir,"dirlist.jl"))
 	include(joinpath(dir,"findnewton.jl"))
 	include(joinpath(dir,"csci_textload.jl"))

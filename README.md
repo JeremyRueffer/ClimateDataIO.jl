@@ -91,8 +91,8 @@ DATA files have two options for a timestamp. The second and third columns are se
 ```julia
 epoch = DateTime(1970,1,1,1)
 s = 1481490002 # Seconds
-ms = 550000000 # Milliseconds
-T = epoch + Dates.Second(s) + Dates.Millisecond(ms/1e6)
+ns = 550000000 # Nanoseconds
+T = epoch + Dates.Second(s) + Dates.Millisecond(ns/1e6)
 # 2016-12-11T22:00:02.05
 ```
 

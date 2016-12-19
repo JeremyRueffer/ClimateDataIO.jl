@@ -1,4 +1,4 @@
-# sltconfig_load.jl
+# slt_configload.jl
 #
 # Jeremy Rüffer
 # Thünen Institut
@@ -6,15 +6,15 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 09.12.2016
+# Last Edit: 19.12.2016
 
-"""# sltconfig_load
+"""# slt_configload
 
 Load a list of .CFG files
 
-`sltconfig_load{T<:String}(files::Array{T,1})`\n
+`slt_configload{T<:String}(files::Array{T,1})`\n
 * **files**::Array{String,1} = Array of CFG file names"""
-function sltconfig_load{T<:String}(files::Array{T,1})
+function slt_configload{T<:String}(files::Array{T,1})
 	# Convert File Name Dates
 	configs = DataFrame()
 	for i=1:1:length(files)
@@ -85,4 +85,4 @@ function sltconfig_load{T<:String}(files::Array{T,1})
 	configs = configs[I,:]
 	
 	return configs
-end # sltconfig_load{T<:String}(files::Array{T,1})
+end # slt_configload{T<:String}(files::Array{T,1})

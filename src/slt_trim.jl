@@ -1,4 +1,4 @@
-# slttrim.jl
+# slt_trim.jl
 #
 # Jeremy Rüffer
 # Thünen Institut
@@ -6,19 +6,19 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 09.12.2016
+# Last Edit: 19.12.2016
 
-"""# slttrim
+"""# slt_trim
 
 Remove columns from SLT files, source files must not have all equal numbers of columns
 
-`slttrim(source,destination,mindate,maxdate,maxanalogcols)`\n
+`slt_trim(source,destination,mindate,maxdate,maxanalogcols)`\n
 * **source**::String = Source directory, `\"K:\\Data\"`
 * **destination**::String = Destination directory, `\"K:\\Data\"`
 * **mindate**::DateTime = Start of period to process
 * **maxdate**::DateTime = End of period to process
 * **maxanalogcols**::Int64 = Maximum number of columns that should remain"""
-function slttrim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxanalogcols::Int64)
+function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxanalogcols::Int64)
 	# f1::String # Source Directory
 	# f2::String # Destination Directory
 	# mindate::DateTime
@@ -97,7 +97,7 @@ function slttrim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxan
 	csvdates = fdates[f]
 	
 	# Load the CFG info
-	configs = sltconfig(cfgfiles)
+	configs = slt_config(cfgfiles)
 	begin
 		temp = configs[end,:]
 		temp[:Time] = DateTime(9999) # Setup a fake final row with a time well beyond any real file name
@@ -118,7 +118,7 @@ function slttrim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxan
 		analog_count = config1[:Analog_Count][1] # Length?
 		sample_frequency = parse(config1[:Frequency][1])
 		for i=1:1:length(tempfiles)
-			temp = sltheader(tempfiles[i],analog_count,sample_frequency)
+			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
 			temp[:Analog_Count] = analog_count
 			temp[:Sample_Frequency] = sample_frequency
 			if isempty(sltinfo)
@@ -251,4 +251,4 @@ function slttrim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxan
 		println("   " * splitdir(i)[2])
 		cp(i,joinpath(f2,splitdir(i)[2]))
 	end
-end # slttrim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxanalogcols::Int64)
+end # slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxanalogcols::Int64)

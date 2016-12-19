@@ -1,4 +1,4 @@
-# sltheader.jl
+# slt_header.jl
 #
 # Jeremy Rüffer
 # Thünen Institut
@@ -6,21 +6,21 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 09.12.2016
+# Last Edit: 19.12.2016
 
-"""# sltheader
+"""# slt_header
 
 Load an SLT header
 
-`sltheader(f,AnalogIn,freq)`\n
+`slt_header(f,AnalogIn,freq)`\n
 * **f**::String = File name
 * **AnalogIn**::Int = Number of analog signals
 * **freq**::Number or String = Sample frequency"""
-function sltheader(f::String,AnalogIn::Int,freq::String)
-	return sltheader(f,AnalogIn,Float64(freq))
-end # sltheader(f::String,AnalogIn::Int,freq::String)
+function slt_header(f::String,AnalogIn::Int,freq::String)
+	return slt_header(f,AnalogIn,Float64(freq))
+end # slt_header(f::String,AnalogIn::Int,freq::String)
 
-function sltheader(f::String,AnalogIn::Int,freq::Number)
+function slt_header(f::String,AnalogIn::Int,freq::Number)
 	# Prepare Output Variables
 	bpr = Int64 # Bytes Per Record
 	eddymeasver = [] # Eddy Meas Version
@@ -61,4 +61,4 @@ function sltheader(f::String,AnalogIn::Int,freq::Number)
 	output = DataFrame(FileName = f,T0 = t0,Line_Count = l,Start_Pos = stpos,Channels = collect(Array[ch]),Bit_Mask = collect(Array[bm]),EddyMeas_Version = eddymeasver,BytesPerRecord = bpr)
 	
 	return output
-end # sltheader(f::String,AnalogIn::Int,freq::Number)
+end # slt_header(f::String,AnalogIn::Int,freq::Number)

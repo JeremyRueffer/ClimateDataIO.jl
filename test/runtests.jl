@@ -6,7 +6,7 @@ println("\n====  SLTLOAD  ====")
 src = splitdir(@__FILE__)[1]
 mindate = DateTime(2016,11,23,14,4)
 maxdate = DateTime(2016,11,23,18)
-Data = ClimateDataIO.sltload(src,mindate,maxdate,verbose=true)
+Data = ClimateDataIO.slt_load(src,mindate,maxdate,verbose=true)
 
 @test size(Data) == (141377,13) || "SLTLOAD: Output size incorrect, should be (141377,13)"
 
@@ -22,7 +22,7 @@ src = splitdir(@__FILE__)[1]
 src = joinpath(src,"W20163281000.slt")
 analog_inputs = 6 # Number of analog inputs
 sample_frequency = 10 # Hz
-Time,Data = ClimateDataIO.sltread(src,analog_inputs,sample_frequency)
+Time,Data = ClimateDataIO.slt_read(src,analog_inputs,sample_frequency)
 
 @test size(Data) == (18003,10) || "SLTREAD: Output size incorrect, should be (18003,10)"
 
@@ -103,7 +103,7 @@ Data = ClimateDataIO.csci_textread(src,verbose=true)
 println("\n====  GHGREAD Tests  ====")
 src = splitdir(@__FILE__)[1]
 src = joinpath(src,"2016-12-11T203000_AIU-1359.ghg")
-Time,Data = ClimateDataIO.ghgread(src,verbose=true)
+Time,Data = ClimateDataIO.ghg_read(src,verbose=true)
 
 @test Time[1] == DateTime(2016,12,11,20,30,0) || "GHGREAD: Time[1] first timestamp should be 2016-12-11T20:30:00"
 
@@ -116,7 +116,7 @@ Time,Data = ClimateDataIO.ghgread(src,verbose=true)
 # GHGLOAD: Load one file
 println("\n====  GHGLOAD Tests  ====")
 src = splitdir(@__FILE__)[1]
-Time,Data = ClimateDataIO.ghgload(src,verbose=true,average=false)
+Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=false)
 
 @test Time[1] == DateTime(2016,12,11,20,0,0) || "GHGLOAD: Time[1] first timestamp should be 2016-12-11T20:00:00"
 

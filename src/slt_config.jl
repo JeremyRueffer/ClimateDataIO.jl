@@ -1,4 +1,4 @@
-# sltconfig.jl
+# slt_config.jl
 #
 # Jeremy Rüffer
 # Thünen Institut
@@ -6,24 +6,24 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 09.12.2016
+# Last Edit: 19.12.2016
 
-"""# sltconfig
+"""# slt_config
 
 Load configuration data from .CFG files or a directory of files.
 
-`sltconfig(filefolder)`\n
+`slt_config(filefolder)`\n
 * **filefolder**::String = File, list of files, or folder with CFG files"""
-function sltconfig(filefolder::String)
+function slt_config(filefolder::String)
 	if isdir(filefolder)
 		(filefolder,folder) = dirlist(filefolder,regex=r"\.cfg$")
 	else
 		filefolder = [filefolder]
 	end
 	
-	return sltconfig_load(filefolder)
-end # sltconfig(filefolder::String)
+	return slt_configload(filefolder)
+end # slt_config(filefolder::String)
 
-function sltconfig{T<:String}(files::Array{T,1})
-	return sltconfig_load(files)
-end # sltconfig{T<:String}(files::Array{T,1})
+function slt_config{T<:String}(files::Array{T,1})
+	return slt_configload(files)
+end # slt_config{T<:String}(files::Array{T,1})

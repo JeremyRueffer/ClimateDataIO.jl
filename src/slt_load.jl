@@ -1,4 +1,4 @@
-# sltload.jl
+# slt_load.jl
 #
 # Jeremy Rüffer
 # Thünen Institut
@@ -6,20 +6,20 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 09.12.2016
+# Last Edit: 19.12.2016
 
-"""# sltload
+"""# slt_load
 
 Load a range of SLT files and convert the analog channels if conversion values are present in the corresponding CFG files
 
-`sltload(dr,mindate,maxdate;average=false,verbose=true)`\n
+`slt_load(dr,mindate,maxdate;average=false,verbose=true)`\n
 * **dr**::String = SLT directory
 * **mindate**::DateTime = Minimum of the time range to load
 * **maxdate**::DateTime = Maximum of the time range to load
 * **average**::Bool (optional) = Half hour average the data when TRUE, FALSE is default
 * **verbose**::Bool (optional) = Display information of what is going on when TRUE, TRUE is default
 """
-function sltload(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=false,verbose::Bool=true)
+function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=false,verbose::Bool=true)
 	############
 	## Checks ##
 	############
@@ -110,7 +110,7 @@ function sltload(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=fa
 	cfgfiles = cfgfiles[f]
 	
 	# Load CFG info
-	configs = sltconfig(cfgfiles)
+	configs = slt_config(cfgfiles)
 	begin
 		temp = configs[end,:]
 		temp[:Time] = DateTime(9999) # Setup a fake final row with a time well beyond any real file name
@@ -138,7 +138,7 @@ function sltload(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=fa
 		slope = config1[:Slope][1]
 		for i=1:1:length(tempfiles)
 			cfg[offset] = cfgf
-			temp = sltheader(tempfiles[i],analog_count,sample_frequency)
+			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
 			temp[:Analog_Count] = analog_count
 			temp[:Sample_Frequency] = sample_frequency
 			temp[:Slope] = collect(Array[slope])
@@ -351,4 +351,4 @@ function sltload(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=fa
 	else
 		return D
 	end
-end # sltload(dr::String,mindate::DateTime,maxdate::DateTime)
+end # slt_load(dr::String,mindate::DateTime,maxdate::DateTime)

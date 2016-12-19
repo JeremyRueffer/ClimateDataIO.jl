@@ -1,4 +1,4 @@
-# slttimeshift.jl
+# slt_timeshift.jl
 #
 # Jeremy Rüffer
 # Thünen Institut
@@ -6,22 +6,22 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 09.12.2016
+# Last Edit: 19.12.2016
 
 # TODOs:
 #	- Re-write the SLT header only instead of re-writing the entire file
 
-"""# slttimeshift
+"""# slt_timeshift
 
 Shift the initial timestamp of a range of SLT and other associated files
 
-`slttimeshift(f1,f2,mindate,maxdate,dt)`\n
+`slt_timeshift(f1,f2,mindate,maxdate,dt)`\n
 * **f1**::String = Source directory
 * **f2**::String = Destination directory
 * **mindate**::DateTime = Minimum of the time range to shift
 * **maxdate**::DateTime = Maximum of the time range to shift
 * **dt**::Dates.Period = Amount of time shift to apply"""
-function slttimeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,dt::Base.Dates.Period)
+function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,dt::Base.Dates.Period)
 	# Check Inputs
 	if !isdir(f1)
 		error("First input must be a directory")
@@ -95,7 +95,7 @@ function slttimeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,
 	csvdates = fdates[f]
 	
 	# Load the CFG info
-	configs = sltconfig(cfgfiles)
+	configs = slt_config(cfgfiles)
 	begin
 		temp = configs[end,:]
 		temp[:Time] = DateTime(9999) # Setup a fake final row with a time well beyond any real file name
@@ -283,7 +283,7 @@ function slttimeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,
 		analog_count = config1[:Analog_Count][1] # Length?
 		sample_frequency = parse(config1[:Frequency][1])
 		for i=1:1:length(tempfiles)
-			temp = sltheader(tempfiles[i],analog_count,sample_frequency)
+			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
 			temp[:Analog_Count] = analog_count
 			temp[:Sample_Frequency] = sample_frequency
 			if isempty(sltinfo)
@@ -341,4 +341,4 @@ function slttimeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,
 		close(fid0) # Close Original File
 		close(fid) # Close New File
 	end
-end # slttimeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,dt::Base.Dates.Period)
+end # slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,dt::Base.Dates.Period)

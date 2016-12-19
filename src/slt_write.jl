@@ -1,4 +1,4 @@
-# sltwrite.jl
+# slt_write.jl
 #
 # Jeremy Rüffer
 # Thünen Institut
@@ -6,13 +6,13 @@
 # Runior Research Group Nitrosphere
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit. 09.12.2016
+# Last Edit. 19.12.2016
 
-"""# sltwrite
+"""# slt_write
 
 Write data to an SLT file
 
-`sltwrite(F,t0,ch,bm,D)`\n
+`slt_write(F,t0,ch,bm,D)`\n
 * **filename**::DirectIndexString = Root of file name, \"K:\\Data\\D\". Script will finish it. ::DirectIndexString
 * **t0**::DateTime = Initial time.
 * **ch**::Array{Int8} = Channels (which analog inputs are active)
@@ -22,7 +22,7 @@ Write data to an SLT file
 \n\n
 Important notes:\n
 * Data input must have u,v,w,c and the analog voltages that are active. The data must be as it is written by EddyMeas. u,v,w are multiplied by 100 before the data is saved. c is multiplied by 50. High resolution data is also modified. See the EddySoft PDF on page 15 (actual page 23) for more information on parsing."""
-function sltwrite(F::String,t0::DateTime,ch::Array{Int8},bm::Array{Int8},D::Array{Int16})
+function slt_write(F::String,t0::DateTime,ch::Array{Int8},bm::Array{Int8},D::Array{Int16})
 	F = joinpath(F,string(Int64(Dates.Year(t0))) * @sprintf("%03u",Int64(floor(Float64(t0 - DateTime(Dates.Year(t0)))/1000/60/60/24))) * @sprintf("%02u",Int64(Dates.Hour(t0))) * @sprintf("%02u",Int64(Dates.Minute(t0))) * ".slt")
 	
 	# Time Conversion
@@ -66,4 +66,4 @@ function sltwrite(F::String,t0::DateTime,ch::Array{Int8},bm::Array{Int8},D::Arra
 		end
 	end
 	close(fid) # Close New File
-end # sltwrite(F::String,t0::DateTime,ch::Array{Int8},bm::Array{Int8},D::Array{Int16})
+end # slt_write(F::String,t0::DateTime,ch::Array{Int8},bm::Array{Int8},D::Array{Int16})

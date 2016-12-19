@@ -1,4 +1,4 @@
-# ghgread.jl
+# ghg_read.jl
 #
 #   Load a GHG file
 #
@@ -8,18 +8,18 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 18.11.2014
-# Last Edit: 15.12.2016
+# Last Edit: 19.12.2016
 
-"# ghgread(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
+"# ghg_read(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
-`time,data = ghgread(source)` Load a single GHG file\n
+`time,data = ghg_read(source)` Load a single GHG file\n
 * **source**::String = Single GHG file or a directory of GHG files
 
 ---
 
 #### Keywords:\n
 * verbose::Bool = Display information as the function runs, TRUE is default\n\n"
-function ghgread(source::String;verbose::Bool=false)
+function ghg_read(source::String;verbose::Bool=false)
 	
 	epoch = DateTime(1970,1,1,1) # Licor epoch
 	

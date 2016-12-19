@@ -1,4 +1,4 @@
-# ghgload.jl
+# ghg_load.jl
 #
 #   Load GHG files
 #
@@ -8,20 +8,20 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 18.11.2014
-# Last Edit: 15.12.2016
+# Last Edit: 19.12.2016
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
 
-"# ghgload(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
+"# ghg_load(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
-`time,data = ghgload(source,minimumdate)` Load all data including and after the given date\n
+`time,data = ghg_load(source,minimumdate)` Load all data including and after the given date\n
 * **minimumdate**::DateTime = Starting date to load data from
 
-`time,data = ghgload(source,minimumdate,maximumdate)` Load all data including and after the given date\n
+`time,data = ghg_load(source,minimumdate,maximumdate)` Load all data including and after the given date\n
 * **maximumdate**::DateTime = Load data before this date
 
-`time,davg,dstd,dmin,dmax = ghgload(source,average=true)` Return the averaged values\n
+`time,davg,dstd,dmin,dmax = ghg_load(source,average=true)` Return the averaged values\n
 * **davg**::Array(Float64,1) = Half hour average of the data
 * **dstd**::Array(Float64,1) = Half hour standard deviations of the data
 * **dmin**::Array(Float64,1) = Minimum values from each half hour
@@ -34,12 +34,12 @@
 * recur::Int = Subdirectory recursion depth. 1 is the root directory.
 * verbose::Bool = Display information as the function runs, TRUE is default
 * average::Bool = Half hour average the data starting at the first data point, TRUE is default\n\n"
-function ghgload(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);recur::Int=1,verbose::Bool=true,average::Bool=true)
+function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);recur::Int=1,verbose::Bool=true,average::Bool=true)
 	##############
 	##  Checks  ##
 	##############
 	if isfile(source)
-		return ghgread(source,verbose=verbose)
+		return ghg_read(source,verbose=verbose)
 	end
 	if !isdir(source)
 		error("Date Ranges can only be used when a directory is given as an input")
@@ -100,7 +100,7 @@ function ghgload(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=
 		if verbose
 			println("\t" * string(i) * ": " * files[i])
 		end
-		(t_temp,D_temp,cols) = ghgread(files[i],verbose=verbose)
+		(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose)
 		
 		if average
 			########################
