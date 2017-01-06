@@ -1,6 +1,8 @@
 using ClimateDataIO
 using Base.Test
 
+# Last Edit: 06.01.17
+
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
 src = splitdir(@__FILE__)[1]
@@ -13,6 +15,48 @@ Data = ClimateDataIO.slt_load(src,mindate,maxdate,verbose=true)
 @test Data[:Time][1] == DateTime(2016,11,23,14,4) || "SLTLOAD: First timestamp should be 2016-11-23T14:04:00"
 
 @test Data[:Time][end] == DateTime(2016,11,23,17,59,59,900) || "SLTLOAD: Last timestamp should be 2016-11-23T17:59:59.9"
+
+
+
+tmean, Dmean, Dstd, Dmin, Dmax = ClimateDataIO.slt_load(src,mindate,maxdate,verbose=true,average=true)
+
+@test size(Dmean) == (8,12) || "SLTLOAD: Output size incorrect, should be (8,12)"
+@test size(Dstd) == (8,12) || "SLTLOAD: Output size incorrect, should be (8,12)"
+@test size(Dmin) == (8,12) || "SLTLOAD: Output size incorrect, should be (8,12)"
+@test size(Dmax) == (8,12) || "SLTLOAD: Output size incorrect, should be (8,12)"
+@test length(tmean) == 8 || "SLTLOAD: Output length incorrect, should be 8"
+
+@test tmean[1] == DateTime(2016,11,23,14,4) || "SLTLOAD: First timestamp should be 2016-11-23T14:04:00"
+
+@test tmean[end] == DateTime(2016,11,23,17,34) || "SLTLOAD: Last timestamp should be 2016-11-23T17:34:00"
+
+
+
+src = splitdir(@__FILE__)[1]
+mindate = DateTime(2016,11,23,14,4)
+maxdate = DateTime(2016,11,23,18)
+dest = joinpath(splitdir(@__FILE__)[1],"temporary_files")
+maxcols = 2 # Max analog columns
+ClimateDataIO.slt_trim(src,dest,mindate,maxdate,maxcols)
+Data = ClimateDataIO.slt_load(dest,mindate,maxdate)
+f = ["W20163281404.cfg","W20163281404.csr","W20163281404.csu","W20163281404.csv","W20163281404.flx","W20163281404.log","W20163281404.slt","W20163281430.slt","W20163281500.slt","W20163281530.slt","W20163281600.slt","W20163281630.slt","W20163281700.slt","W20163281730.slt"]
+for i in f
+	rm(joinpath(dest,i))
+end
+
+
+
+@test size(Data) == (141377,9) || "SLTLOAD: Output size incorrect, should be (141377,9)"
+
+@test Data[:Time][1] == DateTime(2016,11,23,14,4) || "SLTLOAD: First timestamp should be 2016-11-23T14:04:00"
+
+@test Data[:Time][end] == DateTime(2016,11,23,17,59,59,900) || "SLTLOAD: Last timestamp should be 2016-11-23T17:59:59.9"
+
+
+
+src = joinpath(splitdir(@__FILE__)[1],"W20163280930.slt")
+header = slt_header(src,6,10)
+println(typeof(header)) # Temp
 
 
 
@@ -36,13 +80,14 @@ Time,Data = ClimateDataIO.slt_read(src,analog_inputs,sample_frequency)
 println("\n====  STR_LOAD Tests  ====")
 src = splitdir(@__FILE__)[1]
 src = joinpath(src,"161210_000000.str")
-Time,Data = ClimateDataIO.str_load(src,verbose=true)
+cols = ["NH3"]
+Time,Data = ClimateDataIO.str_load(src,verbose=true,cols=cols)
 
 @test Time[1] == DateTime(2016,12,10,0,0,0,622) || "STR_LOAD: First timestamp should be 2016-12-10T00:00:00.622"
 
 @test Time[end] == DateTime(2016,12,10,0,59,59,922) || "STR_LOAD: Last timestamp should be 2016-12-10T00:59:59.922"
 
-@test size(Data) == (35159,2) || "STR_LOAD: Output size incorrect, should be (35159,2)"
+@test size(Data) == (35159,1) || "STR_LOAD: Output size incorrect, should be (35159,2)"
 
 println("\nMultiple files")
 src = splitdir(@__FILE__)[1]
@@ -99,6 +144,34 @@ Data = ClimateDataIO.csci_textread(src,verbose=true)
 
 
 
+Data,loggerStr,colsStr,unitsStr,processingStr = ClimateDataIO.csci_textread(src,verbose=true,headeroutput=true)
+
+@test loggerStr == "\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\r\n" || "loggerStr should be \"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\\r\\n"
+
+@test colsStr == "\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\r\n" || "colsStr should be \"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\\r\\n"
+
+@test unitsStr == "\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\r\n" || "unitsStr should be \"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\\r\\n"
+
+@test processingStr == "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\r\n" || "processingStr should be \"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\\r\\n"
+
+@test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
+
+@test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
+
+@test size(Data) == (11520,10) || "CSCI_TEXTREAD: Data output size incorrect, should be (11520,10)"
+
+
+
+Data = ClimateDataIO.csci_textload([src],verbose=true)
+
+@test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
+
+@test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
+
+@test size(Data) == (11520,10) || "CSCI_TEXTREAD: Data output size incorrect, should be (11520,10)"
+
+
+
 # GHGREAD: Load one file
 println("\n====  GHGREAD Tests  ====")
 src = splitdir(@__FILE__)[1]
@@ -126,10 +199,20 @@ Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=false)
 
 
 
+Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=true)
+
+@test Time[1] == DateTime(2016,12,11,20,0,0) || "GHGLOAD: Time[1] first timestamp should be 2016-12-11T20:00:00"
+
+@test Time[end] == DateTime(2016,12,11,21,30) || "GHGLOAD: Time[end] last timestamp should be 2016-12-04T21:30:00"
+
+@test size(Data) == (4,39) || "GHGLOAD: Data output size incorrect, should be (4,39)"
+
+
+
 # GHGLOAD: Load one file
 println("\n====  LGR_LOAD Tests  ====")
 src = splitdir(@__FILE__)[1]
-Time,Data, Cols = ClimateDataIO.lgr_load(src)
+Time,Data, Cols = ClimateDataIO.lgr_load(src,verbose=true)
 
 @test Time[1] == DateTime(2015,1,30,15,13,47,994) || "LGR_LOAD: Time[1] first timestamp should be 2015-01-30T15:13:47.994"
 
@@ -139,4 +222,16 @@ Time,Data, Cols = ClimateDataIO.lgr_load(src)
 
 
 
+# LGR_READ Error Check
+err = true
+try
+	Time,Data,Cols = ClimateDataIO.lgr_read("blahblahblah")
+	err = false
+end
+@test err == true || "LGR_READ: Should throw an error, invalid file given"
+
 println("All Tests Complete Successfully")
+
+
+
+# LICOR_SPLIT

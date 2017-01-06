@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 19.12.2016
+# Last Edit: 06.01.2017
 
 """# slt_header
 
@@ -17,7 +17,7 @@ Load an SLT header
 * **AnalogIn**::Int = Number of analog signals
 * **freq**::Number or String = Sample frequency"""
 function slt_header(f::String,AnalogIn::Int,freq::String)
-	return slt_header(f,AnalogIn,Float64(freq))
+	return slt_header(f,AnalogIn,parse(Float64,freq))
 end # slt_header(f::String,AnalogIn::Int,freq::String)
 
 function slt_header(f::String,AnalogIn::Int,freq::Number)

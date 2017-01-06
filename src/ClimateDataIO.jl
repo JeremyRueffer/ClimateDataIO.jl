@@ -9,7 +9,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 02.01.2017
+# Last Edit: 04.01.2017
 
 __precompile__(true)
 
@@ -17,16 +17,25 @@ __precompile__(true)
 
 Tools for loading various file types common to soil, atmospheric, and climate sciences. This includes SLT files from EddyMeas, Aerodyne QCL data, CampbellScientific TOA5 DAT files, Los Gatos Research data files, and Licor GHG files.
 
+For more specific information see each functions' help.
+
+---
+
+### Aerodyne QCL Files
 `AerodyneStatus`: Convert the StatusW column in STC files into boolean values
-
-`ghg_load`: Load Licor GHG files
-
-`ghg_read`: Load a Licor GHG file
 
 `str_load`: Load Aerodyne STR files
 
 `stc_load`: Load Aerodyne STC files
 
+### Campbell Scientific Text DAT Files
+`csci_textload`: Load CampbellScientific text DAT files
+
+`csci_textread`: Load a CampbellScientific text DAT files
+
+`csci_times`: Load the minimum and maximum dates and times in the listed files
+
+### EddyMeas SLT Files
 `slt_load`: Load SLT files
 
 `slt_header`: Load SLT header info
@@ -41,25 +50,23 @@ Tools for loading various file types common to soil, atmospheric, and climate sc
 
 `slt_trim`: Remove columns from SLT files
 
-`csci_textload`: Load CampbellScientific text DAT files
-
-`csci_textread`: Load a CampbellScientific text DAT files
-
-`csci_times`: Load the minimum and maximum dates and times in the listed files
-
+### LGR Laser Data
 `lgr_load`: Load  Los Gatos Research (LGR) text data files
 
 `lgr_read`: Load a Los Gatos Research (LGR) text data file
 
-`licor_split`: Split Licor text data files into smaller compressed GHG files
+### Licor GHG Files
+`ghg_load`: Load Licor GHG files
 
-For more information see each function's help.
+`ghg_read`: Load a Licor GHG file
+
+`licor_split`: Split Licor text data files into smaller compressed GHG files
 
 ---
 
 #### Requirements
 * DataFrames
-* ZipFiles (only for licor_split and ghgread)"""
+* ZipFiles (only for licor_split and ghg_read)"""
 module ClimateDataIO
 
 	using DataFrames
