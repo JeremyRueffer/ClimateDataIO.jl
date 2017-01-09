@@ -30,7 +30,7 @@ tmean, Dmean, Dstd, Dmin, Dmax = ClimateDataIO.slt_load(src,mindate,maxdate,verb
 
 @test tmean[end] == DateTime(2016,11,23,17,34) || "SLTLOAD: Last timestamp should be 2016-11-23T17:34:00"
 
-
+readdir() # Travis Test, why does it not think the directory exists?
 
 src = splitdir(@__FILE__)[1]
 mindate = DateTime(2016,11,23,14,4)
