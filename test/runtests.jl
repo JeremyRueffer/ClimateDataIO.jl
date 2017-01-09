@@ -30,12 +30,11 @@ tmean, Dmean, Dstd, Dmin, Dmax = ClimateDataIO.slt_load(src,mindate,maxdate,verb
 
 @test tmean[end] == DateTime(2016,11,23,17,34) || "SLTLOAD: Last timestamp should be 2016-11-23T17:34:00"
 
-readdir() # Travis Test, why does it not think the directory exists?
-
 src = splitdir(@__FILE__)[1]
 mindate = DateTime(2016,11,23,14,4)
 maxdate = DateTime(2016,11,23,18)
 dest = joinpath(splitdir(@__FILE__)[1],"temporary_files")
+isdir(dest) ? nothing: mkdir(dest)
 maxcols = 2 # Max analog columns
 ClimateDataIO.slt_trim(src,dest,mindate,maxdate,maxcols)
 Data = ClimateDataIO.slt_load(dest,mindate,maxdate)
@@ -43,8 +42,6 @@ f = ["W20163281404.cfg","W20163281404.csr","W20163281404.csu","W20163281404.csv"
 for i in f
 	rm(joinpath(dest,i))
 end
-
-
 
 @test size(Data) == (141377,9) || "SLTLOAD: Output size incorrect, should be (141377,9)"
 

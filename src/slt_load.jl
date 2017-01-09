@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 19.12.2016
+# Last Edit: 09.01.2017
 
 """# slt_load
 
@@ -30,15 +30,11 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	#########################
 	## List and Sort Files ##
 	#########################
-	if verbose
-		println("Listing SLT Files")
-	end
+	verbose ? println("Listing SLT Files") : nothing
 	(files,folders) = dirlist(dr,regex=r"\w\d{8}\.(slt|cfg)$")
 	
 	# Parse File Dates
-	if verbose
-		println("Sorting " * string(length(files)) * " Files")
-	end
+	verbose ? println("Sorting " * string(length(files)) * " Files") : nothing
 	fdates = Array(DateTime,length(files))
 	i = 0
 	for i=1:1:length(files)
@@ -92,9 +88,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	###############################
 	## Prepare CFG and SLT Info  ##
 	###############################
-	if verbose
-		println("Loading Settings for " * string(length(files)) * " files")
-	end
+	verbose ? println("Loading Settings for " * string(length(files)) * " files") : nothing
 	
 	# Remove Unnecessary Config Files
 	f = find(cfgdates .<= mindate)
@@ -152,9 +146,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	end
 	
 	# Preallocate Final Arrays
-	if verbose
-		println("Preallocating Final Arrays (" * string(Int64(sum(sltinfo[:Line_Count]))) * "," * string(4+configs[:Analog_Count][1]) * ")")
-	end
+	verbose ? println("Preallocating Final Arrays (" * string(Int64(sum(sltinfo[:Line_Count]))) * "," * string(4+configs[:Analog_Count][1]) * ")") : nothing
 	l = Int64(sum(sltinfo[:Line_Count]))
 	if 4+configs[:Analog_Count][1] == 4
 		D = DataFrame(Time = fill!(Array(DateTime,l),DateTime(0)), u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN), wind_direction = fill!(Array(Float64,l),NaN))
@@ -197,9 +189,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	###################
 	## Load the Data ##
 	###################
-	if verbose
-		println("Loading Data (" * string(length(files)) * " files)")
-	end
+	verbose ? println("Loading Data (" * string(length(files)) * " files)") : nothing
 	offset = 0
 	u = 0.0
 	v = 0.0
@@ -261,9 +251,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	Dmin = DataFrame[]
 	Dmax = DataFrame[]
 	if average
-		if verbose
-			println("\tAveraging SLT Data")
-		end
+		verbose ? println("\tAveraging SLT Data") : nothing
 		
 		targets = collect(minimum(D[:Time]) - Dates.Millisecond(minimum(D[:Time])):Dates.Minute(30):maximum(D[:Time]))
 		actual = findnewton(D[:Time],targets)
@@ -343,9 +331,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		end
 	end
 	
-	if verbose
-		println("Complete")
-	end
+	verbose ? println("Complete") :nothing
 	if average
 		return tmean, Dmean, Dstd, Dmin, Dmax
 	else
