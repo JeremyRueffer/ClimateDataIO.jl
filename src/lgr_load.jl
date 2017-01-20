@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 07.11.2014
-# Last Edit: 12.12.2016
+# Last Edit: 19.01.2017
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -72,9 +72,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	f = find(mindate .<= times .< maxdate)
 	times = times[f]
 	files = files[f]
-	if verbose
-		println("  ZIP File Count: " * string(length(files)) * "\n")
-	end
+	verbose ? println("  ZIP File Count: " * string(length(files)) * "\n") : nothing
 
 	# List and unzip contents
 	D = DataFrame()
@@ -86,10 +84,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		zipdirectories = Array(String,0)
 
 		# List Zip Contents
-		if verbose
-			println("   # " * string(i) * ": " * basename(temp))
-		end
-		println("temp = " * temp) # Temp
+		verbose ? println("   # " * string(i) * ": " * basename(temp)) : nothing
 		l = readcsv(IOBuffer(readstring(`unzip -l $temp`)))[4:end-2]
 		for j=1:1:length(l)
 			if splitext(l[j][31:end])[2] == ".txt"
@@ -124,9 +119,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		end
 	end
 
-	if verbose
-		println("  Data Loading Complete")
-	end
+	verbose ? println("  Data Loading Complete") : nothing
 
 	return t, D, cols
 end

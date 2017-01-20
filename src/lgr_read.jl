@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 07.11.2014
-# Last Edit: 12.12.2016
+# Last Edit: 19.01.2017
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -26,9 +26,7 @@
 * verbose::Bool = Display information as the function runs, TRUE is default\n\n"
 function lgr_read(source::String;verbose::Bool=false)
 	# Check for file
-	if !isfile(source)
-		error(source * " must be a file")
-	end
+	!isfile(source) ? error(source * " must be a file") : nothing
 
 	#############################################
 	##  Prepare Settings for Loading the Data  ##

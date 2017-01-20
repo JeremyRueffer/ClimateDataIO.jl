@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 19.12.2016
+# Last Edit: 19.01.2017
 
 # TODOs:
 #	- Re-write the SLT header only instead of re-writing the entire file
@@ -23,12 +23,8 @@ Shift the initial timestamp of a range of SLT and other associated files
 * **dt**::Dates.Period = Amount of time shift to apply"""
 function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,dt::Base.Dates.Period)
 	# Check Inputs
-	if !isdir(f1)
-		error("First input must be a directory")
-	end
-	if !isdir(f2)
-		error("Second input must be a directory")
-	end
+	!isdir(f1) ? error("First input must be a directory") : nothing
+	!isdir(f2) ? error("Second input must be a directory") : nothing
 	
 	# List and sort files
 	(files,folders) = dirlist(f1,regex=r"\w\d{8}\.")
@@ -108,7 +104,10 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		new_time = configs[:Time][i] + dt
 		println("   " * configs[:FileName][i][end-15:end])
 		
-		temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time)))
+		temp = string(Int64(Dates.Year(new_time))) *
+			@sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
+			@sprintf("%02u",Int64(Dates.Hour(new_time))) *
+			@sprintf("%02u",Int64(Dates.Minute(new_time)))
 		
 		#temp = string(Int64(Dates.Year(new_time))) *
 		#	@sprintf("%03u",Int64(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) *
@@ -160,7 +159,10 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		println("   " * flxfiles[i][end-15:end])
 		new_time = flxdates[i] + dt
 		
-		temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time)))
+		temp = string(Int64(Dates.Year(new_time))) *
+			@sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
+			@sprintf("%02u",Int64(Dates.Hour(new_time))) *
+			@sprintf("%02u",Int64(Dates.Minute(new_time)))
 		#temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time))) # Temp
 		new_filename = joinpath(f2,string(flxfiles[i][end-15]) * temp * ".flx")
 		
@@ -170,7 +172,11 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		while eof(fid0) == false
 			l = readline(fid0)
 			temp_time = DateTime(l[1:16],"dd.mm.yyyy HH:MM") + dt
-			l = @sprintf("%02u",Int64(Dates.Day(temp_time))) * "." * @sprintf("%02u",Int64(Dates.Month(temp_time))) * "." * string(Int64(Dates.Year(temp_time))) * " " * @sprintf("%02u",Int64(Dates.Hour(temp_time))) * ":" * @sprintf("%02u",Int(Dates.Minute(temp_time))) * l[17:end]
+			l = @sprintf("%02u",Int64(Dates.Day(temp_time))) * "." *
+				@sprintf("%02u",Int64(Dates.Month(temp_time))) * "." *
+				string(Int64(Dates.Year(temp_time))) * " " *
+				@sprintf("%02u",Int64(Dates.Hour(temp_time))) * ":" *
+				@sprintf("%02u",Int(Dates.Minute(temp_time))) * l[17:end]
 			write(fid,l)
 		end
 		close(fid)
@@ -183,7 +189,10 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		println("   " * logfiles[i][end-15:end])
 		new_time = logdates[i] + dt
 		
-		temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time)))
+		temp = string(Int64(Dates.Year(new_time))) *
+			@sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
+			@sprintf("%02u",Int64(Dates.Hour(new_time))) *
+			@sprintf("%02u",Int64(Dates.Minute(new_time)))
 		#temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time))) # Temp
 		new_filename = joinpath(f2,string(logfiles[i][end-15]) * temp * ".log")
 		
@@ -192,7 +201,12 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		while eof(fid0) == false
 			l = readline(fid0)
 			temp_time = DateTime(l[1:20],"dd.mm.yyyy HH:MM:SS") + dt
-			l = @sprintf("%02u",Int(Dates.Day(temp_time))) * "." * @sprintf("%02u",Int(Dates.Month(temp_time))) * "." * string(Int(Dates.Year(temp_time))) * "  " * @sprintf("%02u",Int(Dates.Hour(temp_time))) * ":" * @sprintf("%02u",Int(Dates.Minute(temp_time))) * ":" * @sprintf("%02u",Int(Dates.Second(temp_time))) * l[21:end]
+			l = @sprintf("%02u",Int(Dates.Day(temp_time))) * "." *
+				@sprintf("%02u",Int(Dates.Month(temp_time))) * "." *
+				string(Int(Dates.Year(temp_time))) * "  " *
+				@sprintf("%02u",Int(Dates.Hour(temp_time))) * ":" *
+				@sprintf("%02u",Int(Dates.Minute(temp_time))) * ":" *
+				@sprintf("%02u",Int(Dates.Second(temp_time))) * l[21:end]
 			write(fid,l)
 		end
 		close(fid)
@@ -205,7 +219,10 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		println("   " * csrfiles[i][end-15:end])
 		new_time = csrdates[i] + dt
 		
-		temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time)))
+		temp = string(Int64(Dates.Year(new_time))) *
+			@sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
+			@sprintf("%02u",Int64(Dates.Hour(new_time))) *
+			@sprintf("%02u",Int64(Dates.Minute(new_time)))
 		#temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time))) # Temp
 		new_filename = joinpath(f2,string(csrfiles[i][end-15]) * temp * ".csr")
 		
@@ -215,7 +232,11 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		while eof(fid0) == false
 			l = readline(fid0)
 			temp_time = DateTime(l[1:16],"dd.mm.yyyy HH:MM") + dt
-			l = @sprintf("%02u",Int(Dates.Day(temp_time))) * "." * @sprintf("%02u",Int(Dates.Month(temp_time))) * "." * string(Int(Dates.Year(temp_time))) * " " * @sprintf("%02u",Int(Dates.Hour(temp_time))) * ":" * @sprintf("%02u",Int(Dates.Minute(temp_time))) * l[17:end]
+			l = @sprintf("%02u",Int(Dates.Day(temp_time))) * "." *
+				@sprintf("%02u",Int(Dates.Month(temp_time))) * "." *
+				string(Int(Dates.Year(temp_time))) * " " *
+				@sprintf("%02u",Int(Dates.Hour(temp_time))) * ":" *
+				@sprintf("%02u",Int(Dates.Minute(temp_time))) * l[17:end]
 			write(fid,l)
 		end
 		close(fid)
@@ -228,7 +249,10 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		println("   " * csufiles[i][end-15:end])
 		new_time = csudates[i] + dt
 		
-		temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time)))
+		temp = string(Int64(Dates.Year(new_time))) *
+			@sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
+			@sprintf("%02u",Int64(Dates.Hour(new_time))) *
+			@sprintf("%02u",Int64(Dates.Minute(new_time)))
 		#temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time))) # Temp
 		new_filename = joinpath(f2,string(csufiles[i][end-15]) * temp * ".csu")
 		
@@ -238,7 +262,11 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		while eof(fid0) == false
 			l = readline(fid0)
 			temp_time = DateTime(l[1:16],"dd.mm.yyyy HH:MM") + dt
-			l = @sprintf("%02u",Int(Dates.Day(temp_time))) * "." * @sprintf("%02u",Int(Dates.Month(temp_time))) * "." * string(Int(Dates.Year(temp_time))) * " " * @sprintf("%02u",Int(Dates.Hour(temp_time))) * ":" * @sprintf("%02u",Int(Dates.Minute(temp_time))) * l[17:end]
+			l = @sprintf("%02u",Int(Dates.Day(temp_time))) * "." *
+				@sprintf("%02u",Int(Dates.Month(temp_time))) * "." *
+				string(Int(Dates.Year(temp_time))) * " " *
+				@sprintf("%02u",Int(Dates.Hour(temp_time))) * ":" *
+				@sprintf("%02u",Int(Dates.Minute(temp_time))) * l[17:end]
 			write(fid,l)
 		end
 		close(fid)
@@ -251,7 +279,10 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		println("   " * csvfiles[i][end-15:end])
 		new_time = csvdates[i] + dt
 		
-		temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time)))
+		temp = string(Int64(Dates.Year(new_time))) *
+			@sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
+			@sprintf("%02u",Int64(Dates.Hour(new_time))) *
+			@sprintf("%02u",Int64(Dates.Minute(new_time)))
 		#temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) * @sprintf("%02u",Int64(Daets.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time))) # Temp
 		new_filename = joinpath(f2,string(csvfiles[i][end-15]) * temp * ".csv")
 		
@@ -261,7 +292,11 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		while eof(fid0) == false
 			l = readline(fid0)
 			temp_time = DateTime(l[1:16],"dd.mm.yyyy HH:MM") + dt
-			l = @sprintf("%02u",Int(Dates.Day(temp_time))) * "." * @sprintf("%02u",Int(Dates.Month(temp_time))) * "." * string(Int(Dates.Year(temp_time))) * " " * @sprintf("%02u",Int(Dates.Hour(temp_time))) * ":" * @sprintf("%02u",Int(Dates.Minute(temp_time))) * l[17:end]
+			l = @sprintf("%02u",Int(Dates.Day(temp_time))) * "." *
+				@sprintf("%02u",Int(Dates.Month(temp_time))) * "." *
+				string(Int(Dates.Year(temp_time))) * " " *
+				@sprintf("%02u",Int(Dates.Hour(temp_time))) * ":" *
+				@sprintf("%02u",Int(Dates.Minute(temp_time))) * l[17:end]
 			write(fid,l)
 		end
 		close(fid)
@@ -300,7 +335,10 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 	for i = 1:1:size(sltinfo,1)
 		new_time = sltinfo[:T0][i] + dt
 		println("   " * sltinfo[:FileName][i][end-15:end])
-		temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time)))
+		temp = string(Int64(Dates.Year(new_time))) *
+			@sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
+			@sprintf("%02u",Int64(Dates.Hour(new_time))) *
+			@sprintf("%02u",Int64(Dates.Minute(new_time)))
 		#temp = string(Int64(Dates.Year(new_time))) * @sprintf("%03u",Int64(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) * @sprintf("%02u",Int64(Dates.Hour(new_time))) * @sprintf("%02u",Int64(Dates.Minute(new_time))) # Temp
 		new_filename = joinpath(f2,string(sltinfo[:FileName][i][end-15]) * temp * ".slt")
 		
@@ -335,9 +373,7 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 				write(fid,temp_data)
 			end
 		end
-		if early_end
-			println("    Early End of File: " * string(sltinfo[:Line_Count][i]) * " lines") # Temp
-		end
+		early_end ? println("    Early End of File: " * string(sltinfo[:Line_Count][i]) * " lines") : nothing # Temp
 		close(fid0) # Close Original File
 		close(fid) # Close New File
 	end

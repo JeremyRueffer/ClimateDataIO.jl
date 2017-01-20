@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 18.11.2014
-# Last Edit: 19.12.2016
+# Last Edit: 19.01.2017
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -41,12 +41,8 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	if isfile(source)
 		return ghg_read(source,verbose=verbose)
 	end
-	if !isdir(source)
-		error("Date Ranges can only be used when a directory is given as an input")
-	end
-	if maxdate <= mindate
-		error("Maximum date must be greater than the minimum date")
-	end
+	!isdir(source) ? error("Date Ranges can only be used when a directory is given as an input") : nothing
+	maxdate <= mindate ? error("Maximum date must be greater than the minimum date") : nothing
 	
 	#################
 	##  Constants  ##
@@ -106,9 +102,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			########################
 			##  Average the Data  ##
 			########################
-			if verbose
-				println("\t   Averaging Data")
-			end
+			verbose ? println("\t   Averaging Data") : nothing
 			f = [findnewton(t_temp,[minimum(t_temp) - Dates.Millisecond(minimum(t_temp)):Dates.Minute(30):maximum(t_temp);]),length(t_temp) + 1;]
 			for j=1:1:length(f)-1
 				temp_mean = mean(convert(Array,D_temp[f[j]:f[j+1]-1,9:end-1]),1)
@@ -142,17 +136,13 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 				D = [D;D_temp]
 			end
 		end
-		if verbose
-			println("")
-		end
+		verbose ? println("") : nothing
 	end
 	
 	##############
 	##  Output  ##
 	##############
-	if verbose
-		println("GHG Load Complete")
-	end
+	verbose ? println("GHG Load Complete") : nothing
 	if average
 		return t_mean, D_mean, D_std, D_min, D_max
 	else
