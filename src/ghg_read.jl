@@ -31,7 +31,6 @@ function ghg_read(source::String;verbose::Bool=false)
 		temp_dir = "/tmp/"
 	elseif is_apple()
 		temp_dir = ENV["TMPDIR"]
-		println("temp_dir = " * temp_dir) # Temp
 	elseif is_windows()
 		temp_dir = ENV["temp"]
 	end
