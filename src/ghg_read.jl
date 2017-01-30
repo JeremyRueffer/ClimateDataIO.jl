@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 18.11.2014
-# Last Edit: 19.12.2016
+# Last Edit: 23.01.2017
 
 "# ghg_read(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
@@ -27,8 +27,11 @@ function ghg_read(source::String;verbose::Bool=false)
 	##  Initialize  ##
 	##################
 	#epoch = DateTime(1970)
-	if is_linux() || is_apple()
+	if is_linux()
 		temp_dir = "/tmp/"
+	elseif is_apple()
+		temp_dir = ENV["TMPDIR"]
+		println("temp_dir = " * temp_dir) # Temp
 	elseif is_windows()
 		temp_dir = ENV["temp"]
 	end

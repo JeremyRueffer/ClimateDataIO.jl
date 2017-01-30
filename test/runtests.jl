@@ -1,7 +1,7 @@
 using ClimateDataIO
 using Base.Test
 
-# Last Edit: 09.01.17
+# Last Edit: 20.01.17
 
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
@@ -229,8 +229,6 @@ try
 end
 @test err == true || "LGR_READ: Should throw an error, invalid file given"
 
-println("\n\nAll Tests Complete Successfully")
-
 
 
 # LICOR_SPLIT
@@ -291,3 +289,5 @@ rm(joinpath(dest,"2016-12-12T040000_AIU-1359.ghg"))
 @test Time[1] == DateTime(2016,12,11,21,30) || "LICOR_SPLIT: Time[1] first timestamp should be 2016-12-11T21:30:00"
 @test Time[end] == DateTime(2016,12,12,7,59,59,950) || "LICOR_SPLIT: Time[end] last timestamp should be 2016-12-12T07:59:59.95"
 @test size(Data) == (756000,48) || "LGR_LOAD: Data output size incorrect, should be (756000,48)"
+
+println("\n\nAll Tests Complete Successfully")
