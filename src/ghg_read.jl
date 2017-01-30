@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 18.11.2014
-# Last Edit: 23.01.2017
+# Last Edit: 30.01.2017
 
 "# ghg_read(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
@@ -51,7 +51,7 @@ function ghg_read(source::String;verbose::Bool=false)
 				close(fid)
 			end
 		end
-	elseif is_linux()
+	elseif is_unix()
 		temp = []
 		try
 			temp = readstring(`unzip -d $temp_dir $source`)
