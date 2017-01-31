@@ -192,6 +192,7 @@ Data,loggerStr,colsStr,unitsStr,processingStr = ClimateDataIO.csci_textread(src,
 
 
 
+println("\n===  CSCI_TEXTLOAD  ===")
 Data, HeaderInfo, HeaderColumns, HeaderUnits, HeaderSample = ClimateDataIO.csci_textload([src],verbose=true,headerlines=4,headeroutput=true)
 h1 = "\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\r\n"
 h2 = "\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\r\n"
@@ -217,6 +218,7 @@ Data = ClimateDataIO.csci_textload(src,rootname,DateTime(2016,12),DateTime(2017,
 
 
 println("\n===  CSCI_TIMES  ===")
+src = joinpath(src,"CampbellScientific_HC2S3_20161201-000000.dat")
 srcs = [src,src]
 mintime = DateTime(2016,12,1)
 maxtime = DateTime(2016,12,4,23,59,30)
