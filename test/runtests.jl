@@ -1,7 +1,7 @@
 using ClimateDataIO
 using Base.Test
 
-# Last Edit: 30.01.17
+# Last Edit: 31.01.17
 
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
@@ -147,6 +147,22 @@ Time,Data = ClimateDataIO.stc_load(src,verbose=true)
 
 
 
+println("\nStatus Values")
+statuses = ClimateDataIO.AerodyneStatus(Data[:StatusW])
+temp = fill!(Array(Bool,14391),false)
+@test temp == statuses.Valve1 || "AERODYNESTATUS: All values in statuses.Valve1 should be FALSE"
+@test temp == statuses.Valve2 || "AERODYNESTATUS: All values in statuses.Valve2 should be FALSE"
+@test temp == statuses.Valve3 || "AERODYNESTATUS: All values in statuses.Valve3 should be FALSE"
+@test temp != statuses.Valve4 || "AERODYNESTATUS: All values in statuses.Valve4 should not all be FALSE"
+@test temp == statuses.Valve5 || "AERODYNESTATUS: All values in statuses.Valve5 should be FALSE"
+@test temp == statuses.Valve6 || "AERODYNESTATUS: All values in statuses.Valve6 should be FALSE"
+@test temp == statuses.Valve7 || "AERODYNESTATUS: All values in statuses.Valve7 should be FALSE"
+@test temp != statuses.Valve8 || "AERODYNESTATUS: All values in statuses.Valve8 should not all be FALSE"
+known_names = [:AutoBG;:AutoCal;:FrequencyLock;:BinomialFilter;:AltMode;:GuessLast;:PowerNorm;:ContRefLock;:AutoSpectSave;:PressureLock;:WriteData;:RS232;:ElectronicBGSub;:Valve1;:Valve2;:Valve3;:Valve4;:Valve5;:Valve6;:Valve7;:Valve8]
+@test known_names == fieldnames(statuses) || "AERODYNESTATUS: statuses field names should be as follows - \n21-element Array{Symbol,1}:\n  :AutoBG\n  :AutoCal\n  :FrequencyLock\n  :BinomialFilter\n  :AltMode\n  :GuessLast\n  :PowerNorm\n  :ContRefLock\n  :AutoSpectSave\n  :PressureLock\n  :WriteData\n  :RS232\n  :ElectronicBGSub\n  :Valve1\n  :Valve2\n  :Valve3\n  :Valve4\n  :Valve5\n  :Valve6\n  :Valve7\n  :Valve8"
+
+
+
 src = splitdir(@__FILE__)[1]
 src = joinpath(src,"161210_000000.stc")
 Time,Data = ClimateDataIO.stc_load(src,verbose=true,cols = ["Praw","time"])
@@ -157,7 +173,7 @@ Time,Data = ClimateDataIO.stc_load(src,verbose=true,cols = ["Praw","time"])
 # CSCI_TEXTREAD: Load one file
 println("\n====  CSCI_TEXTREAD Tests  ====")
 src = splitdir(@__FILE__)[1]
-src = joinpath(src,"CampbellScientific_HC2S3.dat")
+src = joinpath(src,"CampbellScientific_HC2S3_20161201-000000.dat")
 Data = ClimateDataIO.csci_textread(src,verbose=true)
 @test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
 @test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
@@ -176,10 +192,37 @@ Data,loggerStr,colsStr,unitsStr,processingStr = ClimateDataIO.csci_textread(src,
 
 
 
-Data = ClimateDataIO.csci_textload([src],verbose=true)
+Data, HeaderInfo, HeaderColumns, HeaderUnits, HeaderSample = ClimateDataIO.csci_textload([src],verbose=true,headerlines=4,headeroutput=true)
+h1 = "\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\r\n"
+h2 = "\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\r\n"
+h3 = "\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\r\n"
+h4 = "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\r\n"
 @test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
 @test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
-@test size(Data) == (11520,10) || "CSCI_TEXTREAD: Data output size incorrect, should be (11520,10)"
+@test size(Data) == (11520,10) || "CSCI_TEXTLOAD: Data output size incorrect, should be (11520,10)"
+@test h1 == HeaderInfo || "CSCI_TEXTLOAD: HeaderInfo should be \"\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\r\n\""
+@test h2 == HeaderColumns || "CSCI_TEXTLOAD: HeaderColumns should be \"\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\r\n\""
+@test h3 == HeaderUnits || "CSCI_TEXTLOAD: HeaderUnits should be \"\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\r\n\""
+@test h4 == HeaderSample || "CSCI_TEXTLOAD: HeaderSample should be \"\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\r\n\""
+
+
+
+src = splitdir(@__FILE__)[1]
+rootname = "CampbellScientific"
+Data = ClimateDataIO.csci_textload(src,rootname,DateTime(2016,12),DateTime(2017,1))
+@test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
+@test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
+@test size(Data) == (11520,10) || "CSCI_TEXTLOAD: Data output size incorrect, should be (11520,10)"
+
+
+
+println("\n===  CSCI_TIMES  ===")
+srcs = [src,src]
+mintime = DateTime(2016,12,1)
+maxtime = DateTime(2016,12,4,23,59,30)
+mintimes, maxtimes = ClimateDataIO.csci_times(srcs,headerlines=4)
+@test [mintime;mintime] == mintimes || "CSCI_TIME: Both minimum time values should be 2016-12-01T00:00:00"
+@test [maxtime;maxtime] == maxtimes || "CSCI_TIME: Both maximum time values should be 2016-12-04T23:59:30"
 
 
 
