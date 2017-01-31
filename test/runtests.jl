@@ -304,7 +304,7 @@ for i=1:1:8
     l = readline(fid)
 end
 p = position(fid) # File position
-for j=1:1:4 # 20 for another eight hours
+for j=1:1:12 # 20 for another four hours
     seek(fid,p) # Reset file position
     while !eof(fid)
         l = readline(fid)
@@ -329,10 +329,10 @@ rm(joinpath(dest,"2016-12-11T213000.txt"))
 println("\nLoading Split Files...")
 Time,Data = ClimateDataIO.ghg_load(dest,DateTime(2016,12,11,21,30),average=false,verbose=false)
 rm(joinpath(dest,"2016-12-11T213000_AIU-1359.ghg"))
-#rm(joinpath(dest,"2016-12-12T000000_AIU-1359.ghg"))
+rm(joinpath(dest,"2016-12-12T000000_AIU-1359.ghg"))
 #rm(joinpath(dest,"2016-12-12T040000_AIU-1359.ghg"))
 @test Time[1] == DateTime(2016,12,11,21,30) || "LICOR_SPLIT: Time[1] first timestamp should be 2016-12-11T21:30:00"
-@test Time[end] == DateTime(2016,12,12,3,59,59,950) || "LICOR_SPLIT: Time[end] last timestamp should be 2016-12-12T03:59:59.95"
-@test size(Data) == (468000,48) || "LGR_LOAD: Data output size incorrect, should be (468000,48)"
+@test Time[end] == DateTime(2016,12,11,23,59,59,950) || "LICOR_SPLIT: Time[end] last timestamp should be 2016-12-11T23:59:59.95"
+@test size(Data) == (180000,48) || "LGR_SPLIT: Data output size incorrect, should be (180000,48)"
 
 println("\n\nAll Tests Complete Successfully")
