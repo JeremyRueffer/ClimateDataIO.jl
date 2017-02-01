@@ -57,7 +57,7 @@ function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 		t_offset[1] = Dates.Millisecond(0) # Correction, the first sample shouldn't have an offset
 		t_offset = cumsum(t_offset) # Time offset from the start for every sample
 		t = DateTime(yr,m,dom,h,minut,0) + t_offset # Time
-		d = NaN*Array(Float64,(Int64(l),4 + a_inputs)) # Data Array
+		d = NaN.*Array(Float64,(Int64(l),4 + a_inputs)) # Data Array
 		
 		for i=1:1:l
 			d[i,1] = Float64(read(fid,Int16,1)[1])/100 # u

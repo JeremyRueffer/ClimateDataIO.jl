@@ -1,7 +1,7 @@
 using ClimateDataIO
 using Base.Test
 
-# Last Edit: 31.01.17
+# Last Edit: 01.02.17
 
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
@@ -103,6 +103,42 @@ for i in f
 end
 @test Data[:Time][1] == DateTime(2016,11,23,18,4) || "SLT_TIMESHIFT: Last timestamp should be 2016-11-23T18:04:00"
 @test Data[:Time][end] == DateTime(2016,11,23,21,0,0,100) || "SLT_TIMESHIFT: Last timestamp should be 2016-11-23T21:00:00.1"
+
+
+
+println("\n===  SLT_WRITE  ===")
+src = joinpath(joinpath(splitdir(@__FILE__)[1],"temporary_files"),"X")
+t0 = DateTime(2017,1,31,14)
+ch = convert(Vector{Int8},[1,1])
+bm = convert(Vector{Int8},[1,1])
+l = 40000 # Number of lines
+windxyz = 2000.*rand(l,3) # Wind Vectors
+sos = 50.*(10.*rand(l,1) + 320) # Speed of Sound
+analog_signals = 5000.*rand(l,2) # Voltages
+D0 = convert(Array{Int16},floor([windxyz sos analog_signals])) # Data to save
+ClimateDataIO.slt_write(src,t0,ch,bm,D0)
+src = joinpath(joinpath(splitdir(@__FILE__)[1],"temporary_files"),"X20170311400.slt")
+t1,D1 = ClimateDataIO.slt_read(src,2,10)
+rm(src) # Delete Temporary File
+D1[:,1:3] = D1[:,1:3].*100
+D1[:,4] = D1[:,4].*50
+D1 = convert(Array{Int16},floor(D1))
+@test isempty(find(abs(D1 .- D0) .> 1)) || "SLT_WRITE: The differences between the original array and the reloaded array should be no greater than 1 (rounding errors)."
+
+
+
+println("\n===  SLT_CONFIG  ===")
+src = splitdir(@__FILE__)[1]
+cfgs = ClimateDataIO.slt_config(src)
+@test cfgs[:Time][1] == DateTime(2016,11,23,14,4) || "SLT_CONFIG: cfgs[:Time] should be 2016-11-23T14:04:00"
+@test length(cfgs) == 23 || "SLT_CONFIG: length(cfgs) should be 23"
+
+
+
+src = joinpath(src,"W20163281404.cfg")
+cfgs = ClimateDataIO.slt_config(src)
+@test cfgs[:Time][1] == DateTime(2016,11,23,14,4) || "SLT_CONFIG: cfgs[:Time] should be 2016-11-23T14:04:00"
+@test length(cfgs) == 23 || "SLT_CONFIG: length(cfgs) should be 23"
 
 
 
