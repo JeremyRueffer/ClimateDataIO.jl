@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 07.11.2014
-# Last Edit: 19.01.2017
+# Last Edit: 14.02.2017
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -27,6 +27,8 @@
 function lgr_read(source::String;verbose::Bool=false)
 	# Check for file
 	!isfile(source) ? error(source * " must be a file") : nothing
+	
+	df = Dates.DateFormat("dd/mm/yyyy HH:MM:SS.sss") # Date format
 
 	#############################################
 	##  Prepare Settings for Loading the Data  ##
@@ -71,7 +73,7 @@ function lgr_read(source::String;verbose::Bool=false)
 	####################
 	t = Array(DateTime,size(D,1))
 	for i=1:1:length(t)
-		t[i] = DateTime(D[i,1],"dd/mm/yyyy HH:MM:SS.sss")
+		t[i] = DateTime(D[i,1],df)
 	end
 
 	return t,D,cols

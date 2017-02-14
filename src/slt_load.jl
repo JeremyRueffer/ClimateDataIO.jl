@@ -6,20 +6,28 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 09.12.2016
-# Last Edit: 09.01.2017
+# Last Edit: 09.02.2017
 
 """# slt_load
 
 Load a range of SLT files and convert the analog channels if conversion values are present in the corresponding CFG files
 
-`slt_load(dr,mindate,maxdate;average=false,verbose=true)`\n
+IMPORTANT NOTE: Gill sonic anemometers have a 30° offset from North, when a Gill instrument is listed on the "Sonic:" line of a configuration file then the 30° offset will be corrected.
+
+`slt_load(dr,mindate,maxdate;average=false,verbose=true,angle_offset=0.0)`\n
 * **dr**::String = SLT directory
 * **mindate**::DateTime = Minimum of the time range to load
 * **maxdate**::DateTime = Maximum of the time range to load
 * **average**::Bool (optional) = Half hour average the data when TRUE, FALSE is default
 * **verbose**::Bool (optional) = Display information of what is going on when TRUE, TRUE is default
+* **angle_offset**::Real (optional) = Angle to add to the wind direction it will be added to the "Sonic Alignment" in the configuration file, 0.0 is default
 """
-function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=false,verbose::Bool=true)
+function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=false,verbose::Bool=true,angle_offset::Real=0.0)
+	###############
+	## Constants ##
+	###############
+	GillSonics = 30.0 # Gill sonics have an offset of 30° towards West from North, see page 43 of the Gill R3 manual
+	
 	############
 	## Checks ##
 	############
@@ -190,11 +198,19 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	## Load the Data ##
 	###################
 	verbose ? println("Loading Data (" * string(length(files)) * " files)") : nothing
+	instrument_offset = 0.0 # If instrument in use by its design has an offset
 	offset = 0
 	u = 0.0
 	v = 0.0
 	for i=1:1:length(files)
 		println("   " * string(i) * ": " * files[i])
+		
+		# Instrument Angle Offset
+		if contains(configs[:Sonic][cfg[i]],"Gill")
+			instrument_offset = GillSonics
+		else
+			instrument_offset = 0.0
+		end
 		
 		fid = open(files[i],"r")
 		try
@@ -217,9 +233,9 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 					D[j+offset,7] = 0 # Otherwise u = v = 0 → NaN which messes up other calculations
 				else
 					if v < 0
-						D[j+offset,7] = acosd(u/sqrt(u^2 + v^2)) - configs[:Sonic_Alignment][cfg[i]] # Wind Direction, A·B = |A||B|cos(Ø) → Ø = acos(Au/|A|) if B = [0 1 0]m/s (positive N wind)
+						D[j+offset,7] = acosd(u/sqrt(u^2 + v^2)) - configs[:Sonic_Alignment][cfg[i]] + instrument_offset + angle_offset # Wind Direction, A·B = |A||B|cos(Θ) → Θ = acos(Au/|A|) if B = [0 1 0]m/s (positive N wind)
 					else
-						D[j+offset,7] = 360 - acosd(u/sqrt(u^2 + v^2)) - configs[:Sonic_Alignment][cfg[i]] # Wind Direction, A·B = |A||B|cos(Ø) → Ø = acos(Au/|A|) if B = [0 1 0]m/s (positive N wind)
+						D[j+offset,7] = 360 - acosd(u/sqrt(u^2 + v^2)) - configs[:Sonic_Alignment][cfg[i]] + instrument_offset + angle_offset # Wind Direction, A·B = |A||B|cos(Θ) → Θ = acos(Au/|A|) if B = [0 1 0]m/s (positive N wind)
 					end
 				end
 				
@@ -241,6 +257,15 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		end
 		close(fid)
 	end
+	
+	##############################
+	##  Correct Wind Direction  ##
+	##############################
+	f = find(D[:,7] .> 360.0)
+	D[f,7] = D[f,7] - 360.0
+	
+	f = find(D[:,7] .< 0.0)
+	D[f,7] = D[f,7] + 360.0
 	
 	####################
 	##  Average Data  ##

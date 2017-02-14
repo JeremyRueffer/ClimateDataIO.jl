@@ -19,6 +19,11 @@ Write data to an SLT file
 * **bm**::Array{Int8} = Bit Masks (which analog inputs are high resolution)
 * **D**::Array{Int16} = data
 
+---\n
+
+#### Keywords:\n
+* eddy_ver::Int = EddyMeas version, 0 is default\n\n"
+
 \n\n
 Important notes:\n
 * Data input must have u,v,w,c and the analog voltages that are active. The data must be as it is written by EddyMeas. u,v,w are multiplied by 100 before the data is saved. c is multiplied by 50. High resolution data is also modified. See the EddySoft PDF on page 15 (actual page 23) for more information on parsing."""

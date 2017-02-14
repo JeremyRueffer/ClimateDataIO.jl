@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 18.11.2014
-# Last Edit: 19.01.2017
+# Last Edit: 14.02.2017
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -58,9 +58,10 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	##  Convert File Times and Sort  ##
 	###################################
 	times = Array(DateTime,length(files))
+	df = Dates.DateFormat("yyyy-mm-ddTHHMMSS")
 	for i=1:1:length(files)
 		temp = basename(files[i])
-		times[i] = DateTime(temp[1:17],"yyyy-mm-ddTHHMMSS")
+		times[i] = DateTime(temp[1:17],df)
 	end
 	f = sortperm(times)
 	times = times[f]

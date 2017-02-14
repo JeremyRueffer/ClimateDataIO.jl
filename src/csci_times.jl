@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # Created: 04.11.13
-# Last Edit: 13.12.16
+# Last Edit: 14.02.17
 
 """# csci_times
 
@@ -24,7 +24,9 @@ function csci_times{T<:String}(F::Array{T,1};headerlines::Int=4)
 	# Get the first and last dates of each file
 	mintimes = fill!(Array(DateTime,length(F)),DateTime(0))
 	maxtimes = fill!(Array(DateTime,length(F)),DateTime(0))
-
+	
+	df = Dates.DateFormat("\"yyyy-mm-dd HH:MM:SS\"") # Date format
+	
 	datastart_pos = 1
 	for i=1:1:length(F)
 		# Find Minimum Time
@@ -36,9 +38,9 @@ function csci_times{T<:String}(F::Array{T,1};headerlines::Int=4)
 		datastart_pos = position(fid) # Find start of data
 		if ~eof(fid)
 			l = readline(fid)[1:21]
-			mintimes[i] = DateTime(l,"\"yyyy-mm-dd HH:MM:SS\"")
+			mintimes[i] = DateTime(l,df)
 		end
-
+		
 		# Find Maximum Time
 		l = ""
 		endpos = 1
@@ -56,8 +58,8 @@ function csci_times{T<:String}(F::Array{T,1};headerlines::Int=4)
 			endpos += 1
 		end
 		close(fid)
-		maxtimes[i] = DateTime(l,"\"yyyy-mm-dd HH:MM:SS\"")
+		maxtimes[i] = DateTime(l,df)
 	end
-
+	
 	return mintimes, maxtimes
 end

@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # Created: 04.11.13
-# Last Edit: 12.12.16
+# Last Edit: 14.02.17
 
 """# csci_textread
 
@@ -88,8 +88,9 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	D = readtable(F,eltypes = types,separator = ',',header = false,skipstart = headerlines)
 
 	## Convert time string to time
+	df = Dates.DateFormat("yyyy-mm-dd HH:MM:SS.ss") # Date format
 	for i=1:1:length(t_index)
-		D[t_index[i]] = DateTime(D[t_index[i]],"yyyy-mm-dd HH:MM:SS.ss")
+		D[t_index[i]] = DateTime(D[t_index[i]],df)
 	end
 
 	## Rename the dataframe columns
