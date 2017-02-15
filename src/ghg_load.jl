@@ -47,7 +47,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	#################
 	##  Constants  ##
 	#################
-	#epoch = DateTime(1970)
+	#epoch = DateTime(1970,1,1,1)
 	
 	##################
 	##  List Files  ##

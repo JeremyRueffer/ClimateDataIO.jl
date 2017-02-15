@@ -51,7 +51,8 @@ Timestamps are full text dates and times.
 
 ```julia
 Traw = "2016-12-01 00:00:00"
-T = DateTime(Traw,"yyyy-mm-dd HH:MM:SS")
+fmt = Dates.DateFormat("yyyy-mm-dd HH:MM:SS")
+T = DateTime(Traw,fmt)
 ```
 
 ## EddyMeas
@@ -101,7 +102,8 @@ The second option are columns seven and eight, date and time.
 ```julia
 datestring = "2016-12-11"
 timestring = "22:00:02:500"
-T = DateTime(datestring * timestring,"yyyy-mm-ddHH:MM:SS:sss")
+fmt = Dates.DateFormat("yyyy-mm-ddHH:MM:SS:sss")
+T = DateTime(datestring * timestring,fmt)
 # 2016-12-11T22:00:02.5
 ```
 
@@ -119,5 +121,6 @@ Timestamps are full text dates and times.
 
 ```julia
 Traw = "30/01/2015 15:13:47.994"
-T = DateTime(Traw,"dd/mm/yyyy HH:MM:SS.sss")
+fmt = Dates.DateFormat("dd/mm/yyyy HH:MM:SS.sss")
+T = DateTime(Traw,fmt)
 ```

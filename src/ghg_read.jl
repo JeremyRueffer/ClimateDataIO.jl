@@ -26,7 +26,7 @@ function ghg_read(source::String;verbose::Bool=false)
 	##################
 	##  Initialize  ##
 	##################
-	#epoch = DateTime(1970)
+	#epoch = DateTime(1970,1,1,1)
 	if is_linux()
 		temp_dir = "/tmp/"
 	elseif is_apple()
