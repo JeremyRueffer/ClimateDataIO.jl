@@ -11,7 +11,7 @@
 # 09.12.2016
 # Last Edit: 04.01.2017
 
-__precompile__(true)
+#__precompile__(true)
 
 """# ClimateDataIO
 

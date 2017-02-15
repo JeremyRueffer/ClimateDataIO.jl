@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 07.11.2014
-# Last Edit: 30.01.2017
+# Last Edit: 15.02.2017
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -38,7 +38,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	if !isdir(source) & !isfile(source)
 		error("source is not a file or directory.")
 	end
-
+	
 	# Temporary Directory, Unzipping Destination
 	if is_linux()
 		dest = "/tmp/"
@@ -47,7 +47,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	elseif is_windows()
 		dest = ENV["Temp"]
 	end
-
+	
 	#############################
 	##  Basic Settings Output  ##
 	#############################
@@ -57,7 +57,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		println("  To  : " * string(maxdate))
 		println("  Temp Directory: " * dest)
 	end
-
+	
 	##################
 	##  List Files  ##
 	##################
@@ -69,13 +69,13 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	f = sortperm(times)
 	times = times[f]
 	files = files[f]
-
+	
 	# Remove files out of time range
 	f = find(mindate .<= times .< maxdate)
 	times = times[f]
 	files = files[f]
 	verbose ? println("  ZIP File Count: " * string(length(files)) * "\n") : nothing
-
+	
 	# List and unzip contents
 	D = DataFrame()
 	t = Array(DateTime,0)
@@ -84,34 +84,50 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		temp = files[i]
 		zipfiles = Array(String,0)
 		zipdirectories = Array(String,0)
-
+		
 		# List Zip Contents
 		verbose ? println("   # " * string(i) * ": " * basename(temp)) : nothing
-		l = readcsv(IOBuffer(readstring(`unzip -l $temp`)))[4:end-2]
-		for j=1:1:length(l)
-			if splitext(l[j][31:end])[2] == ".txt"
-				push!(zipfiles,joinpath(dest,l[j][findlast(l[j],' ')+1:end]))
-			else
-				push!(zipdirectories,joinpath(dest,l[j][findlast(l[j],' ')+1:end]))
+		if is_windows()
+			println("files[" * string(i))
+			l = ZipFile.Reader(files[i])
+			for j in l.files
+				if splitext(j.name)[2] == ".txt"
+					push!(zipfiles,joinpath(dest,j.name))
+					
+					verbose ? println("      " * zipfiles[j]) : nothing
+					fid = open(joinpath(dest,j.name),"w")
+					write(fid,readstring(j))
+					close(fid)
+				end
 			end
-		end
-		zipfiles = sort(zipfiles) # Sort the files so they will be loaded chronologically
-		if verbose
-			for j=1:1:length(zipfiles)
-				println("      " * zipfiles[j])
+		else
+			l = readcsv(IOBuffer(readstring(`unzip -l $temp`)))[4:end-2]
+			for j=1:1:length(l)
+				if splitext(l[j][31:end])[2] == ".txt"
+					push!(zipfiles,joinpath(dest,l[j][findlast(l[j],' ')+1:end]))
+				else
+					push!(zipdirectories,joinpath(dest,l[j][findlast(l[j],' ')+1:end]))
+				end
 			end
+			zipfiles = sort(zipfiles) # Sort the files so they will be loaded chronologically
+			
+			if verbose
+				for j=1:1:length(zipfiles)
+					println("      " * zipfiles[j])
+				end
+			end
+			
+			# Unzip
+			temp2 = readstring(`unzip -d $dest $temp`)
 		end
-
-		# Unzip
-		temp2 = readstring(`unzip -d $dest $temp`)
-
+		
 		# Load Each Data File
 		for j=1:1:length(zipfiles)
 			(tempT,tempD,cols) = lgr_read(zipfiles[j],verbose=verbose)
 			t = [t;tempT]
 			D = [D;tempD]
 		end
-
+		
 		# Delete Files and Directories
 		for j=1:1:length(zipfiles)
 			rm(zipfiles[j])
@@ -120,8 +136,8 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			rm(zipdirectories[j])
 		end
 	end
-
+	
 	verbose ? println("  Data Loading Complete") : nothing
-
+	
 	return t, D, cols
 end

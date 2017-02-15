@@ -58,7 +58,7 @@ end
 
 
 src = joinpath(splitdir(@__FILE__)[1],"W20163280930.slt")
-header = slt_header(src,6,10)
+header = ClimateDataIO.slt_header(src,6,10)
 println(typeof(header)) # Temp
 
 
@@ -83,7 +83,7 @@ dest = joinpath(splitdir(@__FILE__)[1],"temporary_files")
 mindate = DateTime(2016,11,23,14,4)
 maxdate = DateTime(2016,11,23,17)
 dt = Dates.Hour(4)
-slt_timeshift(src,dest,mindate,maxdate,dt)
+ClimateDataIO.slt_timeshift(src,dest,mindate,maxdate,dt)
 Data = ClimateDataIO.slt_load(dest,mindate + dt,maxdate + dt,verbose=true)
 f = ["W20163281804.cfg",
 	"W20163281804.csr",
@@ -292,7 +292,7 @@ Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=true)
 
 
 
-# GHGLOAD: Load one file
+# LGR_LOAD: Load a file
 println("\n====  LGR_LOAD Tests  ====")
 src = splitdir(@__FILE__)[1]
 Time,Data, Cols = ClimateDataIO.lgr_load(src,verbose=true)
