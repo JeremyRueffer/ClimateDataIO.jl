@@ -1,7 +1,7 @@
 using ClimateDataIO
 using Base.Test
 
-# Last Edit: 01.02.17
+# Last Edit: 16.02.17
 
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
@@ -319,7 +319,17 @@ dest = joinpath(src,"temporary_files")
 F1 = joinpath(src,"2016-12-11T213000_AIU-1359.ghg")
 F2 = joinpath(dest,"2016-12-11T213000_AIU-1359.data")
 F3 = joinpath(dest,"2016-12-11T213000.txt")
-temp = readstring(`unzip -d $dest $F1`)
+if is_unix()
+	temp = readstring(`unzip -d $dest $F1`)
+elseif is_windows()
+	l = ZipFile.Reader(F1)
+	for j in l.files
+		fid = open(joinpath(dest,j.name),"w")
+		write(fid,readstring(j))
+		close(fid)
+	end
+	close(l) # Close Zip File
+end
 
 # Prepare File
 println("\nGenerating test file...")

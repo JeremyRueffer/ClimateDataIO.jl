@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 18.11.2014
-# Last Edit: 30.01.2017
+# Last Edit: 16.02.2017
 
 "# ghg_read(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
@@ -50,6 +50,7 @@ function ghg_read(source::String;verbose::Bool=false)
 				close(fid)
 			end
 		end
+		close(list) # Close Zip File
 	elseif is_unix()
 		temp = []
 		try

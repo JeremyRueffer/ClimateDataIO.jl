@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.5.0
 # 07.11.2014
-# Last Edit: 15.02.2017
+# Last Edit: 16.02.2017
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -100,6 +100,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 					close(fid)
 				end
 			end
+			close(l) # Close Zip File
 		else
 			l = readcsv(IOBuffer(readstring(`unzip -l $temp`)))[4:end-2]
 			for j=1:1:length(l)
