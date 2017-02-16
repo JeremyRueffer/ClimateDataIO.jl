@@ -88,13 +88,12 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		# List Zip Contents
 		verbose ? println("   # " * string(i) * ": " * basename(temp)) : nothing
 		if is_windows()
-			println("files[" * string(i))
 			l = ZipFile.Reader(files[i])
 			for j in l.files
 				if splitext(j.name)[2] == ".txt"
 					push!(zipfiles,joinpath(dest,j.name))
 					
-					verbose ? println("      " * zipfiles[j]) : nothing
+					verbose ? println("      " * j.name) : nothing
 					fid = open(joinpath(dest,j.name),"w")
 					write(fid,readstring(j))
 					close(fid)
