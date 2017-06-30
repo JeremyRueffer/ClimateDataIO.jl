@@ -1,7 +1,7 @@
 using ClimateDataIO
 using Base.Test
 
-# Last Edit: 16.02.17
+# Last Edit: 19.05.17
 
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
@@ -59,7 +59,6 @@ end
 
 src = joinpath(splitdir(@__FILE__)[1],"W20163280930.slt")
 header = ClimateDataIO.slt_header(src,6,10)
-println(typeof(header)) # Temp
 
 
 
@@ -115,15 +114,15 @@ l = 40000 # Number of lines
 windxyz = 2000.*rand(l,3) # Wind Vectors
 sos = 50.*(10.*rand(l,1) + 320) # Speed of Sound
 analog_signals = 5000.*rand(l,2) # Voltages
-D0 = convert(Array{Int16},floor([windxyz sos analog_signals])) # Data to save
+D0 = convert(Array{Int16},floor.([windxyz sos analog_signals])) # Data to save
 ClimateDataIO.slt_write(src,t0,ch,bm,D0)
 src = joinpath(joinpath(splitdir(@__FILE__)[1],"temporary_files"),"X20170311400.slt")
 t1,D1 = ClimateDataIO.slt_read(src,2,10)
 rm(src) # Delete Temporary File
 D1[:,1:3] = D1[:,1:3].*100
 D1[:,4] = D1[:,4].*50
-D1 = convert(Array{Int16},floor(D1))
-@test isempty(find(abs(D1 .- D0) .> 1)) || "SLT_WRITE: The differences between the original array and the reloaded array should be no greater than 1 (rounding errors)."
+D1 = convert(Array{Int16},floor.(D1))
+@test isempty(find(abs.(D1 .- D0) .> 1)) || "SLT_WRITE: The differences between the original array and the reloaded array should be no greater than 1 (rounding errors)."
 
 
 
@@ -185,7 +184,7 @@ Time,Data = ClimateDataIO.stc_load(src,verbose=true)
 
 println("\nStatus Values")
 statuses = ClimateDataIO.AerodyneStatus(Data[:StatusW])
-temp = fill!(Array(Bool,14391),false)
+temp = fill!(Array{Bool}(14391),false)
 @test temp == statuses.Valve1 || "AERODYNESTATUS: All values in statuses.Valve1 should be FALSE"
 @test temp == statuses.Valve2 || "AERODYNESTATUS: All values in statuses.Valve2 should be FALSE"
 @test temp == statuses.Valve3 || "AERODYNESTATUS: All values in statuses.Valve3 should be FALSE"
@@ -218,10 +217,14 @@ Data = ClimateDataIO.csci_textread(src,verbose=true)
 
 
 Data,loggerStr,colsStr,unitsStr,processingStr = ClimateDataIO.csci_textread(src,verbose=true,headeroutput=true)
-@test loggerStr == "\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\r\n" || "loggerStr should be \"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\\r\\n"
-@test colsStr == "\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\r\n" || "colsStr should be \"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\\r\\n"
-@test unitsStr == "\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\r\n" || "unitsStr should be \"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\\r\\n"
-@test processingStr == "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\r\n" || "processingStr should be \"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\\r\\n"
+h1 = "\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\""
+h2 = "\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\""
+h3 = "\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\""
+h4 = "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\""
+@test loggerStr == h1 || "loggerStr should be \"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\""
+@test colsStr == h2 || "colsStr should be \"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\""
+@test unitsStr == h3 || "unitsStr should be \"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\""
+@test processingStr == h4 || "processingStr should be \"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\""
 @test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
 @test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
 @test size(Data) == (11520,10) || "CSCI_TEXTREAD: Data output size incorrect, should be (11520,10)"
@@ -230,17 +233,17 @@ Data,loggerStr,colsStr,unitsStr,processingStr = ClimateDataIO.csci_textread(src,
 
 println("\n===  CSCI_TEXTLOAD  ===")
 Data, HeaderInfo, HeaderColumns, HeaderUnits, HeaderSample = ClimateDataIO.csci_textload([src],verbose=true,headerlines=4,headeroutput=true)
-h1 = "\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\r\n"
-h2 = "\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\r\n"
-h3 = "\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\r\n"
-h4 = "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\r\n"
+h1 = "\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\""
+h2 = "\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\""
+h3 = "\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\""
+h4 = "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\""
 @test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
 @test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
 @test size(Data) == (11520,10) || "CSCI_TEXTLOAD: Data output size incorrect, should be (11520,10)"
-@test h1 == HeaderInfo || "CSCI_TEXTLOAD: HeaderInfo should be \"\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\r\n\""
-@test h2 == HeaderColumns || "CSCI_TEXTLOAD: HeaderColumns should be \"\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\r\n\""
-@test h3 == HeaderUnits || "CSCI_TEXTLOAD: HeaderUnits should be \"\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\r\n\""
-@test h4 == HeaderSample || "CSCI_TEXTLOAD: HeaderSample should be \"\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\r\n\""
+@test h1 == HeaderInfo || "CSCI_TEXTLOAD: HeaderInfo should be \"\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\""
+@test h2 == HeaderColumns || "CSCI_TEXTLOAD: HeaderColumns should be \"\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\""
+@test h3 == HeaderUnits || "CSCI_TEXTLOAD: HeaderUnits should be \"\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\""
+@test h4 == HeaderSample || "CSCI_TEXTLOAD: HeaderSample should be \"\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\""
 
 
 
@@ -347,13 +350,13 @@ ft = findin(l,"\t")
 s = []
 for i=1:1:8
     # Skip Header
-    l = readline(fid)
+    l = readline(fid,chomp=false)
 end
 p = position(fid) # File position
 for j=1:1:4 # 20 for another eight hours
     seek(fid,p) # Reset file position
     while !eof(fid)
-        l = readline(fid)
+        l = readline(fid,chomp=false)
         ft = findin(l,"\t")
         fsec = findfirst(l[6:end],'\t')+5 # Location of second column
         fmsec = findfirst(l[fsec+1:end],'\t')+fsec # Location of nanosecond column
@@ -381,4 +384,5 @@ rm(joinpath(dest,"2016-12-11T213000_AIU-1359.ghg"))
 @test Time[end] == DateTime(2016,12,11,23,59,59,950) || "LICOR_SPLIT: Time[end] last timestamp should be 2016-12-11T23:59:59.95"
 @test size(Data) == (180000,48) || "LGR_SPLIT: Data output size incorrect, should be (180000,48)"
 
+rm(joinpath(src,"temporary_files"))
 println("\n\nAll Tests Complete Successfully")

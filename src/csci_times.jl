@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # Created: 04.11.13
-# Last Edit: 14.02.17
+# Last Edit: 19.05.17
 
 """# csci_times
 
@@ -22,8 +22,8 @@ Retrieve the minimum and maximum dates from the listed files
 """
 function csci_times{T<:String}(F::Array{T,1};headerlines::Int=4)
 	# Get the first and last dates of each file
-	mintimes = fill!(Array(DateTime,length(F)),DateTime(0))
-	maxtimes = fill!(Array(DateTime,length(F)),DateTime(0))
+	mintimes = fill!(Array{DateTime}(length(F)),DateTime(0))
+	maxtimes = fill!(Array{DateTime}(length(F)),DateTime(0))
 	
 	df = Dates.DateFormat("\"yyyy-mm-dd HH:MM:SS\"") # Date format
 	
@@ -58,7 +58,7 @@ function csci_times{T<:String}(F::Array{T,1};headerlines::Int=4)
 			endpos += 1
 		end
 		close(fid)
-		maxtimes[i] = DateTime(l,df)
+		maxtimes[i] = DateTime(l[1:21],df)
 	end
 	
 	return mintimes, maxtimes

@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # Created: 01.11.13
-# Last Edit: 21.09.16
+# Last Edit: 11.05.17
 
 "# dirlist(directory::ASCIIString;recur_depth::Int64,regular_expression::Regex)
 
@@ -86,9 +86,9 @@ function dirlist{T <: String}(directories::Array{T,1};recur::Int64=typemax(Int64
 				println("FAILED READING " * directories[i])
 				println("Continuing...")
 			end
-			fbool = fill!(Array(Bool,length(lst)),false) # File boolean array, true = file, false = not
+			fbool = fill!(Array{Bool}(length(lst)),false) # File boolean array, true = file, false = not
 			#fbool = repmat([false],length(lst)) # File boolean array, true = file, false = not
-			dbool = fill!(Array(Bool,length(lst)),false) # Directory boolean array (FASTER)
+			dbool = fill!(Array{Bool}(length(lst)),false) # Directory boolean array (FASTER)
 			#dbool = repmat([false],length(lst)) # Directory boolean array (SLOWER)
 
 			# Check for files and directories

@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 07.11.2014
-# Last Edit: 14.02.2017
+# Last Edit: 12.05.2017
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -37,16 +37,16 @@ function lgr_read(source::String;verbose::Bool=false)
 	fsize = stat(source).size
 	fid = open(source,"r")
 	readline(fid)
-	cols = readline(fid)[1:end-1]
+	cols = readline(fid,chomp=false)[1:end-1]
 	cols = permutedims(readcsv(IOBuffer("\"" * replace(replace(cols," ",""),",","\",\"") * "\"")),[2,1])
 	startpos = position(fid)
-	l = readline(fid)
+	l = readline(fid,chomp=false)
 	llength = length(l) # Line Length
 	endpos = 1
 	f = false
 	while !f
 		seek(fid,fsize-endpos)
-		l = readline(fid)
+		l = readline(fid,chomp=false)
 		l = l[1:findfirst(l,',')] # Find the first comma
 		if !isempty(l)
 			if length(findin(l,'/')) == 2 && length(findin(l,':')) == 2
@@ -60,7 +60,7 @@ function lgr_read(source::String;verbose::Bool=false)
 	l_count = Int((endpos - startpos)/llength) # Number of data lines
 
 	# Column Types
-	col_types = fill!(Array(DataType,length(cols)),Float64)
+	col_types = fill!(Array{DataType}(length(cols)),Float64)
 	col_types[[1;length(col_types)]] = String
 
 	#####################
@@ -71,7 +71,7 @@ function lgr_read(source::String;verbose::Bool=false)
 	####################
 	##  Convert Time  ##
 	####################
-	t = Array(DateTime,size(D,1))
+	t = Array{DateTime}(size(D,1))
 	for i=1:1:length(t)
 		t[i] = DateTime(D[i,1],df)
 	end

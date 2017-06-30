@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 08.12.2016
-# Last Edit: 13.12.2016
+# Last Edit: 19.05.2017
 
 # Reference: https://zipfilejl.readthedocs.io/en/latest/
 
@@ -44,7 +44,7 @@ function ziptextfiles(dest::String,files::Array{String,1};verbose::Bool=false)
 			fid_destination = ZipFile.addfile(zid,basename(files[i]),method=ZipFile.Deflate)
 			fid_source = open(files[i],"r")
 			while !eof(fid_source)
-				write(fid_destination,readline(fid_source))
+				write(fid_destination,readline(fid_source,chomp=false))
 			end
 			close(fid_source)
 			close(fid_destination)

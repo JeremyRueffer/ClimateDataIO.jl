@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 18.11.2014
-# Last Edit: 14.02.2017
+# Last Edit: 12.05.2017
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -22,10 +22,10 @@
 * **maximumdate**::DateTime = Load data before this date
 
 `time,davg,dstd,dmin,dmax = ghg_load(source,average=true)` Return the averaged values\n
-* **davg**::Array(Float64,1) = Half hour average of the data
-* **dstd**::Array(Float64,1) = Half hour standard deviations of the data
-* **dmin**::Array(Float64,1) = Minimum values from each half hour
-* **dmax**::Array(Float64,1) = Maximum values from each half hour
+* **davg**::Array{Float64}(1) = Half hour average of the data
+* **dstd**::Array{Float64}(1) = Half hour standard deviations of the data
+* **dmin**::Array{Float64}(1) = Minimum values from each half hour
+* **dmax**::Array{Float64}(1) = Maximum values from each half hour
 
 
 ---
@@ -57,7 +57,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	###################################
 	##  Convert File Times and Sort  ##
 	###################################
-	times = Array(DateTime,length(files))
+	times = Array{DateTime}(length(files))
 	df = Dates.DateFormat("yyyy-mm-ddTHHMMSS")
 	for i=1:1:length(files)
 		temp = basename(files[i])

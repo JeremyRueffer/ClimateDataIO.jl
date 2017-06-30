@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 09.12.2016
-# Last Edit: 19.12.2016
+# Last Edit: 12.05.2017
 
 """# slt_read
 
@@ -53,11 +53,11 @@ function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 		bm = bm[1:2:end] # Bit masks
 		
 		## Preallocate Output Array
-		t_offset = fill!(Array(Dates.Millisecond,floor(l)),Dates.Millisecond(1000/sample_rate)) # dt between every sample
+		t_offset = fill!(Array{Dates.Millisecond}(floor(l)),Dates.Millisecond(1000/sample_rate)) # dt between every sample
 		t_offset[1] = Dates.Millisecond(0) # Correction, the first sample shouldn't have an offset
 		t_offset = cumsum(t_offset) # Time offset from the start for every sample
 		t = DateTime(yr,m,dom,h,minut,0) + t_offset # Time
-		d = NaN.*Array(Float64,(Int64(l),4 + a_inputs)) # Data Array
+		d = NaN.*Array{Float64}((Int64(l),4 + a_inputs)) # Data Array
 		
 		for i=1:1:l
 			d[i,1] = Float64(read(fid,Int16,1)[1])/100 # u

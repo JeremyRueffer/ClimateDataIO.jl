@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 09.12.2016
-# Last Edit: 19.12.2016
+# Last Edit: 12.05.2017
 
 """# slt_config
 

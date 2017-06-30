@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # Created: 04.11.13
-# Last Edit: 14.02.17
+# Last Edit: 12.05.17
 
 """# csci_textread
 
@@ -96,11 +96,10 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	## Rename the dataframe columns
 	cols[1] = "Timestamp"
 	cols[2] = "Record"
-	new_names = Array(Symbol,size(cols,2))
+	new_names = Array{Symbol}(size(cols,2))
 	for i=1:1:length(new_names)
 		new_names[i] = Symbol(cols[i])
 	end
-	#new_names = [Symbol("$i") for i in cols] # Temp
 	names!(D,new_names)
 
 	if headeroutput

@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 18.11.2014
-# Last Edit: 16.02.2017
+# Last Edit: 12.05.2017
 
 "# ghg_read(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
@@ -71,11 +71,11 @@ function ghg_read(source::String;verbose::Bool=false)
 	header_line = 7
 	fid = open(temp,"r")
 	for j=1:1:header_line
-		readline(fid)
+		readline(fid,chomp=false)
 	end
-	cols = permutedims(readcsv(IOBuffer("\"" * replace(readline(fid)[1:end-1],"\t","\",\"") * "\"")),[2,1])
+	cols = permutedims(readcsv(IOBuffer("\"" * replace(readline(fid,chomp=false)[1:end-1],"\t","\",\"") * "\"")),[2,1])
 	close(fid)
-	new_names = Array(Symbol,length(cols))
+	new_names = Array{Symbol}(length(cols))
 	temp_name = ""
 	for i=1:1:length(cols)
 		temp_name = replace(cols[i]," ","_")
@@ -87,7 +87,7 @@ function ghg_read(source::String;verbose::Bool=false)
 	end
 	
 	# Load Data
-	col_types = fill!(Array(DataType,length(cols)),Float64)
+	col_types = fill!(Array{DataType}(length(cols)),Float64)
 	col_types[1:8] = [String;Int64;Int64;Int64;Int64;Int64;String;String]
 	D = DataFrames.readtable(temp,eltypes = col_types,separator = '\t',header = false,skipstart = header_line + 1)
 	verbose ? println("\t   Deleting temporary files") : nothing

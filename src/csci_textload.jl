@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # Created: 04.11.13
-# Last Edit: 12.12.16
+# Last Edit: 24.05.17
 
 """# csci_textload
 
@@ -60,7 +60,7 @@ function csci_textload(F::String,rootname::String,mindate::DateTime=DateTime(0),
 
 	# Find files only with the root name
 	filebase = ""
-	keepers = Array(Bool,length(files))
+	keepers = Array{Bool}(length(files))
 	for i=1:1:length(files)
 		keepers[i] = ismatch(Regex(rootname),basename(files[i]))
 	end
@@ -74,17 +74,17 @@ function csci_textload(F::String,rootname::String,mindate::DateTime=DateTime(0),
 	maxtimes = maxtimes[f]
 
 	# Remove Files Out of Range
-	f1 = Array(Bool,length(files))
+	f1 = Array{Bool}(length(files))
 	for i=1:1:length(files)
 		f1[i] = (mintimes[i] <= mindate < maxtimes[i]) | (mintimes[i] <= maxdate < maxtimes[i])
 	end
-	f = (mindate .<= mintimes .< maxdate) | (mindate .<= maxtimes .< maxdate) | f1
+	f = (mindate .<= mintimes .< maxdate) .| (mindate .<= maxtimes .< maxdate) .| f1
 	files = files[f]
 	mintimes = mintimes[f]
 	maxtimes = maxtimes[f]
 
 	# Convert to Array{String,1}
-	temp = Array(String,length(files))
+	temp = Array{String}(length(files))
 	for i=1:1:length(files)
 		temp[i] = files[i]
 	end

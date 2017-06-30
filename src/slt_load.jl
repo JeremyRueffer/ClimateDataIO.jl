@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 09.12.2016
-# Last Edit: 09.02.2017
+# Last Edit: 23.06.2017
 
 """# slt_load
 
@@ -43,7 +43,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	
 	# Parse File Dates
 	verbose ? println("Sorting " * string(length(files)) * " Files") : nothing
-	fdates = Array(DateTime,length(files))
+	fdates = Array{DateTime}(length(files))
 	i = 0
 	for i=1:1:length(files)
 		temp = basename(files[i])
@@ -126,7 +126,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	
 	# Load SLT Info
 	sltinfo = DataFrame()
-	cfg = Array(Int8,length(files)) # List of which CFG file each
+	cfg = Array{Int8}(length(files)) # List of which CFG file each
 	offset = 1 # File processing list offset
 	while offset < length(files)
 		cfgf = find(configs[:Time] .<= fdates[offset])[end] # Find latest config
@@ -157,19 +157,19 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	verbose ? println("Preallocating Final Arrays (" * string(Int64(sum(sltinfo[:Line_Count]))) * "," * string(4+configs[:Analog_Count][1]) * ")") : nothing
 	l = Int64(sum(sltinfo[:Line_Count]))
 	if 4+configs[:Analog_Count][1] == 4
-		D = DataFrame(Time = fill!(Array(DateTime,l),DateTime(0)), u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN), wind_direction = fill!(Array(Float64,l),NaN))
+		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN))
 	elseif 4+configs[:Analog_Count][1] == 5
-		D = DataFrame(Time = fill!(Array(DateTime,l),DateTime(0)), u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN), wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN))
+		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN))
 	elseif 4+configs[:Analog_Count][1] == 6
-		D = DataFrame(Time = fill!(Array(DateTime,l),DateTime(0)), u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN), wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN))
+		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN))
 	elseif 4+configs[:Analog_Count][1] == 7
-		D = DataFrame(Time = fill!(Array(DateTime,l),DateTime(0)), u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN), wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN))
+		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN), Analog3 = fill!(Array{Float64}(l),NaN))
 	elseif 4+configs[:Analog_Count][1] == 8
-		D = DataFrame(Time = fill!(Array(DateTime,l),DateTime(0)), u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN), wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN))
+		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN), Analog3 = fill!(Array{Float64}(l),NaN), Analog4 = fill!(Array{Float64}(l),NaN))
 	elseif 4+configs[:Analog_Count][1] == 9
-		D = DataFrame(Time = fill!(Array(DateTime,l),DateTime(0)), u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN), wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN))
+		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN), Analog3 = fill!(Array{Float64}(l),NaN), Analog4 = fill!(Array{Float64}(l),NaN), Analog5 = fill!(Array{Float64}(l),NaN))
 	elseif 4+configs[:Analog_Count][1] == 10
-		D = DataFrame(Time = fill!(Array(DateTime,l),DateTime(0)), u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN), wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN), Analog6 = fill!(Array(Float64,l),NaN))
+		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN), Analog3 = fill!(Array{Float64}(l),NaN), Analog4 = fill!(Array{Float64}(l),NaN), Analog5 = fill!(Array{Float64}(l),NaN), Analog6 = fill!(Array{Float64}(l),NaN))
 	end
 	
 	# Rename DataFrame columns
@@ -262,10 +262,10 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	##  Correct Wind Direction  ##
 	##############################
 	f = find(D[:,7] .> 360.0)
-	D[f,7] = D[f,7] - 360.0
+	D[f,7] = D[f,7] .- 360.0
 	
 	f = find(D[:,7] .< 0.0)
-	D[f,7] = D[f,7] + 360.0
+	D[f,7] = D[f,7] .+ 360.0
 	
 	####################
 	##  Average Data  ##
@@ -283,43 +283,22 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		f = [actual;length(D[:Time]) + 1]
 		
 		# Preallocate
-		tmean = fill!(Array(DateTime,length(f) - 1),DateTime(0))
+		tmean = fill!(Array{DateTime}(length(f) - 1),DateTime(0))
 		l = length(f) - 1
-		if 4+configs[:Analog_Count][1] == 4
-			Dmean = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN))
-			Dstd = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN))
-			Dmin = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN))
-			Dmax = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN))
-		elseif 4+configs[:Analog_Count][1] == 5
-			Dmean = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN))
-			Dstd = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN))
-			Dmin = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN))
-			Dmax = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN))
-		elseif 4+configs[:Analog_Count][1] == 6
-			Dmean = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN))
-			Dstd = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN))
-			Dmin = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN))
-			Dmax = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN))
-		elseif 4+configs[:Analog_Count][1] == 7
-			Dmean = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN))
-			Dstd = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN))
-			Dmin = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN))
-			Dmax = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN))
-		elseif 4+configs[:Analog_Count][1] == 8
-			Dmean = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN))
-			Dstd = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN))
-			Dmin = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN))
-			Dmax = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN))
-		elseif 4+configs[:Analog_Count][1] == 9
-			Dmean = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN))
-			Dstd = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN))
-			Dmin = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN))
-			Dmax = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN))
-		elseif 4+configs[:Analog_Count][1] == 10
-			Dmean = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN), Analog6 = fill!(Array(Float64,l),NaN))
-			Dstd = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN), Analog6 = fill!(Array(Float64,l),NaN))
-			Dmin = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN), Analog6 = fill!(Array(Float64,l),NaN))
-			Dmax = DataFrame(u = fill!(Array(Float64,l),NaN), v = fill!(Array(Float64,l),NaN), w = fill!(Array(Float64,l),NaN), sonic_temp = fill!(Array(Float64,l),NaN), speed_of_sound = fill!(Array(Float64,l),NaN),wind_direction = fill!(Array(Float64,l),NaN), Analog1 = fill!(Array(Float64,l),NaN), Analog2 = fill!(Array(Float64,l),NaN), Analog3 = fill!(Array(Float64,l),NaN), Analog4 = fill!(Array(Float64,l),NaN), Analog5 = fill!(Array(Float64,l),NaN), Analog6 = fill!(Array(Float64,l),NaN))
+		Dcols = [:u,:v,:w,:sonic_temp,:speed_of_sound,:wind_direction,:Analog1,:Analog2,:Analog3,:Analog4,:Analog5,:Analog6]
+		Dtypes = [Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64]
+		
+		Dmean = DataFrame(Dtypes[1:6+configs[:Analog_Count][1]],Dcols[1:6+configs[:Analog_Count][1]],l)
+		Dstd = DataFrame(Dtypes[1:6+configs[:Analog_Count][1]],Dcols[1:6+configs[:Analog_Count][1]],l)
+		Dmin = DataFrame(Dtypes[1:6+configs[:Analog_Count][1]],Dcols[1:6+configs[:Analog_Count][1]],l)
+		Dmax = DataFrame(Dtypes[1:6+configs[:Analog_Count][1]],Dcols[1:6+configs[:Analog_Count][1]],l)
+		for i = length(Dcols[1:4+configs[:Analog_Count][1]])
+			for j = l
+				Dmean[j,i] = NaN
+				Dstd[j,i] = NaN
+				Dmin[j,i] = NaN
+				Dmax[j,i] = NaN
+			end
 		end
 		names!(Dmean,names(D)[2:end])
 		names!(Dstd,names(D)[2:end])
@@ -345,13 +324,16 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 					Dmin[j,k] = temp_Dmin[k]
 					Dmax[j,k] = temp_Dmax[k]
 				end
-			catch
-				println("\nsize(D) = " * string(size(D)))
-				println("\tminimum(t) = " * string(minimum(t)))
-				println("\tmaximum(t) = " * string(maximum(t)))
+			catch e
+				println(e)
+				println("\n\tsize(D) = " * string(size(D)))
+				println("\tnames(D) = " * string(names(D)))
+				println("\tsize(Dmean) = " * string(size(Dmean)))
+				println("\tsize(temp_Dmean) = " * string(size(temp_Dmean)))
+				println("\tminimum(t) = " * string(minimum(D[:Time])))
+				println("\tmaximum(t) = " * string(maximum(D[:Time])))
 				println("\tf[j] = " * string(f[j]))
 				println("\tj = " * string(j))
-				println("\tlength(D[f[j]]) = " * string(length(D[f[j]])))
 			end
 		end
 	end

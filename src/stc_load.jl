@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 16.12.2016
-# Last Edit: 16.12.2016
+# Last Edit: 24.05.2017
 
 """# stc_load
 
@@ -95,7 +95,7 @@ function stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	begin
 		# Ensure all rows are defined in SPEFile
 		if in(true,[isequal(:SPEFile,i) for i in names(Dstc)]) # See if :SPEFile exists first
-			f = isna(Dstc[:SPEFile])
+			f = isna.(Dstc[:SPEFile])
 			Dstc[:SPEFile][f] = ""
 		end
 		
@@ -205,7 +205,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	#########################
 	##  Parse Time Format  ##
 	#########################
-	time = Array(DateTime,length(D[:time])) # Preallocate time column
+	time = Array{DateTime}(length(D[:time])) # Preallocate time column
 	secs = Dates.Second # Initialize so it doesn't have to do it every time in the loop
 	millisecs = Dates.Millisecond # Initialize so it doesn't have to do it every time in the loop
 	for i=1:1:length(D[:time])
@@ -220,7 +220,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	if !isempty(cols)
 		# Check cols' type
 		if typeof(cols) != Array{Symbol,1} && typeof(cols) != Symbol
-			temp = Array(Symbol,length(cols))
+			temp = Array{Symbol}(length(cols))
 			for i=1:1:length(cols)
 				temp[i] = Symbol(cols[i]) # Convert all the values to symbols
 			end
@@ -229,7 +229,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 		
 		# Make sure each entry exists
 		fields = names(D)
-		cols_bool = fill!(Array(Bool,length(cols)),false) # Preallocate false
+		cols_bool = fill!(Array{Bool}(length(cols)),false) # Preallocate false
 		for i=1:1:length(cols)
 			for j=1:1:length(fields)
 				if fields[j] == cols[i]
@@ -242,7 +242,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 		# Remove Unwanted column
 		if isempty(cols)
 			D = DataFrame()
-			time = Array(DateTime,0)
+			time = Array{DateTime}(0)
 		else
 			D = D[cols]
 		end

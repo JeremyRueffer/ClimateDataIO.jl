@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 13.12.2016
-# Last Edit: 14.02.2017
+# Last Edit: 12.05.2017
 
 """# aerodyne_parsetime
 
@@ -19,7 +19,7 @@ Parse the STR and STC file name timestamps into DateTime and sort
 """
 function aerodyne_parsetime{T<:String}(F::Array{T,1})
 	## Parse the names of files into a readable time ##
-	t = Array(DateTime,Int64(length(F))) # Preallocate time column
+	t = Array{DateTime}(Int64(length(F))) # Preallocate time column
 	df = Dates.DateFormat("yyyymmdd_HHMMSS") # Date format
 	for i = 1:1:length(F)
 		t[i] = DateTime("20" * F[i][end-16:end-4],df)

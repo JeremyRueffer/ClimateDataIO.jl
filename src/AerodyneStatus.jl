@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 13.12.2016
-# Last Edit: 14.12.2016
+# Last Edit: 12.05.2017
 
 """# AerodyneStatus
 
@@ -74,44 +74,44 @@ type AerodyneStatus
 	
 	# Constructor for AerodyneStatus type
 	function AerodyneStatus{T<:Int64}(vals::DataFrames.DataArray{T,1})
-		AerodyneStatus(convert(Array,vals))
+		AerodyneStatus(Array{Int64}(vals))
 	end # End AerodyneStatus{T<:Int64}(vals::DataFrames.DataArray{T,1}) constructor
 	
 	# Constructor for AerodyneStatus type
 	function AerodyneStatus{T<:Float64}(vals::DataFrames.DataArray{T,1})
-		AerodyneStatus(Int64(convert(Array,vals)))
+		AerodyneStatus(Array{Int64}(vals))
 	end # End AerodyneStatus{T<:Float64}(vals::DataFrames.DataArray{T,1}) constructor
 	
 	# Constructor for AerodyneStatus type
 	function AerodyneStatus(vals::Array{Int64})
 		l = Int64(length(vals))
 		
-		AutoBG = Array(Bool,l)
-		AutoCal = Array(Bool,l)
-		FrequencyLock = Array(Bool,l)
-		BinomialFilter = Array(Bool,l)
-		AltMode = Array(Bool,l)
-		GuessLast = Array(Bool,l)
-		PowerNorm = Array(Bool,l)
-		ContRefLock = Array(Bool,l)
+		AutoBG = Array{Bool}(l)
+		AutoCal = Array{Bool}(l)
+		FrequencyLock = Array{Bool}(l)
+		BinomialFilter = Array{Bool}(l)
+		AltMode = Array{Bool}(l)
+		GuessLast = Array{Bool}(l)
+		PowerNorm = Array{Bool}(l)
+		ContRefLock = Array{Bool}(l)
 		
-		AutoSpectSave = Array(Bool,l)
-		PressureLock = Array(Bool,l)
-		#b11 = Array(Bool,l)
-		#b12 = Array(Bool,l)
-		WriteData = Array(Bool,l)
-		RS232 = Array(Bool,l)
-		ElectronicBGSub = Array(Bool,l)
-		#b16 = Array(Bool,l)
+		AutoSpectSave = Array{Bool}(l)
+		PressureLock = Array{Bool}(l)
+		#b11 = Array{Bool}(l)
+		#b12 = Array{Bool}(l)
+		WriteData = Array{Bool}(l)
+		RS232 = Array{Bool}(l)
+		ElectronicBGSub = Array{Bool}(l)
+		#b16 = Array{Bool}(l)
 		
-		Valve1 = Array(Bool,l)
-		Valve2 = Array(Bool,l)
-		Valve3 = Array(Bool,l)
-		Valve4 = Array(Bool,l)
-		Valve5 = Array(Bool,l)
-		Valve6 = Array(Bool,l)
-		Valve7 = Array(Bool,l)
-		Valve8 = Array(Bool,l)
+		Valve1 = Array{Bool}(l)
+		Valve2 = Array{Bool}(l)
+		Valve3 = Array{Bool}(l)
+		Valve4 = Array{Bool}(l)
+		Valve5 = Array{Bool}(l)
+		Valve6 = Array{Bool}(l)
+		Valve7 = Array{Bool}(l)
+		Valve8 = Array{Bool}(l)
 		
 		# Parse Inputs
 		for i=1:l

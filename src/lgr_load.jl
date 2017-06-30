@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 07.11.2014
-# Last Edit: 16.02.2017
+# Last Edit: 12.05.2017
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -18,9 +18,9 @@
 "# lgr_load(source::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=false)
 
 `time,data,columns = lgr_load(source)` Load a directory of LGR zip files\n
-* **time**::Array(DateTime,1) = Time column
+* **time**::Array{DateTime}(1) = Time column
 * **data**::DataFrame = Data
-* **columns**::Array(String,1) = List of columns
+* **columns**::Array{String}(1) = List of columns
 * **source**::String = Directory of LGR zip files\n\n
 
 `time,data,columns = lgr_load(source,minimumdate)` \n
@@ -62,7 +62,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	##  List Files  ##
 	##################
 	(files,folders) = dirlist(source,regex=r"\d{2}[A-Z][a-z][a-z]\d{4}\.zip$")
-	times = Array(DateTime,length(files))
+	times = Array{DateTime}(length(files))
 	for i=1:1:length(times)
 		times[i] = DateTime(files[i][end-12:end-4],"dduuuyyyy") # Convert file name to a timestamp
 	end
@@ -78,12 +78,12 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	
 	# List and unzip contents
 	D = DataFrame()
-	t = Array(DateTime,0)
+	t = Array{DateTime}(0)
 	cols = []
 	for i=1:1:length(files)
 		temp = files[i]
-		zipfiles = Array(String,0)
-		zipdirectories = Array(String,0)
+		zipfiles = Array{String}(0)
+		zipdirectories = Array{String}(0)
 		
 		# List Zip Contents
 		verbose ? println("   # " * string(i) * ": " * basename(temp)) : nothing

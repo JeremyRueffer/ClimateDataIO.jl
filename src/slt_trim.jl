@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 09.12.2016
-# Last Edit: 19.12.2016
+# Last Edit: 12.05.2017
 
 """# slt_trim
 
@@ -37,7 +37,7 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 	(files,folders) = dirlist(f1,regex=r"\w\d{8}\.")
 	
 	# Parse File Dates
-	fdates = Array(DateTime,length(files))
+	fdates = Array{DateTime}(length(files))
 	i = 0
 	for i=1:1:length(files)
 		try
@@ -148,14 +148,14 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 		# Write the header
 		write(fid,Int8(2(maxanalogcols + 4))) # Bytes per record = Number of columns x 2
 		write(fid,Int8(sltinfo[:EddyMeas_Version][i]))
-		write(fid,Int8(Dates.Day(sltinfo[:T0][i])))
-		write(fid,Int8(Dates.Month(sltinfo[:T0][i])))
-		yr1 = Int8(floor(Float64(Dates.Year(sltinfo[:T0][i]))/100))
-		yr2 = Int8(Int64(Dates.Year(sltinfo[:T0][i])) - 100*floor(Float64(Dates.Year(sltinfo[:T0][i]))/100))
+		write(fid,Int8(Dates.value(Dates.Day(sltinfo[:T0][i]))))
+		write(fid,Int8(Dates.value(Dates.Month(sltinfo[:T0][i]))))
+		yr1 = Int8(floor(Float64(Dates.value(Dates.Year(sltinfo[:T0][i])))/100))
+		yr2 = Int8(Int64(Dates.value(Dates.Year(sltinfo[:T0][i]))) - 100*floor(Float64(Dates.value(Dates.Year(sltinfo[:T0][i])))/100))
 		write(fid,yr1)
 		write(fid,yr2)
-		write(fid,Int8(Dates.Hour(sltinfo[:T0][i])))
-		write(fid,Int8(Dates.Minute(sltinfo[:T0][i])))
+		write(fid,Int8(Dates.value(Dates.Hour(sltinfo[:T0][i]))))
+		write(fid,Int8(Dates.value(Dates.Minute(sltinfo[:T0][i]))))
 		
 		# Write Channels and Bit Masks
 		for j=1:1:sltinfo[:Analog_Count][i] - colldiff
@@ -201,7 +201,7 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 		fid2 = open(joinpath(f2,splitdir(i)[2]),"w+")
 		
 		for j=1:1:6 + maxanalogcols
-			write(fid2,[readline(fid1)])
+			write(fid2,[readline(fid1,chomp=false)])
 		end
 		
 		for j=1:1:6 - maxanalogcols
@@ -210,7 +210,7 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 		end
 		
 		for j=1:1:9
-			write(fid2,[readline(fid1)])
+			write(fid2,[readline(fid1,chomp=false)])
 		end
 		
 		close(fid1)

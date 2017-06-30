@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6
 # 16.12.2016
-# Last Edit: 16.12.2016
+# Last Edit: 18.05.2017
 
 """# str_load
 
@@ -145,7 +145,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	fid = open(F,"r")
 	h1 = readline(fid)
 	h = collect(Array[[]])
-	h1 = h1[rsearch(h1,"SPEC:")[end]+1:end-2] # Remove everything including and before the SPEC:
+	h1 = h1[rsearch(h1,"SPEC:")[end]+1:end] # Remove everything including and before the SPEC:
 	h = permutedims(readcsv(IOBuffer("\"" * replace(h1,",","\",\"") * "\"")),[2,1]) # "
 	h = [ascii("$i") for i in h]
 	for i=1:1:length(h)
@@ -201,7 +201,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	#########################
 	##  Parse Time Format  ##
 	#########################
-	time = Array(DateTime,length(D[:time])) # Preallocate time column
+	time = Array{DateTime}(length(D[:time])) # Preallocate time column
 	secs = Dates.Second # Initialize so it doesn't have to do it every time in the loop
 	millisecs = Dates.Millisecond # Initialize so it doesn't have to do it every time in the loop
 	for i=1:1:length(D[:time])
@@ -216,7 +216,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	if !isempty(cols)
 		# Check cols' type
 		if typeof(cols) != Array{Symbol,1} && typeof(cols) != Symbol
-			temp = Array(Symbol,length(cols))
+			temp = Array{Symbol}(length(cols))
 			for i=1:1:length(cols)
 				temp[i] = Symbol(cols[i]) # Convert all the values to symbols
 			end
@@ -225,7 +225,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 		
 		# Make sure each entry exists
 		fields = names(D)
-		cols_bool = fill!(Array(Bool,length(cols)),false) # Preallocate false
+		cols_bool = fill!(Array{Bool}(length(cols)),false) # Preallocate false
 		for i=1:1:length(cols)
 			for j=1:1:length(fields)
 				if fields[j] == cols[i]
@@ -238,7 +238,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 		# Remove Unwanted column
 		if isempty(cols)
 			D = DataFrame()
-			time = Array(DateTime,0)
+			time = Array{DateTime}(0)
 		else
 			D = D[cols]
 		end
