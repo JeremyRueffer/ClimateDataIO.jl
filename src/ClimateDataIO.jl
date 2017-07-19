@@ -7,11 +7,11 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.5.0
+# Julia 0.6.0
 # 09.12.2016
-# Last Edit: 04.01.2017
+# Last Edit: 07.07.2017
 
-#__precompile__(true)
+__precompile__(true)
 
 """# ClimateDataIO
 
