@@ -6,9 +6,9 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.6
 # Created: 01.11.13
-# Last Edit: 11.05.17
+# Last Edit: 27.09.17
 
-"# dirlist(directory::ASCIIString;recur_depth::Int64,regular_expression::Regex)
+"""# dirlist(directory::ASCIIString;recur_depth::Int,regular_expression::Regex)
 
 `(files,folders) = dirlist(\"K:\\\\Code\\\\\")` List all the files in the Code directory and all its subdirectories
 
@@ -47,14 +47,14 @@
 * splitdir
 * splitdrive
 * basename
-* dirname"
+* dirname"""
 #function dirlist{T <: String}(directory::Vector{T};args...)
 function dirlist(directory::String;args...)
     return dirlist([directory];args...)
 end
 
-#function dirlist{T <: String}(directories::Array{T,1};recur=typemax(Int64),regex=r"")
-function dirlist{T <: String}(directories::Array{T,1};recur::Int64=typemax(Int64),regex::Regex=r"")
+#function dirlist{T <: String}(directories::Array{T,1};recur=typemax(Int),regex=r"")
+function dirlist{T <: String}(directories::Array{T,1};recur::Int=typemax(Int),regex::Regex=r"")
 	###################################
 	##  Regular Expression Examples  ##
 	###################################

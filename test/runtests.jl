@@ -1,7 +1,7 @@
 using ClimateDataIO
 using Base.Test
 
-# Last Edit: 19.05.17
+# Last Edit: 28.09.17
 
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
@@ -291,7 +291,7 @@ Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=false)
 Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=true)
 @test Time[1] == DateTime(2016,12,11,20,0,0) || "GHGLOAD: Time[1] first timestamp should be 2016-12-11T20:00:00"
 @test Time[end] == DateTime(2016,12,11,21,30) || "GHGLOAD: Time[end] last timestamp should be 2016-12-04T21:30:00"
-@test size(Data) == (4,39) || "GHGLOAD: Data output size incorrect, should be (4,39)"
+@test size(Data) == (4,48) || "GHGLOAD: Data output size incorrect, should be (4,48)"
 
 
 

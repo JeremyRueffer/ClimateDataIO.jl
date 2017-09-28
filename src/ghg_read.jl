@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.6
 # 18.11.2014
-# Last Edit: 12.05.2017
+# Last Edit: 27.09.2017
 
 "# ghg_read(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
@@ -54,7 +54,7 @@ function ghg_read(source::String;verbose::Bool=false)
 	elseif is_unix()
 		temp = []
 		try
-			temp = readstring(`unzip -d $temp_dir $source`)
+			temp = readstring(`unzip -o -d $temp_dir $source`)
 		catch
 			warn("Failed to unzip " * temp)
 			return
@@ -92,8 +92,10 @@ function ghg_read(source::String;verbose::Bool=false)
 	D = DataFrames.readtable(temp,eltypes = col_types,separator = '\t',header = false,skipstart = header_line + 1)
 	verbose ? println("\t   Deleting temporary files") : nothing
 	rm(temp) # Remove the temporary data file
-	temp = joinpath(temp_dir,name * ".metadata")
-	isfile(temp) && rm(temp) # Delete the temporary metadata file if it exists
+	temp = [joinpath(temp_dir,name * ".metadata"),joinpath(temp_dir,name * "-biomet.metadata"),joinpath(temp_dir,name * "-biomet.data")]
+	for i in temp
+		isfile(i) && rm(i) # Delete the temporary metadata file if it exists
+	end
 	names!(D,new_names)
 	
 	# Convert Time

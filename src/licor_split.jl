@@ -29,7 +29,7 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
     ###################
     # Dr = Source Directory
     # Dest = Destination Directory
-
+	
     ####################
     ##  Parse Inputs  ##
     ####################
@@ -37,9 +37,9 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
     if ~isdir(Dr) | ~isdir(Dest)
         error("Source or destination directory does not exist")
     end
-
+	
     (files,folders) = dirlist(Dr,regex=r"\d{4}-\d{2}-\d{2}T\d{6}\.txt$",recur=1) # List TXT files
-
+	
     #####################
     ##  Process Files  ##
     #####################
@@ -61,9 +61,9 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 	    	println("   " * files[i])
 	    end
 	    s = stat(files[i]) # Get file info
-
+		
 	    fid = open(files[i],"r")
-
+		
 	    # Load Header
 	    j = 1;
 	    l = "Bierchen" # Needs any string at least 5 characters long
@@ -73,12 +73,12 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 	    	j += 1
 	    end
 	    data_pos = position(fid) # Position of where the data starts
-
+		
 	    #Get Start Time
 	    l = readline(fid,chomp=false)
 		ft = findin(l,"\t")
 	    starttime = DateTime(l[ft[6]+1:ft[8]-1],"yyyy-mm-dd\tHH:MM:SS:sss")
-
+		
 	    # Get End Time
 	    endline = true
 	    lastpos = 4 # Characters from the end of the file where the last line begins
@@ -94,7 +94,7 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 	    l = readline(fid,chomp=false)
 		ft = findin(l,"\t")
 	    endtime = DateTime(l[ft[6]+1:ft[8]-1],"yyyy-mm-dd\tHH:MM:SS:sss")
-
+		
 	    # Split the File
 	    seek(fid,data_pos) # Move the cursor to the start of the data
 	    fid2 = open(files[i]);close(fid2)
@@ -104,13 +104,13 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 		    if isopen(fid2) == false
 			    # No output stream available
 			    # Open new output file from previous line
-
+				
 			    if first_file == true
 				    # There is not previously loaded line, load one now
 				    l = readline(fid,chomp=false)
 				    first_file = false
 			    end
-
+					
 			    # Calculate last value of file
 				ft = findin(l,"\t")
 			    temp_start = DateTime(l[ft[6]+1:ft[8]-1],"yyyy-mm-dd\tHH:MM:SS:sss")
@@ -131,7 +131,7 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 				    DD2 = DD2 + Dates.Day(1)
 			    end
 			    next_start = DateTime(Dates.Year(temp_start),Dates.Month(temp_start),DD2,HH2)
-
+				
 			    # Generate File Name
 			    for j=1:1:length(header)
 			    	if ismatch(r"^Instrument:",header[j])
@@ -142,34 +142,34 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 			    	println("\t\t- " * fname)
 			    end
 			    fid2 = open(fname,"w+")
-
+				
 			    # Find and replace the Timestamp header line
 			    for j=1:1:length(header);
 			    	if ismatch(r"^Timestamp",header[j])
 			    		header[j] = "Timestamp:  " * Dates.format(temp_start,"yyyy-mm-dd HH:MM:SS:sss") * "\n"
 			    	end
 			    end
-
+				
 			    # Iteratively write the header
 			    for j=1:1:length(header)
 			    	write(fid2,header[j])
 			    end
-
+				
 			    write(fid2,l) # Write the line used to create the file name
 		    else
 			    # An output stream is available
 			    l = readline(fid,chomp=false) # Load in another line
-
+				
 			    # Write or Close
 				ft = findin(l,"\t")
 			    temp_end = DateTime(l[ft[6]+1:ft[8]-1],"yyyy-mm-dd\tHH:MM:SS:sss")
 			    if temp_end >= next_start
 				    # The current line is newer than the start of the next file, close the current file
 				    close(fid2)
-
+					
 				    # Zipped File Name (minus extension)
 				    fzip = splitext(fname)[1]
-
+					
 				    # Zip File
 				    if verbose
 				    	println("\t\t\tCompressing...")
@@ -183,13 +183,13 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 			    end
 		    end
 	    end
-
+		
 	    close(fid2)
 	    close(fid)
-
+		
 		# Zipped File Name (minus extension)
 		fzip = splitext(fname)[1]
-
+		
 		# Zip the final file
 		if verbose
 			println("\t\t\tCompressing...")
@@ -199,7 +199,7 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 		ziptextfiles(fzip,fname) # Zip file
 	    rm(fname)
     end
-
+	
     if verbose
     	println("Complete")
     end

@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.6
 # 18.11.2014
-# Last Edit: 12.05.2017
+# Last Edit: 28.09.2017
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -105,25 +105,57 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			########################
 			verbose ? println("\t   Averaging Data") : nothing
 			f = [findnewton(t_temp,[minimum(t_temp) - Dates.Millisecond(minimum(t_temp)):Dates.Minute(30):maximum(t_temp);]),length(t_temp) + 1;]
+			
+			# Preallocate DataFrames
+			type_list = Array{DataType}(size(D_temp)[2])
+			for j=1:1:size(D_temp)[2]
+				temp = typeof(D_temp[j][1])
+				if temp <: Integer
+					temp = typeof(1.0)
+				end
+				type_list[j] = temp
+			end
+			D_mean_temp = DataFrame(type_list,names(D_temp),length(f)-1)
+			D_std_temp = DataFrame(type_list,names(D_temp),length(f)-1)
+			D_min_temp = DataFrame(type_list,names(D_temp),length(f)-1)
+			D_max_temp = DataFrame(type_list,names(D_temp),length(f)-1)
+			
 			for j=1:1:length(f)-1
-				temp_mean = mean(convert(Array,D_temp[f[j]:f[j+1]-1,9:end-1]),1)
-				temp_std = std(convert(Array,D_temp[f[j]:f[j+1]-1,9:end-1]),1)
-				temp_min = minimum(convert(Array,D_temp[f[j]:f[j+1]-1,9:end-1]),1)
-				temp_max = maximum(convert(Array,D_temp[f[j]:f[j+1]-1,9:end-1]),1)
+				for k=1:1:length(type_list)
+					if type_list[k] == String
+						tempStr = unique(D_temp[f[j]:f[j+1]-1,k])
+						if length(tempStr) != 1
+							tempStr = ["Mixed"]
+						end
+						D_mean_temp[j,k] = tempStr[1]
+						D_std_temp[j,k] = tempStr[1]
+						D_min_temp[j,k] = tempStr[1]
+						D_max_temp[j,k] = tempStr[1]
+					else
+						D_mean_temp[j,k] = mean(convert(Array,D_temp[f[j]:f[j+1]-1,k]))
+						D_std_temp[j,k] = std(convert(Array,D_temp[f[j]:f[j+1]-1,k]))
+						D_min_temp[j,k] = minimum(convert(Array,D_temp[f[j]:f[j+1]-1,k]))
+						D_max_temp[j,k] = maximum(convert(Array,D_temp[f[j]:f[j+1]-1,k]))
+					end
+				end
 				
 				if isempty(D_mean)
 					t_mean = t_temp[f[j]]
-					D_mean = temp_mean
-					D_std = temp_std
-					D_min = temp_min
-					D_max = temp_max
 				else
 					t_mean = [t_mean;t_temp[f[j]]]
-					D_mean = [D_mean;temp_mean]
-					D_std = [D_std;temp_std]
-					D_min = [D_min;temp_min]
-					D_max = [D_max;temp_max]
 				end
+			end
+			
+			if isempty(D_mean)
+				D_mean = D_mean_temp
+				D_std = D_std_temp
+				D_min = D_min_temp
+				D_max = D_max_temp
+			else
+				D_mean = [D_mean;D_mean_temp]
+				D_std = [D_std;D_std_temp]
+				D_min = [D_min;D_min_temp]
+				D_max = [D_max;D_max_temp]
 			end
 		else
 			##################
