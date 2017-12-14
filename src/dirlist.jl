@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # Created: 01.11.13
-# Last Edit: 27.09.17
+# Last Edit: 12.12.17
 
 """# dirlist(directory::ASCIIString;recur_depth::Int,regular_expression::Regex)
 
@@ -48,13 +48,13 @@
 * splitdrive
 * basename
 * dirname"""
-#function dirlist{T <: String}(directory::Vector{T};args...)
-function dirlist(directory::String;args...)
+#function dirlist{T <: String}(directory::Vector{T};args...)::Tuple{Array{String,1},Array{String,1}}
+function dirlist(directory::String;args...)::Tuple{Array{String,1},Array{String,1}}
     return dirlist([directory];args...)
 end
 
-#function dirlist{T <: String}(directories::Array{T,1};recur=typemax(Int),regex=r"")
-function dirlist{T <: String}(directories::Array{T,1};recur::Int=typemax(Int),regex::Regex=r"")
+#function dirlist{T <: String}(directories::Array{T,1};recur=typemax(Int),regex=r"")::Tuple{Array{String,1},Array{String,1}}
+function dirlist{T <: String}(directories::Array{T,1};recur::Int=typemax(Int),regex::Regex=r"")::Tuple{Array{String,1},Array{String,1}}
 	###################################
 	##  Regular Expression Examples  ##
 	###################################

@@ -4,7 +4,7 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 09.12.2016
 # Last Edit: 18.05.2017
 
@@ -109,15 +109,15 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		
 		doy = @sprintf("%03u",Dates.dayofyear(new_time))
 		temp = Dates.format(new_time,"yyyy" * doy * "HHMM")
-		#temp = string(Int64(Dates.Year(new_time))) *
-		#	@sprintf("%03u",1 + Int64(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
-		#	@sprintf("%02u",Int64(Dates.Hour(new_time))) *
-		#	@sprintf("%02u",Int64(Dates.Minute(new_time)))
+		#temp = string(Int(Dates.Year(new_time))) *
+		#	@sprintf("%03u",1 + Int(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
+		#	@sprintf("%02u",Int(Dates.Hour(new_time))) *
+		#	@sprintf("%02u",Int(Dates.Minute(new_time)))
 		
-		#temp = string(Int64(Dates.Year(new_time))) *
-		#	@sprintf("%03u",Int64(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) *
-		#	@sprintf("%02u",Int64(Dates.Hour(new_time))) *
-		#	@sprintf("%02u",Int64(Dates.Minute(new_time)))
+		#temp = string(Int(Dates.Year(new_time))) *
+		#	@sprintf("%03u",Int(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) *
+		#	@sprintf("%02u",Int(Dates.Hour(new_time))) *
+		#	@sprintf("%02u",Int(Dates.Minute(new_time)))
 		new_filename = joinpath(f2,string(configs[:FileName][i][end-15]) * temp * ".cfg")
 		
 		# Correct the Data
@@ -316,8 +316,8 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		write(fid,Int8(sltinfo[:EddyMeas_Version][i]))
 		write(fid,Int8(Dates.value(Dates.Day(new_time))))
 		write(fid,Int8(Dates.value(Dates.Month(new_time))))
-		yr1 = Int8(floor(Int64(Dates.value(Dates.Year(new_time)))/100))
-		yr2 = Int8(Int64(Dates.value(Dates.Year(new_time))) - 100*floor(Int64(Dates.value(Dates.Year(new_time)))/100))
+		yr1 = Int8(floor(Int(Dates.value(Dates.Year(new_time)))/100))
+		yr2 = Int8(Int(Dates.value(Dates.Year(new_time))) - 100*floor(Int(Dates.value(Dates.Year(new_time)))/100))
 		write(fid,yr1)
 		write(fid,yr2)
 		write(fid,Int8(Dates.value(Dates.Hour(new_time))))

@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 13.12.2016
-# Last Edit: 12.05.2017
+# Last Edit: 13.12.2017
 
 """# AerodyneStatus
 
@@ -73,18 +73,13 @@ type AerodyneStatus
 	Valve8::Vector{Bool}
 	
 	# Constructor for AerodyneStatus type
-	function AerodyneStatus{T<:Int64}(vals::DataFrames.DataArray{T,1})
-		AerodyneStatus(Array{Int64}(vals))
-	end # End AerodyneStatus{T<:Int64}(vals::DataFrames.DataArray{T,1}) constructor
+	function AerodyneStatus{T<:Float64}(vals::Array{T,1})
+		AerodyneStatus(Array{Int}(vals))
+	end # End AerodyneStatus{T<:Float64}(vals::Array{T,1}) constructor
 	
 	# Constructor for AerodyneStatus type
-	function AerodyneStatus{T<:Float64}(vals::DataFrames.DataArray{T,1})
-		AerodyneStatus(Array{Int64}(vals))
-	end # End AerodyneStatus{T<:Float64}(vals::DataFrames.DataArray{T,1}) constructor
-	
-	# Constructor for AerodyneStatus type
-	function AerodyneStatus(vals::Array{Int64})
-		l = Int64(length(vals))
+	function AerodyneStatus(vals::Array{Int})
+		l = Int(length(vals))
 		
 		AutoBG = Array{Bool}(l)
 		AutoCal = Array{Bool}(l)

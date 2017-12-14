@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # Created: 04.11.13
-# Last Edit: 19.05.17
+# Last Edit: 13.12.17
 
 """# csci_times
 

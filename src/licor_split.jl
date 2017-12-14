@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 20.05.2014
-# Last Edit: 24.05.2017
+# Last Edit: 14.12.2017
 
 "# licor_split(source::String,destination::String;verbose::Bool=false)
 
@@ -53,7 +53,7 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
     time = DateTime[]
     starttime = DateTime[]
     endtime = DateTime[]
-    fname = []
+    fname = String[]
     header = Array{String}(0) # Initialized header array
     sentinel = 20; # Sentinel value for header while loop
     for i=1:1:length(files)

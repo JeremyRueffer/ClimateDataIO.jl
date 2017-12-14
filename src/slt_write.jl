@@ -4,7 +4,7 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Runior Research Group Nitrosphere
-# Julia 0.6
+# Julia 0.6.1
 # 09.12.2016
 # Last Edit. 19.05.2017
 
@@ -41,8 +41,8 @@ function slt_write(F::String,t0::DateTime,ch::Array{Int8},bm::Array{Int8},D::Arr
 	# Time Conversion
 	day0 = Int8(Dates.value(Dates.Day(t0)))
 	month0 = Int8(Dates.value(Dates.Month(t0)))
-	yr1 = convert(Int8,floor(convert(Int64,Dates.value(Dates.Year(t0)))/100))
-	yr2 = convert(Int8,convert(Int64,Dates.value(Dates.Year(t0))) - 100*floor(convert(Int64,Dates.value(Dates.Year(t0)))/100))
+	yr1 = convert(Int8,floor(convert(Int,Dates.value(Dates.Year(t0)))/100))
+	yr2 = convert(Int8,convert(Int,Dates.value(Dates.Year(t0))) - 100*floor(convert(Int,Dates.value(Dates.Year(t0)))/100))
 	hour0 = Int8(Dates.value(Dates.Hour(t0)))
 	minute0 = Int8(Dates.value(Dates.Minute(t0)))
 	

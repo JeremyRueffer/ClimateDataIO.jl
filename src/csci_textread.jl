@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # Created: 04.11.13
-# Last Edit: 12.05.17
+# Last Edit: 13.12.17
 
 """# csci_textread
 
@@ -39,12 +39,15 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	# kwargs = KeyWord Arguments
 	#	hout::Bool = Include four additional header lines in outputs
 	#	headerlines::Int = Number of header lines
-
+	
+	headerlines += 1
+	df = Dates.DateFormat("yyyy-mm-dd HH:MM:SS.ss") # Date format
+	
 	## Update Conversion Lists
 	strlist = ["OSVersion";"ProgName";"CompileResults";"CardStatus";"IPInfo";"pppDialResponse";"DataTableName\\(\\d\\)";"PortConfig\\(\\d\\)";"IPAddressEth";"IPMaskEth";"IPGateway";"pppIPAddr";"pppUsername";"pppPassword";"pppDial";"Messages";strlist]
 	intlist = ["RECORD";"TCPPort";intlist]
 	timelist = ["TIMESTAMP";"StartTime";"LastSystemScan";timelist]
-
+	
 	## Load Header Data
 	fid = open(F,"r")
 	loggerStr = readline(fid)
@@ -52,56 +55,52 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	unitsStr = readline(fid)
 	processingStr = readline(fid)
 	close(fid)
-
+	
 	logger = readcsv(IOBuffer(loggerStr))
-	cols = readcsv(IOBuffer(colsStr))
+	cols_temp = readcsv(IOBuffer(colsStr))
 	units = readcsv(IOBuffer(unitsStr))
-	processing = readcsv(IOBuffer(processingStr))
-
+	processing_temp = readcsv(IOBuffer(processingStr))
+	
+	cols = Array{String}(length(cols_temp))
+	processing = Array{String}(length(cols_temp))
+	for i=1:length(cols)
+		cols[i] = cols_temp[i]
+		processing[i] = processing_temp[i]
+	end
+	
 	## Prepare Type List
-	types = repmat([Float64],length(processing))
+	types = Any[Float64 for i=1:length(processing)]
 	for i=1:1:length(types)
 		for j=1:1:length(strlist)
 			if ismatch(Regex(strlist[j]),cols[i])
-				types[i] = String
+				types[i] = Union{Missing,String}
 			end
 		end
 	end
 	for i=1:1:length(types)
 		for j=1:1:length(intlist)
 			if ismatch(Regex(intlist[j]),cols[i])
-				types[i] = Int64
+				types[i] = Int
 			end
 		end
 	end
-	t_index = Int64[]
+	t_index = Int[]
 	for i=1:1:length(types)
 		for j=1:1:length(timelist)
 			if ismatch(Regex(timelist[j]),cols[i])
-				types[i] = String
+				types[i] = DateTime
 				t_index = [t_index;i]
 			end
 		end
 	end
-
-	## Load Data
-	D = readtable(F,eltypes = types,separator = ',',header = false,skipstart = headerlines)
-
-	## Convert time string to time
-	df = Dates.DateFormat("yyyy-mm-dd HH:MM:SS.ss") # Date format
-	for i=1:1:length(t_index)
-		D[t_index[i]] = DateTime(D[t_index[i]],df)
-	end
-
-	## Rename the dataframe columns
+	
 	cols[1] = "Timestamp"
 	cols[2] = "Record"
-	new_names = Array{Symbol}(size(cols,2))
-	for i=1:1:length(new_names)
-		new_names[i] = Symbol(cols[i])
-	end
-	names!(D,new_names)
-
+	
+	## Load Data
+	D = CSV.read(F;types = types,header=cols,delim = ',',datarow = headerlines,dateformat = df)
+	#D = readtable(F,eltypes = types,separator = ',',header = false,skipstart = headerlines)
+	
 	if headeroutput
 		return D,loggerStr,colsStr,unitsStr,processingStr
 	else

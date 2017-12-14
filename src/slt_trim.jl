@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 09.12.2016
-# Last Edit: 12.05.2017
+# Last Edit: 06.12.2017
 
 """# slt_trim
 
@@ -17,13 +17,13 @@ Remove columns from SLT files, source files must not have all equal numbers of c
 * **destination**::String = Destination directory, `\"K:\\Data\"`
 * **mindate**::DateTime = Start of period to process
 * **maxdate**::DateTime = End of period to process
-* **maxanalogcols**::Int64 = Maximum number of columns that should remain"""
-function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxanalogcols::Int64)
+* **maxanalogcols**::Int = Maximum number of columns that should remain"""
+function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxanalogcols::Int)
 	# f1::String # Source Directory
 	# f2::String # Destination Directory
 	# mindate::DateTime
 	# maxdate::DateTime
-	# maxanalogcols::Int64 # Maximum number of analog columns
+	# maxanalogcols::Int # Maximum number of analog columns
 	
 	# Check Inputs
 	if !isdir(f1)
@@ -151,7 +151,7 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 		write(fid,Int8(Dates.value(Dates.Day(sltinfo[:T0][i]))))
 		write(fid,Int8(Dates.value(Dates.Month(sltinfo[:T0][i]))))
 		yr1 = Int8(floor(Float64(Dates.value(Dates.Year(sltinfo[:T0][i])))/100))
-		yr2 = Int8(Int64(Dates.value(Dates.Year(sltinfo[:T0][i]))) - 100*floor(Float64(Dates.value(Dates.Year(sltinfo[:T0][i])))/100))
+		yr2 = Int8(Int(Dates.value(Dates.Year(sltinfo[:T0][i]))) - 100*floor(Float64(Dates.value(Dates.Year(sltinfo[:T0][i])))/100))
 		write(fid,yr1)
 		write(fid,yr2)
 		write(fid,Int8(Dates.value(Dates.Hour(sltinfo[:T0][i]))))
@@ -251,4 +251,4 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 		println("   " * splitdir(i)[2])
 		cp(i,joinpath(f2,splitdir(i)[2]))
 	end
-end # slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxanalogcols::Int64)
+end # slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxanalogcols::Int)

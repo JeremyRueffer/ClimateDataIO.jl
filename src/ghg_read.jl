@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 18.11.2014
-# Last Edit: 27.09.2017
+# Last Edit: 14.12.2017
 
 "# ghg_read(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
@@ -27,13 +27,7 @@ function ghg_read(source::String;verbose::Bool=false)
 	##  Initialize  ##
 	##################
 	#epoch = DateTime(1970,1,1,1)
-	if is_linux()
-		temp_dir = "/tmp/"
-	elseif is_apple()
-		temp_dir = ENV["TMPDIR"]
-	elseif is_windows()
-		temp_dir = ENV["temp"]
-	end
+	temp_dir = tempdir()
 	D = DataFrame()
 	t = DateTime[]
 	
@@ -68,14 +62,14 @@ function ghg_read(source::String;verbose::Bool=false)
 	(name,ext) = splitext(basename(source))
 	temp = joinpath(temp_dir,name * ".data")
 	verbose ? println("\t   Loading " * joinpath(temp_dir,name * ".data")) : nothing
-	header_line = 7
+	header_line = 9
 	fid = open(temp,"r")
-	for j=1:1:header_line
+	for j=1:1:header_line - 2
 		readline(fid,chomp=false)
 	end
 	cols = permutedims(readcsv(IOBuffer("\"" * replace(readline(fid,chomp=false)[1:end-1],"\t","\",\"") * "\"")),[2,1])
 	close(fid)
-	new_names = Array{Symbol}(length(cols))
+	new_names = Array{String}(length(cols))
 	temp_name = ""
 	for i=1:1:length(cols)
 		temp_name = replace(cols[i]," ","_")
@@ -83,20 +77,20 @@ function ghg_read(source::String;verbose::Bool=false)
 		temp_name = replace(replace(temp_name,"%",""),"^","")
 		temp_name = replace(temp_name,"_-","")
 		temp_name = replace(temp_name,"/","_per_")
-		new_names[i] = Symbol(temp_name)
+		new_names[i] = temp_name
 	end
 	
 	# Load Data
 	col_types = fill!(Array{DataType}(length(cols)),Float64)
-	col_types[1:8] = [String;Int64;Int64;Int64;Int64;Int64;String;String]
-	D = DataFrames.readtable(temp,eltypes = col_types,separator = '\t',header = false,skipstart = header_line + 1)
+	col_types[1:8] = [String;Int;Int;Int;Int;Int;String;String]
+	D = CSV.read(temp,types = col_types,header = new_names,delim = '\t',datarow = header_line)
+	#D = DataFrames.readtable(temp,eltypes = col_types,separator = '\t',header = false,skipstart = header_line + 1)
 	verbose ? println("\t   Deleting temporary files") : nothing
 	rm(temp) # Remove the temporary data file
 	temp = [joinpath(temp_dir,name * ".metadata"),joinpath(temp_dir,name * "-biomet.metadata"),joinpath(temp_dir,name * "-biomet.data")]
 	for i in temp
 		isfile(i) && rm(i) # Delete the temporary metadata file if it exists
 	end
-	names!(D,new_names)
 	
 	# Convert Time
 	t = epoch + map(Dates.Second,Array(D[:Seconds])) + map(Dates.Millisecond,Array(D[:Nanoseconds])./1e6)

@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 16.12.2016
-# Last Edit: 18.05.2017
+# Last Edit: 14.12.2017
 
 """# str_load
 
@@ -144,15 +144,15 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	## Load Header Information
 	fid = open(F,"r")
 	h1 = readline(fid)
-	h = collect(Array[[]])
 	h1 = h1[rsearch(h1,"SPEC:")[end]+1:end] # Remove everything including and before the SPEC:
-	h = permutedims(readcsv(IOBuffer("\"" * replace(h1,",","\",\"") * "\"")),[2,1]) # "
-	h = [ascii("$i") for i in h]
-	for i=1:1:length(h)
-		h[i] = strip(h[i]) # Remove leading and trailing whitespace
-		h[i] = replace(h[i]," ","_") # Replace remaining whitespace with _
+	h2 = readcsv(IOBuffer("\"" * replace(h1,",","\",\"") * "\""))
+	h = Array{String}(length(h2) + 2)
+	h[1] = "time"
+	h[end] = "Empty"
+	for i=1:1:length(h2)
+		h[i+1] = strip(String(h2[i])) # Remove leading and trailing whitespace
+		h[i+1] = replace(h[i+1]," ","_") # Replace remaining whitespace with _
 	end
-	h = ["time";h]
 	close(fid)
 	
 	## Check for duplicate column names and adjust them
@@ -171,31 +171,27 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	end
 	
 	## List column types
-	coltypes = repmat([Float64],length(h))
+	coltypes = Any[Float64 for i=1:length(h)]
 	for i=1:1:length(h)
 		if h[i] == "SPEFile"
-			coltypes[i] = String
+			coltypes[i] = Union{Missing,String}
 		end
 		
 		if h[i] == "StatusW"
-			coltypes[i] = Int64
+			coltypes[i] = Int
 		end
 	end
 	
 	## Todo: Replace column names with reasonable names
 	
 	## Load data
-	D = []
+	D = DataFrame()
 	try
-		D = DataFrames.readtable(F,eltypes = coltypes,separator = ' ',header = false,skipstart = 2*1)
+		#D = DataFrames.readtable(F,eltypes = coltypes,separator = ' ',header = false,skipstart = 2*1)
+		D = CSV.read(F;delim=" ",header=h,datarow=2)[:,1:end-1]
 	catch
 		println("Cannot load " * F)
 		error("ERROR loading files")
-	end
-	
-	## Rename the dataframe columns with the correct names
-	for i=1:1:length(h)
-		rename!(D,Symbol("x" * string(i)),Symbol(h[i]))
 	end
 	
 	#########################

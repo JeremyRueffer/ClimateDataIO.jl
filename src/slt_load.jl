@@ -4,7 +4,7 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 09.12.2016
 # Last Edit: 23.06.2017
 
@@ -153,25 +153,6 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		end
 	end
 	
-	# Preallocate Final Arrays
-	verbose ? println("Preallocating Final Arrays (" * string(Int64(sum(sltinfo[:Line_Count]))) * "," * string(4+configs[:Analog_Count][1]) * ")") : nothing
-	l = Int64(sum(sltinfo[:Line_Count]))
-	if 4+configs[:Analog_Count][1] == 4
-		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN))
-	elseif 4+configs[:Analog_Count][1] == 5
-		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN))
-	elseif 4+configs[:Analog_Count][1] == 6
-		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN))
-	elseif 4+configs[:Analog_Count][1] == 7
-		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN), Analog3 = fill!(Array{Float64}(l),NaN))
-	elseif 4+configs[:Analog_Count][1] == 8
-		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN), Analog3 = fill!(Array{Float64}(l),NaN), Analog4 = fill!(Array{Float64}(l),NaN))
-	elseif 4+configs[:Analog_Count][1] == 9
-		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN), Analog3 = fill!(Array{Float64}(l),NaN), Analog4 = fill!(Array{Float64}(l),NaN), Analog5 = fill!(Array{Float64}(l),NaN))
-	elseif 4+configs[:Analog_Count][1] == 10
-		D = DataFrame(Time = fill!(Array{DateTime}(l),DateTime(0)), u = fill!(Array{Float64}(l),NaN), v = fill!(Array{Float64}(l),NaN), w = fill!(Array{Float64}(l),NaN), sonic_temp = fill!(Array{Float64}(l),NaN), speed_of_sound = fill!(Array{Float64}(l),NaN), wind_direction = fill!(Array{Float64}(l),NaN), Analog1 = fill!(Array{Float64}(l),NaN), Analog2 = fill!(Array{Float64}(l),NaN), Analog3 = fill!(Array{Float64}(l),NaN), Analog4 = fill!(Array{Float64}(l),NaN), Analog5 = fill!(Array{Float64}(l),NaN), Analog6 = fill!(Array{Float64}(l),NaN))
-	end
-	
 	# Rename DataFrame columns
 	h = ["Time";"u";"v";"w";"sonic_temp";"speed_of_sound";"wind_direction";configs[:Analog_Names][1]]
 	h_unique = unique(h);
@@ -188,11 +169,15 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 			end
 		end
 	end
-	h = [Symbol(replace("$j"," ","")) for j in h]
-	names!(D,h)
-	#for i=1:1:configs[:Analog_Count][1]
-	#        rename!(D,symbol("Analog" * string(i)),symbol(replace(configs[:Analog_Names][1][i]," ","")))
-	#end
+	
+	# Preallocate Final Arrays
+	verbose ? println("Preallocating Final Arrays (" * string(Int(sum(sltinfo[:Line_Count]))) * "," * string(4+configs[:Analog_Count][1]) * ")") : nothing
+	l = Int(sum(sltinfo[:Line_Count]))
+	col_types = fill!(Array{DataType}(length(h)),Float64)
+	col_types[1] = DateTime
+	D = DataFrame(col_types,Symbol[Symbol(i) for i in h],l)
+	D[:,2:end] = NaN
+	D[:,1] = DateTime(0)
 	
 	###################
 	## Load the Data ##
@@ -202,8 +187,13 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	offset = 0
 	u = 0.0
 	v = 0.0
+	filefolder = ""
 	for i=1:1:length(files)
-		println("   " * string(i) * ": " * files[i])
+		if splitdir(files[i])[1] != filefolder
+			filefolder = splitdir(files[i])[1]
+			println("  " * filefolder)
+		end
+		println("\t" * string(i) * ": " * basename(files[i]))
 		
 		# Instrument Angle Offset
 		if contains(configs[:Sonic][cfg[i]],"Gill")
@@ -216,8 +206,8 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		try
 			seek(fid,sltinfo[:Start_Pos][i])
 			
-			for j=1:1:Int64(sltinfo[:Line_Count][i])
-				ms = Int64(floor((j-1)*(1/sltinfo[:Sample_Frequency][i])*1000)) # milliseconds
+			for j=1:1:Int(sltinfo[:Line_Count][i])
+				ms = Int(floor((j-1)*(1/sltinfo[:Sample_Frequency][i])*1000)) # milliseconds
 				D[j+offset,1] = sltinfo[:T0][i] + Dates.Millisecond(ms) # Years, Months, Days, Hours, Minutes, Seconds, Milliseconds
 				u = Float64(read(fid,Int16,1)[1])/100 # u
 				v = Float64(read(fid,Int16,1)[1])/100 # v
@@ -250,7 +240,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 					D[j+offset,k+7] = m*V + b # Convert to a value
 				end
 			end
-			offset += Int64(sltinfo[:Line_Count][i])
+			offset += Int(sltinfo[:Line_Count][i])
 		catch e
 			println("Error loading file: " * files[i])
 			println(e)

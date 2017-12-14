@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 07.11.2014
-# Last Edit: 12.05.2017
+# Last Edit: 14.12.2017
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -29,7 +29,7 @@ function lgr_read(source::String;verbose::Bool=false)
 	!isfile(source) ? error(source * " must be a file") : nothing
 	
 	df = Dates.DateFormat("dd/mm/yyyy HH:MM:SS.sss") # Date format
-
+	
 	#############################################
 	##  Prepare Settings for Loading the Data  ##
 	#############################################
@@ -56,25 +56,36 @@ function lgr_read(source::String;verbose::Bool=false)
 		endpos += 1
 	end
 	endpos = position(fid) # Position of the end of data
+	footerlines = 0
+	while !eof(fid)
+		readline(fid)
+		footerlines += 1
+	end
 	close(fid)
 	l_count = Int((endpos - startpos)/llength) # Number of data lines
-
+	
 	# Column Types
 	col_types = fill!(Array{DataType}(length(cols)),Float64)
-	col_types[[1;length(col_types)]] = String
-
+	col_types[length(col_types)] = String
+	col_types[1] = DateTime
+	
+	# Column Names
+	col_names = Array{String}(length(cols))
+	for i=1:length(cols)
+		col_names[i] = replace(cols[i],"[","")
+		col_names[i] = replace(col_names[i],"]","")
+	end
+	
 	#####################
 	##  Load the Data  ##
 	#####################
-	D = DataFrames.readtable(source,eltypes = col_types,separator = ',',header = false,skipstart = 2,nrows=l_count)
-
-	####################
-	##  Convert Time  ##
-	####################
-	t = Array{DateTime}(size(D,1))
-	for i=1:1:length(t)
-		t[i] = DateTime(D[i,1],df)
-	end
-
-	return t,D,cols
+	D = CSV.read(source,
+		datarow=3,
+		dateformat=Dates.DateFormat("  dd/mm/yyyy HH:MM:SS.sss"),
+		delim=',',
+		header=col_names,
+		footerskip=footerlines, # PGP signed
+		types=col_types)
+	
+	return D
 end

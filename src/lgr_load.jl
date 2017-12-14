@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 07.11.2014
-# Last Edit: 12.05.2017
+# Last Edit: 14.12.2017
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -17,16 +17,14 @@
 
 "# lgr_load(source::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=false)
 
-`time,data,columns = lgr_load(source)` Load a directory of LGR zip files\n
-* **time**::Array{DateTime}(1) = Time column
+`data = lgr_load(source)` Load a directory of LGR zip files\n
 * **data**::DataFrame = Data
-* **columns**::Array{String}(1) = List of columns
 * **source**::String = Directory of LGR zip files\n\n
 
-`time,data,columns = lgr_load(source,minimumdate)` \n
+`data = lgr_load(source,minimumdate)` \n
 * **minimumdate**::DateTime = Starting date to load data from\n\n
 
-`time,data,columns = lgr_load(source,minimumdate,maximumdate)` \n
+`data = lgr_load(source,minimumdate,maximumdate)` \n
 * **maximumdate**::DateTime = Load data before this date\n\n
 
 ---\n
@@ -40,13 +38,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	end
 	
 	# Temporary Directory, Unzipping Destination
-	if is_linux()
-		dest = "/tmp/"
-	elseif is_apple()
-		dest = ENV["TMPDIR"]
-	elseif is_windows()
-		dest = ENV["Temp"]
-	end
+	dest = tempdir()
 	
 	#############################
 	##  Basic Settings Output  ##
@@ -78,8 +70,6 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	
 	# List and unzip contents
 	D = DataFrame()
-	t = Array{DateTime}(0)
-	cols = []
 	for i=1:1:length(files)
 		temp = files[i]
 		zipfiles = Array{String}(0)
@@ -123,9 +113,8 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		
 		# Load Each Data File
 		for j=1:1:length(zipfiles)
-			(tempT,tempD,cols) = lgr_read(zipfiles[j],verbose=verbose)
-			t = [t;tempT]
-			D = [D;tempD]
+			tempD = lgr_read(zipfiles[j],verbose=verbose)
+			isempty(D) ? D = tempD : D = [D;tempD]
 		end
 		
 		# Delete Files and Directories
@@ -139,5 +128,5 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	
 	verbose ? println("  Data Loading Complete") : nothing
 	
-	return t, D, cols
+	return D
 end

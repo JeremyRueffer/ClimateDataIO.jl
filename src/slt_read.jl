@@ -4,7 +4,7 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6
+# Julia 0.6.1
 # 09.12.2016
 # Last Edit: 12.05.2017
 
@@ -30,22 +30,22 @@ function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 	fid = open(F,"r")
 	try
 		# Header
-		bpr = Int64(read(fid,Int8,1)[1]) # Bytes Per Record
+		bpr = Int(read(fid,Int8,1)[1]) # Bytes Per Record
 		eddymeasver = read(fid,Int8,1)
-		dom = Int64(read(fid,Int8,1)[1]) # Day of Month
-		m = Int64(read(fid,Int8,1)[1]) # Month number
-		yr = 100*Int64(read(fid,Int8,1)[1]) + Int64(read(fid,Int8,1)[1]) # Year
-		h = Int64(read(fid,Int8,1)[1]) # Hour
-		minut = Int64(read(fid,Int8,1)[1]) # Minute
+		dom = Int(read(fid,Int8,1)[1]) # Day of Month
+		m = Int(read(fid,Int8,1)[1]) # Month number
+		yr = 100*Int(read(fid,Int8,1)[1]) + Int(read(fid,Int8,1)[1]) # Year
+		h = Int(read(fid,Int8,1)[1]) # Hour
+		minut = Int(read(fid,Int8,1)[1]) # Minute
 		t0 = DateTime(yr,m,dom,h,minut,0) # Initial file time
 		
 		fs = stat(F).size # File size in bytes
-		#l = Int64((fs - 8 - 2*a_inputs)/bpr) # Number of rows of data, trusting the file
+		#l = Int((fs - 8 - 2*a_inputs)/bpr) # Number of rows of data, trusting the file
 		l = (fs - 8 - 2*a_inputs)/(8 + 2*a_inputs) # Number of rows of data, trusting the user inputs
 		if l - floor(l) != 0
 			warn(F * " either has a different column count than " * string(a_input + 4) * " or was terminated early.")
 		end
-		l = Int64(floor(l))
+		l = Int(floor(l))
 		
 		# Bit Masks and Channels
 		bm = read(fid,Int8,2*a_inputs)
@@ -57,7 +57,7 @@ function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 		t_offset[1] = Dates.Millisecond(0) # Correction, the first sample shouldn't have an offset
 		t_offset = cumsum(t_offset) # Time offset from the start for every sample
 		t = DateTime(yr,m,dom,h,minut,0) + t_offset # Time
-		d = NaN.*Array{Float64}((Int64(l),4 + a_inputs)) # Data Array
+		d = NaN.*Array{Float64}((Int(l),4 + a_inputs)) # Data Array
 		
 		for i=1:1:l
 			d[i,1] = Float64(read(fid,Int16,1)[1])/100 # u

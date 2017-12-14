@@ -1,7 +1,7 @@
 using ClimateDataIO
 using Base.Test
 
-# Last Edit: 28.09.17
+# Last Edit: 14.12.17
 
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
@@ -9,6 +9,7 @@ src = splitdir(@__FILE__)[1]
 mindate = DateTime(2016,11,23,14,4)
 maxdate = DateTime(2016,11,23,18)
 Data = ClimateDataIO.slt_load(src,mindate,maxdate,verbose=true)
+tmean, Dmean, Dstd, Dmin, Dmax = ClimateDataIO.slt_load(src,mindate,maxdate,verbose=true,average=true)
 @test size(Data) == (141377,13) || "SLTLOAD: Output size incorrect, should be (141377,13)"
 @test Data[:Time][1] == DateTime(2016,11,23,14,4) || "SLTLOAD: First timestamp should be 2016-11-23T14:04:00"
 @test Data[:Time][end] == DateTime(2016,11,23,17,59,59,900) || "SLTLOAD: Last timestamp should be 2016-11-23T17:59:59.9"
@@ -147,18 +148,18 @@ src = splitdir(@__FILE__)[1]
 src = joinpath(src,"161210_000000.str")
 cols = ["NH3"]
 Time,Data = ClimateDataIO.str_load(src,verbose=true,cols=cols)
-@test Time[1] == DateTime(2016,12,10,0,0,0,622) || "STR_LOAD: First timestamp should be 2016-12-10T00:00:00.622"
+@test Time[1] == DateTime(2016,12,10,0,0,0,525) || "STR_LOAD: First timestamp should be 2016-12-10T00:00:00.525"
 @test Time[end] == DateTime(2016,12,10,0,59,59,922) || "STR_LOAD: Last timestamp should be 2016-12-10T00:59:59.922"
-@test size(Data) == (35159,1) || "STR_LOAD: Output size incorrect, should be (35159,2)"
+@test size(Data) == (35160,1) || "STR_LOAD: Output size incorrect, should be (35160,2)"
 
 
 
 println("\nMultiple files")
 src = splitdir(@__FILE__)[1]
 Time,Data = ClimateDataIO.str_load(src,verbose=true)
-@test Time[1] == DateTime(2016,12,10,0,0,0,622) || "STR_LOAD: First timestamp should be 2016-12-10T00:00:00.622"
+@test Time[1] == DateTime(2016,12,10,0,0,0,525) || "STR_LOAD: First timestamp should be 2016-12-10T00:00:00.525"
 @test Time[end] == DateTime(2016,12,10,3,59,59,917) || "STR_LOAD: Last timestamp should be 2016-12-10T03:59:59.917"
-@test size(Data) == (140641,2) || "STR_LOAD: Output size incorrect, should be (140641,2)"
+@test size(Data) == (140645,2) || "STR_LOAD: Output size incorrect, should be (140645,2)"
 
 
 
@@ -167,24 +168,24 @@ println("\n====  STC_LOAD Tests  ====")
 src = splitdir(@__FILE__)[1]
 src = joinpath(src,"161210_000000.stc")
 Time,Data = ClimateDataIO.stc_load(src,verbose=true)
-@test Time[1] == DateTime(2016,12,10,0,0,2,622) || "STC_LOAD: First timestamp should be 2016-12-10T00:00:02.622"
+@test Time[1] == DateTime(2016,12,10,0,0,0,622) || "STC_LOAD: First timestamp should be 2016-12-10T00:00:02.622"
 @test Time[end] == DateTime(2016,12,10,0,59,59,622) || "STC_LOAD: Last timestamp should be 2016-12-10T00:59:59.622"
-@test size(Data) == (3598,26) || "STC_LOAD: Output size incorrect, should be (35159,2)"
+@test size(Data) == (3600,26) || "STC_LOAD: Output size incorrect, should be (3600,26)"
 
 
 
 println("\nMultiple files")
 src = splitdir(@__FILE__)[1]
 Time,Data = ClimateDataIO.stc_load(src,verbose=true)
-@test Time[1] == DateTime(2016,12,10,0,0,2,622) || "STC_LOAD: First timestamp should be 2016-12-10T00:00:02.622"
+@test Time[1] == DateTime(2016,12,10,0,0,0,622) || "STC_LOAD: First timestamp should be 2016-12-10T00:00:02.622"
 @test Time[end] == DateTime(2016,12,10,3,59,59,117) || "STC_LOAD: Last timestamp should be 2016-12-10T03:59:59.117"
-@test size(Data) == (14391,26) || "STC_LOAD: Output size incorrect, should be (14391,2)"
+@test size(Data) == (14399,26) || "STC_LOAD: Output size incorrect, should be (14399,26)"
 
 
 
 println("\nStatus Values")
 statuses = ClimateDataIO.AerodyneStatus(Data[:StatusW])
-temp = fill!(Array{Bool}(14391),false)
+temp = fill!(Array{Bool}(14399),false)
 @test temp == statuses.Valve1 || "AERODYNESTATUS: All values in statuses.Valve1 should be FALSE"
 @test temp == statuses.Valve2 || "AERODYNESTATUS: All values in statuses.Valve2 should be FALSE"
 @test temp == statuses.Valve3 || "AERODYNESTATUS: All values in statuses.Valve3 should be FALSE"
@@ -298,9 +299,9 @@ Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=true)
 # LGR_LOAD: Load a file
 println("\n====  LGR_LOAD Tests  ====")
 src = splitdir(@__FILE__)[1]
-Time,Data, Cols = ClimateDataIO.lgr_load(src,verbose=true)
-@test Time[1] == DateTime(2015,1,30,15,13,47,994) || "LGR_LOAD: Time[1] first timestamp should be 2015-01-30T15:13:47.994"
-@test Time[end] == DateTime(2015,1,31,15,13,55,727) || "LGR_LOAD: Time[end] last timestamp should be 2015-01-31T15:13:55.727"
+Data = ClimateDataIO.lgr_load(src,verbose=true)
+@test Data[:Time][1] == DateTime(2015,1,30,15,13,47,994) || "LGR_LOAD: Time[1] first timestamp should be 2015-01-30T15:13:47.994"
+@test Data[:Time][end] == DateTime(2015,1,31,15,13,55,727) || "LGR_LOAD: Time[end] last timestamp should be 2015-01-31T15:13:55.727"
 @test size(Data) == (78272,23) || "LGR_LOAD: Data output size incorrect, should be (78272,23)"
 
 
@@ -308,7 +309,7 @@ Time,Data, Cols = ClimateDataIO.lgr_load(src,verbose=true)
 # LGR_READ Error Check
 err = true
 try
-	Time,Data,Cols = ClimateDataIO.lgr_read("blahblahblah")
+	Data = ClimateDataIO.lgr_read("blahblahblah")
 	err = false
 end
 @test err == true || "LGR_READ: Should throw an error, invalid file given"
