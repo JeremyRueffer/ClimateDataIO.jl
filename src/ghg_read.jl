@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.6.2
 # 18.11.2014
-# Last Edit: 28.03.2018
+# Last Edit: 29.03.2018
 
 "# ghg_read(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
@@ -53,7 +53,8 @@ function ghg_read(source::String;verbose::Bool=false)
 	# Load Data
 	col_types = fill!(Array{DataType}(length(cols)),Float64)
 	col_types[1:8] = [String;Int;Int;Int;Int;Int;String;String]
-	D = CSV.read(list.files[1],types = col_types,header = new_names,delim = '\t',datarow = header_line)
+	# datarow = 1, the position within the file is just at the start of the data already because of the header loading
+	D = CSV.read(list.files[1],types = col_types,header = new_names,delim = '\t',datarow = 1)
 	
 	# Convert Time
 	t = epoch + map(Dates.Second,Array(D[:Seconds])) + map(Dates.Millisecond,Array(D[:Nanoseconds])./1e6)
