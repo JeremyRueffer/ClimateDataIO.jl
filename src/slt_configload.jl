@@ -46,16 +46,17 @@ function slt_configload{T<:String}(files::Array{T,1})::DataFrame
  		Int]
 	configs = DataFrame(col_types,col_names,length(files))
 	
-	configs[:Analog_Inputs][1] = Array{Int,1}(0)
-	configs[:Analog_Names][1] = Array{String,1}(0)
-	configs[:Analog_Lower][1] = Array{Int,1}(0)
-	configs[:Analog_Upper][1] = Array{Int,1}(0)
-	configs[:Analog_Units][1] = Array{String,1}(0)
-	configs[:Analog_Delay][1] = Array{Int,1}(0)
-	configs[:Slope][1] = Array{Float64,1}(0)
-	
 	# Fill Fields with Single Values
 	for i=1:1:length(files)
+		# Initialiye empty arrays
+		configs[:Analog_Inputs][i] = Array{Int,1}(0)
+		configs[:Analog_Names][i] = Array{String,1}(0)
+		configs[:Analog_Lower][i] = Array{Int,1}(0)
+		configs[:Analog_Upper][i] = Array{Int,1}(0)
+		configs[:Analog_Units][i] = Array{String,1}(0)
+		configs[:Analog_Delay][i] = Array{Int,1}(0)
+		configs[:Slope][i] = Array{Float64,1}(0)
+		
 		configs[:FileName][i] = files[i]
 		time = DateTime(parse(files[i][end-14:end-11])) + Dates.Day(parse(files[i][end-10:end-8])) - Dates.Day(1) + Dates.Hour(parse(files[i][end-7:end-6])) + Dates.Minute(parse(files[i][end-5:end-4]))
 		configs[:Time][i] = time

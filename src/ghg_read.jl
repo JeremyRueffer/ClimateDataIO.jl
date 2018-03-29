@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.6.2
 # 18.11.2014
-# Last Edit: 14.12.2017
+# Last Edit: 28.03.2018
 
 "# ghg_read(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
 
@@ -20,55 +20,25 @@
 #### Keywords:\n
 * verbose::Bool = Display information as the function runs, TRUE is default\n\n"
 function ghg_read(source::String;verbose::Bool=false)
-	
-	epoch = DateTime(1970,1,1,1) # Licor epoch
-	
 	##################
 	##  Initialize  ##
 	##################
-	#epoch = DateTime(1970,1,1,1)
-	temp_dir = tempdir()
+	epoch = DateTime(1970,1,1,1) # Licor epoch
 	D = DataFrame()
 	t = DateTime[]
-	
-	#############
-	##  Unzip  ##
-	#############
-	verbose ? println("\t   Unzipping") : nothing
-	if is_windows()
-		list = ZipFile.Reader(source) # List the files in the GHG file
-		for i=1:1:length(list.files)
-			if splitext(list.files[i].name)[2] == ".data"
-				fid = open(joinpath(temp_dir,list.files[i].name),"w")
-				write(fid,readstring(list.files[i]))
-				close(fid)
-			end
-		end
-		close(list) # Close Zip File
-	elseif is_unix()
-		temp = []
-		try
-			temp = readstring(`unzip -o -d $temp_dir $source`)
-		catch
-			warn("Failed to unzip " * temp)
-			return
-		end
-	end
 	
 	#################
 	##  Load Data  ##
 	#################
 	# Load Header
+	list = ZipFile.Reader(source) # List the files in the GHG file
 	(name,ext) = splitext(basename(source))
-	temp = joinpath(temp_dir,name * ".data")
-	verbose ? println("\t   Loading " * joinpath(temp_dir,name * ".data")) : nothing
+	verbose ? println("\t   Loading " * name * ".data") : nothing
 	header_line = 9
-	fid = open(temp,"r")
 	for j=1:1:header_line - 2
-		readline(fid,chomp=false)
+		readline(list.files[1])
 	end
-	cols = permutedims(readcsv(IOBuffer("\"" * replace(readline(fid,chomp=false)[1:end-1],"\t","\",\"") * "\"")),[2,1])
-	close(fid)
+	cols = permutedims(readcsv(IOBuffer("\"" * replace(readline(list.files[1]),"\t","\",\"") * "\"")),[2,1])
 	new_names = Array{String}(length(cols))
 	temp_name = ""
 	for i=1:1:length(cols)
@@ -83,14 +53,7 @@ function ghg_read(source::String;verbose::Bool=false)
 	# Load Data
 	col_types = fill!(Array{DataType}(length(cols)),Float64)
 	col_types[1:8] = [String;Int;Int;Int;Int;Int;String;String]
-	D = CSV.read(temp,types = col_types,header = new_names,delim = '\t',datarow = header_line)
-	#D = DataFrames.readtable(temp,eltypes = col_types,separator = '\t',header = false,skipstart = header_line + 1)
-	verbose ? println("\t   Deleting temporary files") : nothing
-	rm(temp) # Remove the temporary data file
-	temp = [joinpath(temp_dir,name * ".metadata"),joinpath(temp_dir,name * "-biomet.metadata"),joinpath(temp_dir,name * "-biomet.data")]
-	for i in temp
-		isfile(i) && rm(i) # Delete the temporary metadata file if it exists
-	end
+	D = CSV.read(list.files[1],types = col_types,header = new_names,delim = '\t',datarow = header_line)
 	
 	# Convert Time
 	t = epoch + map(Dates.Second,Array(D[:Seconds])) + map(Dates.Millisecond,Array(D[:Nanoseconds])./1e6)
