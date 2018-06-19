@@ -1,7 +1,9 @@
 using ClimateDataIO
 using Base.Test
 
-# Last Edit: 14.12.17
+# Last Edit: 19.06.18
+
+# TODO: Add tests for GHG_LOAD and GHG_READ Biomet loading scenarios
 
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
@@ -272,7 +274,7 @@ mintimes, maxtimes = ClimateDataIO.csci_times(srcs,headerlines=4)
 println("\n====  GHGREAD Tests  ====")
 src = splitdir(@__FILE__)[1]
 src = joinpath(src,"2016-12-11T203000_AIU-1359.ghg")
-Time,Data = ClimateDataIO.ghg_read(src,verbose=true)
+Time,Data = ClimateDataIO.ghg_read(src,verbose=true,filetype="primary")
 @test Time[1] == DateTime(2016,12,11,20,30,0) || "GHGREAD: Time[1] first timestamp should be 2016-12-11T20:30:00"
 @test Time[end] == DateTime(2016,12,11,20,59,59,950) || "GHGREAD: Time[end] last timestamp should be 2016-12-04T20:59:59.95"
 @test size(Data) == (36000,48) || "GHGREAD: Data output size incorrect, should be (36000,48)"
@@ -282,14 +284,14 @@ Time,Data = ClimateDataIO.ghg_read(src,verbose=true)
 # GHGLOAD: Load one file
 println("\n====  GHGLOAD Tests  ====")
 src = splitdir(@__FILE__)[1]
-Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=false)
+Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=false,filetype="primary")
 @test Time[1] == DateTime(2016,12,11,20,0,0) || "GHGLOAD: Time[1] first timestamp should be 2016-12-11T20:00:00"
 @test Time[end] == DateTime(2016,12,11,21,59,59,950) || "GHGLOAD: Time[end] last timestamp should be 2016-12-04T21:59:59.95"
 @test size(Data) == (144000,48) || "GHGLOAD: Data output size incorrect, should be (144000,48)"
 
 
 
-Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=true)
+Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=true,filetype="primary")
 @test Time[1] == DateTime(2016,12,11,20,0,0) || "GHGLOAD: Time[1] first timestamp should be 2016-12-11T20:00:00"
 @test Time[end] == DateTime(2016,12,11,21,30) || "GHGLOAD: Time[end] last timestamp should be 2016-12-04T21:30:00"
 @test size(Data) == (4,48) || "GHGLOAD: Data output size incorrect, should be (4,48)"
@@ -377,7 +379,7 @@ ClimateDataIO.licor_split(dest,dest)
 rm(joinpath(dest,"2016-12-11T213000.txt"))
 
 println("\nLoading Split Files...")
-Time,Data = ClimateDataIO.ghg_load(dest,DateTime(2016,12,11,21,30),average=false,verbose=false)
+Time,Data = ClimateDataIO.ghg_load(dest,DateTime(2016,12,11,21,30),average=false,verbose=false,filetype="primary")
 rm(joinpath(dest,"2016-12-11T213000_AIU-1359.ghg"))
 #rm(joinpath(dest,"2016-12-12T000000_AIU-1359.ghg"))
 #rm(joinpath(dest,"2016-12-12T040000_AIU-1359.ghg"))

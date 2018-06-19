@@ -6,14 +6,14 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.6.3
 # 18.11.2014
-# Last Edit: 28.09.2017
+# Last Edit: 19.06.2018
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
 
-"# ghg_load(source::String,minimumdate::DateTime,maximumdate::DateTime;recur_depth::Int,verbose::Bool,average::Bool)
+"# ghg_load(source::String,minimumdate::DateTime,maximumdate::DateTime;filetype::String,recur_depth::Int,verbose::Bool,average::Bool)
 
 `time,data = ghg_load(source,minimumdate)` Load all data including and after the given date\n
 * **minimumdate**::DateTime = Starting date to load data from
@@ -33,8 +33,9 @@
 #### Keywords:\n
 * recur::Int = Subdirectory recursion depth. 1 is the root directory.
 * verbose::Bool = Display information as the function runs, TRUE is default
-* average::Bool = Half hour average the data starting at the first data point, TRUE is default\n\n"
-function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);recur::Int=1,verbose::Bool=true,average::Bool=true)
+* average::Bool = Half hour average the data starting at the first data point, TRUE is default
+* filetype::String = Data file type to load, \"primary\" is default and loads the primary high frequency file. \"biomet\" would load the BIOMET file if it is present.\n\n"
+function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);filetype::String="primary",recur::Int=1,verbose::Bool=true,average::Bool=true)
 	##############
 	##  Checks  ##
 	##############
@@ -97,7 +98,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		if verbose
 			println("\t" * string(i) * ": " * files[i])
 		end
-		(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose)
+		(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose,filetype=filetype)
 		
 		if average
 			########################
