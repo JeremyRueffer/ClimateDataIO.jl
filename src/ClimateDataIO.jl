@@ -72,7 +72,6 @@ module ClimateDataIO
 	using DataFrames
 	using ZipFile # Only needed for ziptextfiles.jl (licor_split.jl)
 	using CSV
-	using JLD2 # Temp
 	
 	export AerodyneStatus,
 		ghg_load,
