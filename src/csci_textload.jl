@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
-# Created: 04.11.13
-# Last Edit: 13.12.17
+# Julia 0.7
+# Created: 04.11.2013
+# Last Edit: 11.04.2019
 
 """# csci_textload
 
@@ -61,9 +61,9 @@ function csci_textload(F::String,rootname::String,mindate::DateTime=DateTime(0),
 	
 	# Find files only with the root name
 	filebase = ""
-	keepers = Array{Bool}(length(files))
+	keepers = Array{Bool}(undef,length(files))
 	for i=1:1:length(files)
-		keepers[i] = ismatch(Regex(rootname),basename(files[i]))
+		keepers[i] = occursin(Regex(rootname),basename(files[i]))
 	end
 	files = files[keepers]
 	
@@ -75,7 +75,7 @@ function csci_textload(F::String,rootname::String,mindate::DateTime=DateTime(0),
 	maxtimes = maxtimes[f]
 	
 	# Remove Files Out of Range
-	f1 = Array{Bool}(length(files))
+	f1 = Array{Bool}(undef,length(files))
 	for i=1:1:length(files)
 		f1[i] = (mintimes[i] <= mindate < maxtimes[i]) | (mintimes[i] <= maxdate < maxtimes[i])
 	end
@@ -85,7 +85,7 @@ function csci_textload(F::String,rootname::String,mindate::DateTime=DateTime(0),
 	maxtimes = maxtimes[f]
 	
 	# Convert to Array{String,1}
-	temp = Array{String}(length(files))
+	temp = Array{String}(undef,length(files))
 	for i=1:1:length(files)
 		temp[i] = files[i]
 	end
@@ -103,14 +103,14 @@ function csci_textload(F::String,rootname::String,mindate::DateTime=DateTime(0),
 		D = csci_textload(files,headerlines=headerlines,headeroutput=headeroutput,verbose=verbose,strlist=strlist,intlist=intlist,timelist=timelist)
 		
 		# Remove Values Still Out of Range
-		f = find(mindate .<= D[1] .< maxdate)
+		f = findall(mindate .<= D[1] .< maxdate)
 		D = D[f,:]
 		
 		return D
 	end
 end
 
-function csci_textload{T<:String}(F::Array{T,1};headerlines::Int=4,headeroutput::Bool=false,verbose::Bool=true,strlist::Array{String,1}=String[],intlist::Array{String,1}=String[],timelist::Array{String,1}=String[])
+function csci_textload(F::Array{T,1};headerlines::Int=4,headeroutput::Bool=false,verbose::Bool=true,strlist::Array{String,1}=String[],intlist::Array{String,1}=String[],timelist::Array{String,1}=String[]) where T <: String
 	D = DataFrame[]
 	loggerStr = ""
 	colsStr = ""

@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 07.11.2014
-# Last Edit: 14.12.2017
+# Last Edit: 26.06.2018
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -91,7 +91,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			end
 			close(l) # Close Zip File
 		else
-			l = readcsv(IOBuffer(readstring(`unzip -l $temp`)))[4:end-2]
+			l = readdlm(IOBuffer(readstring(`unzip -l $temp`)),',')[4:end-2]
 			for j=1:1:length(l)
 				if splitext(l[j][31:end])[2] == ".txt"
 					push!(zipfiles,joinpath(dest,l[j][findlast(l[j],' ')+1:end]))

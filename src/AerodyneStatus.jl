@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 13.12.2016
-# Last Edit: 13.12.2017
+# Last Edit: 11.04.2019
 
 """# AerodyneStatus
 
@@ -44,7 +44,7 @@ Parse the StatusW column in an STC file into this custom type
 * **Valve 7** - Active/inactive
 * **Valve 8** - Active/inactive
 """
-type AerodyneStatus
+mutable struct AerodyneStatus
 	AutoBG::Vector{Bool}
 	AutoCal::Vector{Bool}
 	FrequencyLock::Vector{Bool}
@@ -73,40 +73,40 @@ type AerodyneStatus
 	Valve8::Vector{Bool}
 	
 	# Constructor for AerodyneStatus type
-	function AerodyneStatus{T<:Float64}(vals::Array{T,1})
+	function AerodyneStatus(vals::Array{T,1}) where T <: Float64
 		AerodyneStatus(Array{Int}(vals))
-	end # End AerodyneStatus{T<:Float64}(vals::Array{T,1}) constructor
+	end # End AerodyneStatus(vals::Array{T,1}) where T <: Float64 constructor
 	
 	# Constructor for AerodyneStatus type
 	function AerodyneStatus(vals::Array{Int})
 		l = Int(length(vals))
 		
-		AutoBG = Array{Bool}(l)
-		AutoCal = Array{Bool}(l)
-		FrequencyLock = Array{Bool}(l)
-		BinomialFilter = Array{Bool}(l)
-		AltMode = Array{Bool}(l)
-		GuessLast = Array{Bool}(l)
-		PowerNorm = Array{Bool}(l)
-		ContRefLock = Array{Bool}(l)
+		AutoBG = Array{Bool}(undef,l)
+		AutoCal = Array{Bool}(undef,l)
+		FrequencyLock = Array{Bool}(undef,l)
+		BinomialFilter = Array{Bool}(undef,l)
+		AltMode = Array{Bool}(undef,l)
+		GuessLast = Array{Bool}(undef,l)
+		PowerNorm = Array{Bool}(undef,l)
+		ContRefLock = Array{Bool}(undef,l)
 		
-		AutoSpectSave = Array{Bool}(l)
-		PressureLock = Array{Bool}(l)
-		#b11 = Array{Bool}(l)
-		#b12 = Array{Bool}(l)
-		WriteData = Array{Bool}(l)
-		RS232 = Array{Bool}(l)
-		ElectronicBGSub = Array{Bool}(l)
-		#b16 = Array{Bool}(l)
+		AutoSpectSave = Array{Bool}(undef,l)
+		PressureLock = Array{Bool}(undef,l)
+		#b11 = Array{Bool}(undef,l)
+		#b12 = Array{Bool}(undef,l)
+		WriteData = Array{Bool}(undef,l)
+		RS232 = Array{Bool}(undef,l)
+		ElectronicBGSub = Array{Bool}(undef,l)
+		#b16 = Array{Bool}(undef,l)
 		
-		Valve1 = Array{Bool}(l)
-		Valve2 = Array{Bool}(l)
-		Valve3 = Array{Bool}(l)
-		Valve4 = Array{Bool}(l)
-		Valve5 = Array{Bool}(l)
-		Valve6 = Array{Bool}(l)
-		Valve7 = Array{Bool}(l)
-		Valve8 = Array{Bool}(l)
+		Valve1 = Array{Bool}(undef,l)
+		Valve2 = Array{Bool}(undef,l)
+		Valve3 = Array{Bool}(undef,l)
+		Valve4 = Array{Bool}(undef,l)
+		Valve5 = Array{Bool}(undef,l)
+		Valve6 = Array{Bool}(undef,l)
+		Valve7 = Array{Bool}(undef,l)
+		Valve8 = Array{Bool}(undef,l)
 		
 		# Parse Inputs
 		for i=1:l

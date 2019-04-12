@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
-# Created: 04.11.13
-# Last Edit: 13.12.17
+# Julia 0.7
+# Created: 04.11.2013
+# Last Edit: 11.04.2019
 
 """# csci_times
 
@@ -20,10 +20,10 @@ Retrieve the minimum and maximum dates from the listed files
 * **F**::Array{String,1} = Array of files to retrieve dates from
 * **headerlines**::Int (optional) = Number of header lines, 4 is default
 """
-function csci_times{T<:String}(F::Array{T,1};headerlines::Int=4)
+function csci_times(F::Array{T,1};headerlines::Int=4) where T <: String
 	# Get the first and last dates of each file
-	mintimes = fill!(Array{DateTime}(length(F)),DateTime(0))
-	maxtimes = fill!(Array{DateTime}(length(F)),DateTime(0))
+	mintimes = fill!(Array{DateTime}(undef,length(F)),DateTime(0))
+	maxtimes = fill!(Array{DateTime}(undef,length(F)),DateTime(0))
 	
 	df = Dates.DateFormat("\"yyyy-mm-dd HH:MM:SS\"") # Date format
 	

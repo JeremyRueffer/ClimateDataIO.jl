@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
-# Created: 04.11.13
-# Last Edit: 13.12.17
+# Julia 0.7
+# Created: 04.11.2013
+# Last Edit: 11.04.2019
 
 """# csci_textread
 
@@ -56,13 +56,13 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	processingStr = readline(fid)
 	close(fid)
 	
-	logger = readcsv(IOBuffer(loggerStr))
-	cols_temp = readcsv(IOBuffer(colsStr))
-	units = readcsv(IOBuffer(unitsStr))
-	processing_temp = readcsv(IOBuffer(processingStr))
+	logger = readdlm(IOBuffer(loggerStr),',')
+	cols_temp = readdlm(IOBuffer(colsStr),',')
+	units = readdlm(IOBuffer(unitsStr),',')
+	processing_temp = readdlm(IOBuffer(processingStr),',')
 	
-	cols = Array{String}(length(cols_temp))
-	processing = Array{String}(length(cols_temp))
+	cols = Array{String}(undef,length(cols_temp))
+	processing = Array{String}(undef,length(cols_temp))
 	for i=1:length(cols)
 		cols[i] = cols_temp[i]
 		processing[i] = processing_temp[i]
@@ -72,14 +72,14 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	types = Any[Float64 for i=1:length(processing)]
 	for i=1:1:length(types)
 		for j=1:1:length(strlist)
-			if ismatch(Regex(strlist[j]),cols[i])
+			if occursin(Regex(strlist[j]),cols[i])
 				types[i] = Union{Missing,String}
 			end
 		end
 	end
 	for i=1:1:length(types)
 		for j=1:1:length(intlist)
-			if ismatch(Regex(intlist[j]),cols[i])
+			if occursin(Regex(intlist[j]),cols[i])
 				types[i] = Int
 			end
 		end
@@ -87,7 +87,7 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	t_index = Int[]
 	for i=1:1:length(types)
 		for j=1:1:length(timelist)
-			if ismatch(Regex(timelist[j]),cols[i])
+			if occursin(Regex(timelist[j]),cols[i])
 				types[i] = DateTime
 				t_index = [t_index;i]
 			end

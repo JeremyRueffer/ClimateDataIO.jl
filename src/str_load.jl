@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 16.12.2016
-# Last Edit: 14.12.2017
+# Last Edit: 26.06.2018
 
 """# str_load
 
@@ -106,7 +106,7 @@ function str_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	return Tstr,Dstr
 end # End of str_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=false,cols::Array{String,1}=String[],recur::Int=9999)
 
-function str_load{T<:String}(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[])
+function str_load(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[]) where T <: String
 	## Load a list of file names ##
 	
 	# Sort files by dates
@@ -121,7 +121,7 @@ function str_load{T<:String}(F::Array{T,1};verbose::Bool=false,cols::Array{Strin
 	end
 	
 	return t,D
-end # End str_load{T<:String}(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[])
+end # End str_load(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[]) where T <: String
 
 function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	ext = F[rsearch(F,'.') + 1:end] # Save the extension
@@ -145,7 +145,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	fid = open(F,"r")
 	h1 = readline(fid)
 	h1 = h1[rsearch(h1,"SPEC:")[end]+1:end] # Remove everything including and before the SPEC:
-	h2 = readcsv(IOBuffer("\"" * replace(h1,",","\",\"") * "\""))
+	h2 = readdlm(IOBuffer("\"" * replace(h1,",","\",\"") * "\""),',')
 	h = Array{String}(length(h2) + 2)
 	h[1] = "time"
 	h[end] = "Empty"

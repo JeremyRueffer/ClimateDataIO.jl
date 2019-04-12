@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
-# Created: 01.11.13
-# Last Edit: 12.12.17
+# Julia 0.7
+# Created: 01.11.2013
+# Last Edit: 26.06.2018
 
 """# dirlist(directory::ASCIIString;recur_depth::Int,regular_expression::Regex)
 
@@ -48,13 +48,12 @@
 * splitdrive
 * basename
 * dirname"""
-#function dirlist{T <: String}(directory::Vector{T};args...)::Tuple{Array{String,1},Array{String,1}}
-function dirlist(directory::String;args...)::Tuple{Array{String,1},Array{String,1}}
+function dirlist(directory::String;args...) #function dirlist{T <: String}(directory::Vector{T};args...)
     return dirlist([directory];args...)
 end
 
-#function dirlist{T <: String}(directories::Array{T,1};recur=typemax(Int),regex=r"")::Tuple{Array{String,1},Array{String,1}}
-function dirlist{T <: String}(directories::Array{T,1};recur::Int=typemax(Int),regex::Regex=r"")::Tuple{Array{String,1},Array{String,1}}
+#function dirlist{T <: String}(directories::Array{T,1};recur=typemax(Int),regex=r"")
+function dirlist(directories::Array{T,1};recur::Int=typemax(Int),regex::Regex=r"") where T <: String
 	###################################
 	##  Regular Expression Examples  ##
 	###################################
@@ -63,7 +62,7 @@ function dirlist{T <: String}(directories::Array{T,1};recur::Int=typemax(Int),re
 	# r"\d{8}-\d{6}" # Search for names with eight digits followed by a dash and another six digits (12345678-654321)
 	# r"(example)" # Search for all files with "example" in the name
 	# r"\.jl$" # Search for .jl at the end of the file. The . must be escaped with a \
-
+	
     # Parse Inputs
     rcr_max = Int[]
     try
@@ -71,26 +70,29 @@ function dirlist{T <: String}(directories::Array{T,1};recur::Int=typemax(Int),re
 	catch e
 		error("recur must be convertable to Int")
 	end
-
-	flist = DirectIndexString[] # File list
-	dlist = DirectIndexString[] # Directory list
+	
+	# Initialize variables to be used inside the loop
+	flist = Array{String}(undef,0) # File list
+	dlist = Array{String}(undef,0) # Directory list
 	rcr = 1
+	lst = Array{String}(undef,0)
+	nextdirs = Array{String}(undef,0)
+	
+	# Iterate through the given directory and its subdirectories
 	while rcr <= rcr_max && ~isempty(directories)
 		# While the maximum recursion level hasn't been reached and "directories" is not empty
-		nextdirs = [] # List of directories for the next iteration
+		nextdirs = Array{String}(undef,0) # List of directories for the next iteration
 		for i=1:1:length(directories)
-			lst = [] # Define and reset on each cycle
+			lst = Array{String}(undef,0) # Define and reset on each cycle
 			try # May fail on certain folders like K:\__Papierkorb__\
 				lst = readdir(directories[i]) # List contents of specified directory
 			catch
 				println("FAILED READING " * directories[i])
 				println("Continuing...")
 			end
-			fbool = fill!(Array{Bool}(length(lst)),false) # File boolean array, true = file, false = not
-			#fbool = repmat([false],length(lst)) # File boolean array, true = file, false = not
-			dbool = fill!(Array{Bool}(length(lst)),false) # Directory boolean array (FASTER)
-			#dbool = repmat([false],length(lst)) # Directory boolean array (SLOWER)
-
+			fbool = fill!(Array{Bool}(undef,length(lst)),false) # File boolean array, true = file, false = not
+			dbool = fill!(Array{Bool}(undef,length(lst)),false) # Directory boolean array (FASTER)
+			
 			# Check for files and directories
 			for j=1:1:length(lst)
 				if isdir(joinpath(directories[i],lst[j]))
@@ -111,12 +113,12 @@ function dirlist{T <: String}(directories::Array{T,1};recur::Int=typemax(Int),re
 	
     if regex != r""
 		# Find specific files if regular expression exists
-		matches = repmat([false],length(flist)) # Preallocate a false array
+		matches = repeat([false],length(flist)) # Preallocate a false array
 		for i=1:1:length(flist)
-			matches[i] = ismatch(regex,flist[i])
+			matches[i] = occursin(regex,flist[i])
 		end
 		flist = flist[matches] # Take only matching files
 	end
-
+	
     return flist,dlist # Return the results of the file and directory listing
 end

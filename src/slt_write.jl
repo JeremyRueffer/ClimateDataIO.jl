@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Runior Research Group Nitrosphere
-# Julia 0.6.1
+# Julia 0.7
 # 09.12.2016
-# Last Edit. 19.05.2017
+# Last Edit. 26.06.2018
 
 """# slt_write
 

@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 20.05.2014
-# Last Edit: 14.12.2017
+# Last Edit: 12.04.2019
 
 "# licor_split(source::String,destination::String;verbose::Bool=false)
 
@@ -54,7 +54,7 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
     starttime = DateTime[]
     endtime = DateTime[]
     fname = String[]
-    header = Array{String}(0) # Initialized header array
+    header = Array{String}(undef,0) # Initialized header array
     sentinel = 20; # Sentinel value for header while loop
     for i=1:1:length(files)
     	if verbose
@@ -68,15 +68,15 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 	    j = 1;
 	    l = "Bierchen" # Needs any string at least 5 characters long
 	    while l[1:5] != "DATAH" && j < sentinel
-	    	l = readline(fid,chomp=false)
+	    	l = readline(fid,keep=true)
 	    	header = [header;l]
 	    	j += 1
 	    end
 	    data_pos = position(fid) # Position of where the data starts
 		
 	    #Get Start Time
-	    l = readline(fid,chomp=false)
-		ft = findin(l,"\t")
+	    l = readline(fid,keep=true)
+		ft = findall(x -> x == '\t',l)
 	    starttime = DateTime(l[ft[6]+1:ft[8]-1],"yyyy-mm-dd\tHH:MM:SS:sss")
 		
 	    # Get End Time
@@ -84,15 +84,15 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 	    lastpos = 4 # Characters from the end of the file where the last line begins
 	    while endline == true
 		    seek(fid,s.size-lastpos)
-		    l = readline(fid,chomp=false)
+		    l = readline(fid,keep=true)
 		    if eof(fid) == false
 			    endline = false
 		    else
 			    lastpos += 2
 		    end
 	    end
-	    l = readline(fid,chomp=false)
-		ft = findin(l,"\t")
+	    l = readline(fid,keep=true)
+		ft = findall(x -> x == '\t',l)
 	    endtime = DateTime(l[ft[6]+1:ft[8]-1],"yyyy-mm-dd\tHH:MM:SS:sss")
 		
 	    # Split the File
@@ -107,12 +107,12 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 				
 			    if first_file == true
 				    # There is not previously loaded line, load one now
-				    l = readline(fid,chomp=false)
+				    l = readline(fid,keep=true)
 				    first_file = false
 			    end
 					
 			    # Calculate last value of file
-				ft = findin(l,"\t")
+				ft = findall(x -> x == '\t',l)
 			    temp_start = DateTime(l[ft[6]+1:ft[8]-1],"yyyy-mm-dd\tHH:MM:SS:sss")
 			    HH2 = Dates.Hour[]
 			    DD2 = Dates.Day(temp_start)
@@ -134,7 +134,7 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 				
 			    # Generate File Name
 			    for j=1:1:length(header)
-			    	if ismatch(r"^Instrument:",header[j])
+			    	if occursin(r"^Instrument:",header[j])
 			    		fname = joinpath(Dest,Dates.format(temp_start,"yyyy-mm-ddTHHMMSS") * "_" * header[j][13:end-1] * ".data")
 			    	end
 				end
@@ -145,7 +145,7 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 				
 			    # Find and replace the Timestamp header line
 			    for j=1:1:length(header);
-			    	if ismatch(r"^Timestamp",header[j])
+			    	if occursin(r"^Timestamp",header[j])
 			    		header[j] = "Timestamp:  " * Dates.format(temp_start,"yyyy-mm-dd HH:MM:SS:sss") * "\n"
 			    	end
 			    end
@@ -158,10 +158,12 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 			    write(fid2,l) # Write the line used to create the file name
 		    else
 			    # An output stream is available
-			    l = readline(fid,chomp=false) # Load in another line
+			    l = readline(fid,keep=true) # Load in another line
 				
 			    # Write or Close
-				ft = findin(l,"\t")
+				ft = findall(x -> x == '\t',l)
+				#println(l) # Temp
+				#println(l[ft[6]+1:ft[8]-1]) # Temp
 			    temp_end = DateTime(l[ft[6]+1:ft[8]-1],"yyyy-mm-dd\tHH:MM:SS:sss")
 			    if temp_end >= next_start
 				    # The current line is newer than the start of the next file, close the current file

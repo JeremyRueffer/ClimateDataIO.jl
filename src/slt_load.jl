@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 09.12.2016
-# Last Edit: 23.06.2017
+# Last Edit: 10.04.2019
 
 """# slt_load
 
@@ -43,15 +43,15 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	
 	# Parse File Dates
 	verbose ? println("Sorting " * string(length(files)) * " Files") : nothing
-	fdates = Array{DateTime}(length(files))
+	fdates = Array{DateTime}(undef,length(files))
 	i = 0
 	for i=1:1:length(files)
 		temp = basename(files[i])
 		try
-			yearstr = parse(temp[2:5])
-			daystr = parse(temp[6:8])
-			hourstr = parse(temp[9:10])
-			minutestr = parse(temp[11:12])
+			yearstr = Meta.parse(temp[2:5])
+			daystr = Meta.parse(temp[6:8])
+			hourstr = Meta.parse(temp[9:10])
+			minutestr = Meta.parse(temp[11:12])
 			fdates[i] = DateTime(yearstr) + Dates.Day(daystr) - Dates.Day(1) + Dates.Hour(hourstr) + Dates.Minute(minutestr)
 			catch
 				println(files[i])
@@ -60,7 +60,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	end
 	
 	# Save Config files before dates are filtered
-	f = [ismatch(r"\.cfg$",i) for i in files]
+	f = [occursin(r"\.cfg$",i) for i in files]
 	cfgfiles = files[f]
 	cfgdates = fdates[f]
 	
@@ -70,12 +70,12 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	cfgfiles = cfgfiles[f]
 	
 	# Save SLT files before dates are filtered
-	f = [ismatch(r"\.slt$",i) for i in files]
+	f = [occursin(r"\.slt$",i) for i in files]
 	files = files[f]
 	fdates = fdates[f]
 	
 	# Remove files beyond the given time bounds
-	f = find(mindate .<= fdates .< maxdate)
+	f = findall(mindate .<= fdates .< maxdate)
 	fdates = fdates[f]
 	files = files[f]
 	
@@ -99,7 +99,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	verbose ? println("Loading Settings for " * string(length(files)) * " files") : nothing
 	
 	# Remove Unnecessary Config Files
-	f = find(cfgdates .<= mindate)
+	f = findall(cfgdates .<= mindate)
 	if isempty(f)
 		error("No corresponding configuration files found, cannot continue.")
 	end
@@ -107,37 +107,45 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	cfgdates = cfgdates[f:end]
 	cfgfiles = cfgfiles[f:end]
 	
-	f = find(cfgdates .< maxdate)
+	f = findall(cfgdates .< maxdate)
 	cfgdates = cfgdates[f]
 	cfgfiles = cfgfiles[f]
 	
 	# Load CFG info
+	#println(cfgfiles) # Temp
 	configs = slt_config(cfgfiles)
-	begin
-		temp = configs[end,:]
-		temp[:Time] = DateTime(9999) # Setup a fake final row with a time well beyond any real file name
-		configs = [configs;temp]
-	end
+	configs = [configs;deepcopy(configs[1])] # Setup a fake final row with a time well beyond any real file name
+	configs[end]["Time"] = DateTime(9999)
+	#println("-------------------------") # Temp
+	#println(mindate) # Temp
+	#println("-------------------------") # Temp
+	#println(maxdate) # Temp
+	#println("-------------------------") # Temp
+	#println(files) # Temp
+	#println("-------------------------") # Temp
+	#println(configs) # Temp
+	#println("-------------------------") # Temp
 	
 	# Check for column changes
-	if length(unique(configs[:Analog_Inputs])) > 1
+	if length(unique(get.(configs,"Analog_Inputs",[-9999.0.*ones(Int,6)]))) > 1
 		error("Analog inputs are not all the same, dimension mismatch.")
 	end
 	
 	# Load SLT Info
 	sltinfo = DataFrame()
-	cfg = Array{Int8}(length(files)) # List of which CFG file each
+	cfg = Array{Int8}(undef,length(files)) # List of which CFG file each
 	offset = 1 # File processing list offset
+	times = get.(configs,"Time",Dates.DateTime(0))
 	while offset < length(files)
-		cfgf = find(configs[:Time] .<= fdates[offset])[end] # Find latest config
-		config1 = configs[cfgf,:] # Current config and lower bound on file list
-		config2 = configs[cfgf+1,:] # Upper bound on file list
+		cfgf = findall(times .<= fdates[offset])[end] # Find latest config
+		config1 = configs[cfgf] # Current config and lower bound on file list
+		config2 = configs[cfgf+1] # Upper bound on file list
 		
-		f = find(config1[:Time] .<= fdates .< config2[:Time])
+		f = findall(get(config1,"Time",Dates.DateTime(1)) .<= fdates .< get(config2,"Time",Dates.DateTime(1)))
 		tempfiles = files[f]
-		analog_count = config1[:Analog_Count][1]
-		sample_frequency = parse(config1[:Frequency][1])
-		slope = config1[:Slope][1]
+		analog_count = get(config1,"Analog_Count",0)
+		sample_frequency = Meta.parse(get(config1,"Frequency","0"))
+		slope = get(config1,"Slope",zeros(Float64,6))
 		for i=1:1:length(tempfiles)
 			cfg[offset] = cfgf
 			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
@@ -154,7 +162,9 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	end
 	
 	# Rename DataFrame columns
-	h = ["Time";"u";"v";"w";"sonic_temp";"speed_of_sound";"wind_direction";configs[:Analog_Names][1]]
+	#println(configs) # Temp
+	h = ["Time";"u";"v";"w";"sonic_temp";"speed_of_sound";"wind_direction";get(configs[1],"Analog_Names","")]
+	#println(h) # Temp
 	h_unique = unique(h);
 	if length(h) !== length(unique(h_unique))
 		for i = 1:1:length(h_unique)
@@ -171,9 +181,9 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	end
 	
 	# Preallocate Final Arrays
-	verbose ? println("Preallocating Final Arrays (" * string(Int(sum(sltinfo[:Line_Count]))) * "," * string(4+configs[:Analog_Count][1]) * ")") : nothing
+	verbose ? println("Preallocating Final Arrays (" * string(Int(sum(sltinfo[:Line_Count]))) * "," * string(4+get(configs[1],"Analog_Count",0)) * ")") : nothing
 	l = Int(sum(sltinfo[:Line_Count]))
-	col_types = fill!(Array{DataType}(length(h)),Float64)
+	col_types = fill!(Array{DataType}(undef,length(h)),Float64)
 	col_types[1] = DateTime
 	D = DataFrame(col_types,Symbol[Symbol(i) for i in h],l)
 	D[:,2:end] = NaN
@@ -196,7 +206,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		println("\t" * string(i) * ": " * basename(files[i]))
 		
 		# Instrument Angle Offset
-		if contains(configs[:Sonic][cfg[i]],"Gill")
+		if occursin("Gill",get.(configs,"Sonic","")[cfg[i]])
 			instrument_offset = GillSonics
 		else
 			instrument_offset = 0.0
@@ -209,12 +219,12 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 			for j=1:1:Int(sltinfo[:Line_Count][i])
 				ms = Int(floor((j-1)*(1/sltinfo[:Sample_Frequency][i])*1000)) # milliseconds
 				D[j+offset,1] = sltinfo[:T0][i] + Dates.Millisecond(ms) # Years, Months, Days, Hours, Minutes, Seconds, Milliseconds
-				u = Float64(read(fid,Int16,1)[1])/100 # u
-				v = Float64(read(fid,Int16,1)[1])/100 # v
+				u = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # u
+				v = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # v
 				D[j+offset,2] = u
 				D[j+offset,3] = v
-				D[j+offset,4] = Float64(read(fid,Int16,1)[1])/100 # w
-				temp = Float64(read(fid,Int16,1)[1])
+				D[j+offset,4] = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # w
+				temp = Float64(read!(fid,Array{Int16}(undef,1))[1])
 				D[j+offset,5] = ((temp/50)^2)/403 - 273.16 # Tc
 				D[j+offset,6] = temp/50 # c
 				
@@ -223,20 +233,20 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 					D[j+offset,7] = 0 # Otherwise u = v = 0 → NaN which messes up other calculations
 				else
 					if v < 0
-						D[j+offset,7] = acosd(u/sqrt(u^2 + v^2)) - configs[:Sonic_Alignment][cfg[i]] + instrument_offset + angle_offset # Wind Direction, A·B = |A||B|cos(Θ) → Θ = acos(Au/|A|) if B = [0 1 0]m/s (positive N wind)
+						D[j+offset,7] = acosd(u/sqrt(u^2 + v^2)) - get.(configs,"Sonic_Alignment",[0])[cfg[i]] + instrument_offset + angle_offset # Wind Direction, A·B = |A||B|cos(Θ) → Θ = acos(Au/|A|) if B = [0 1 0]m/s (positive N wind)
 					else
-						D[j+offset,7] = 360 - acosd(u/sqrt(u^2 + v^2)) - configs[:Sonic_Alignment][cfg[i]] + instrument_offset + angle_offset # Wind Direction, A·B = |A||B|cos(Θ) → Θ = acos(Au/|A|) if B = [0 1 0]m/s (positive N wind)
+						D[j+offset,7] = 360 - acosd(u/sqrt(u^2 + v^2)) - get.(configs,"Sonic_Alignment",[0])[cfg[i]] + instrument_offset + angle_offset # Wind Direction, A·B = |A||B|cos(Θ) → Θ = acos(Au/|A|) if B = [0 1 0]m/s (positive N wind)
 					end
 				end
 				
 				for k=1:1:sltinfo[:Analog_Count][i]
-					V = Float64(read(fid,Int16,1)[1]) # V1
+					V = Float64(read!(fid,Array{Int16}(undef,1))[1]) # V1
 					if sltinfo[:Bit_Mask][i][k] & 2^(1-1) > 0 # If the first bit is high
 						# If the bit mask is high, use the following formula to convert the binary value to mV
 						V = (V[1] + 25000)/10 # Binary to mV
 					end
-					b = Float64(configs[:Analog_Lower][cfg[i]][k]) # Y-intercept
-					m = configs[:Slope][cfg[i]][k] # Slope
+					b = Float64(get.(configs,"Analog_Lower",[0])[cfg[i]][k]) # Y-intercept
+					m = get.(configs,"Slope",[0])[cfg[i]][k] # Slope
 					D[j+offset,k+7] = m*V + b # Convert to a value
 				end
 			end
@@ -251,10 +261,10 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	##############################
 	##  Correct Wind Direction  ##
 	##############################
-	f = find(D[:,7] .> 360.0)
+	f = findall(D[7] .> 360.0)
 	D[f,7] = D[f,7] .- 360.0
 	
-	f = find(D[:,7] .< 0.0)
+	f = findall(D[7] .< 0.0)
 	D[f,7] = D[f,7] .+ 360.0
 	
 	####################
@@ -273,16 +283,16 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		f = [actual;length(D[:Time]) + 1]
 		
 		# Preallocate
-		tmean = fill!(Array{DateTime}(length(f) - 1),DateTime(0))
+		tmean = fill!(Array{DateTime}(undef,length(f) - 1),DateTime(0))
 		l = length(f) - 1
 		Dcols = [:u,:v,:w,:sonic_temp,:speed_of_sound,:wind_direction,:Analog1,:Analog2,:Analog3,:Analog4,:Analog5,:Analog6]
 		Dtypes = [Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64]
 		
-		Dmean = DataFrame(Dtypes[1:6+configs[:Analog_Count][1]],Dcols[1:6+configs[:Analog_Count][1]],l)
-		Dstd = DataFrame(Dtypes[1:6+configs[:Analog_Count][1]],Dcols[1:6+configs[:Analog_Count][1]],l)
-		Dmin = DataFrame(Dtypes[1:6+configs[:Analog_Count][1]],Dcols[1:6+configs[:Analog_Count][1]],l)
-		Dmax = DataFrame(Dtypes[1:6+configs[:Analog_Count][1]],Dcols[1:6+configs[:Analog_Count][1]],l)
-		for i = length(Dcols[1:4+configs[:Analog_Count][1]])
+		Dmean = DataFrame(Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]],Dcols[1:6+get.(configs,"Analog_Count",[0])[1]],l)
+		Dstd = DataFrame(Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]],Dcols[1:6+get.(configs,"Analog_Count",[0])[1]],l)
+		Dmin = DataFrame(Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]],Dcols[1:6+get.(configs,"Analog_Count",[0])[1]],l)
+		Dmax = DataFrame(Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]],Dcols[1:6+get.(configs,"Analog_Count",[0])[1]],l)
+		for i = length(Dcols[1:4+get.(configs,"Analog_Count",[0])[1]])
 			for j = l
 				Dmean[j,i] = NaN
 				Dstd[j,i] = NaN
@@ -303,10 +313,10 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		for j=1:1:length(f)-1
 			try
 				tmean[j] = D[f[j],1]
-				temp_Dmean = mean(convert(Array,D[f[j]:f[j+1]-1,2:end]),1)
-				temp_Dstd = std(convert(Array,D[f[j]:f[j+1]-1,2:end]),1)
-				temp_Dmin = minimum(convert(Array,D[f[j]:f[j+1]-1,2:end]),1)
-				temp_Dmax = maximum(convert(Array,D[f[j]:f[j+1]-1,2:end]),1)
+				temp_Dmean = mean(convert(Array,D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dstd = std(convert(Array,D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dmin = minimum(convert(Array,D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dmax = maximum(convert(Array,D[f[j]:f[j+1]-1,2:end]),dims=1)
 				
 				for k=1:1:length(temp_Dmean)
 					Dmean[j,k] = temp_Dmean[k]
@@ -328,7 +338,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		end
 	end
 	
-	verbose ? println("Complete") :nothing
+	verbose ? println("Complete") : nothing
 	if average
 		return tmean, Dmean, Dstd, Dmin, Dmax
 	else

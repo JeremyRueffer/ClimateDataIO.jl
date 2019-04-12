@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 09.12.2016
-# Last Edit: 12.05.2017
+# Last Edit: 28.06.2018
 
 """# slt_read
 
@@ -30,13 +30,13 @@ function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 	fid = open(F,"r")
 	try
 		# Header
-		bpr = Int(read(fid,Int8,1)[1]) # Bytes Per Record
-		eddymeasver = read(fid,Int8,1)
-		dom = Int(read(fid,Int8,1)[1]) # Day of Month
-		m = Int(read(fid,Int8,1)[1]) # Month number
-		yr = 100*Int(read(fid,Int8,1)[1]) + Int(read(fid,Int8,1)[1]) # Year
-		h = Int(read(fid,Int8,1)[1]) # Hour
-		minut = Int(read(fid,Int8,1)[1]) # Minute
+		bpr = Int(read!(fid,Array{Int8}(undef,1))[1]) # Bytes Per Record
+		eddymeasver = read!(fid,Array{Int8}(undef,1))
+		dom = Int(read!(fid,Array{Int8}(undef,1))[1]) # Day of Month
+		m = Int(read!(fid,Array{Int8}(undef,1))[1]) # Month number
+		yr = 100*Int(read!(fid,Array{Int8}(undef,1))[1]) + Int(read!(fid,Array{Int8}(undef,1))[1]) # Year
+		h = Int(read!(fid,Array{Int8}(undef,1))[1]) # Hour
+		minut = Int(read!(fid,Array{Int8}(undef,1))[1]) # Minute
 		t0 = DateTime(yr,m,dom,h,minut,0) # Initial file time
 		
 		fs = stat(F).size # File size in bytes
@@ -48,27 +48,27 @@ function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 		l = Int(floor(l))
 		
 		# Bit Masks and Channels
-		bm = read(fid,Int8,2*a_inputs)
+		bm = read!(fid,Array{Int8}(undef,2*a_inputs))
 		ch = bm[2:2:end] # Channels
 		bm = bm[1:2:end] # Bit masks
 		
 		## Preallocate Output Array
-		t_offset = fill!(Array{Dates.Millisecond}(floor(l)),Dates.Millisecond(1000/sample_rate)) # dt between every sample
+		t_offset = fill!(Array{Dates.Millisecond}(undef,floor(l)),Dates.Millisecond(1000/sample_rate)) # dt between every sample
 		t_offset[1] = Dates.Millisecond(0) # Correction, the first sample shouldn't have an offset
 		t_offset = cumsum(t_offset) # Time offset from the start for every sample
 		t = DateTime(yr,m,dom,h,minut,0) + t_offset # Time
-		d = NaN.*Array{Float64}((Int(l),4 + a_inputs)) # Data Array
+		d = NaN.*Array{Float64}(undef,(Int(l),4 + a_inputs)) # Data Array
 		
 		for i=1:1:l
-			d[i,1] = Float64(read(fid,Int16,1)[1])/100 # u
-			d[i,2] = Float64(read(fid,Int16,1)[1])/100 # v
-			d[i,3] = Float64(read(fid,Int16,1)[1])/100 # w
-			d[i,4] = Float64(read(fid,Int16,1)[1])/50 # c, # Speed of Sound
+			d[i,1] = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # u
+			d[i,2] = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # v
+			d[i,3] = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # w
+			d[i,4] = Float64(read!(fid,Array{Int16}(undef,1))[1])/50 # c, # Speed of Sound
 			#d[i,5] = d[i,4]^2/403 - 273.15 # Tc, # Temperature
 			#println("u = " * string(d[i,1]) * " m/s , v = " * string(d[i,2]) * " m/s , w = " * string(d[i,3]) * " m/s , c = " * string(d[i,4]) * " K") # Temp
 			
 			for j=1:1:a_inputs
-				V = Float64(read(fid,Int16,1)[1]) # V1
+				V = Float64(read!(fid,Array{Int16}(undef,1))[1]) # V1
 				if bm[j] & 2^(1-1) > 0 # If the first bit is high
 					# If the bit mask is high, use the following formula to convert the binary value to mV
 					V = (V[1] + 25000)/10 # Binary to mV

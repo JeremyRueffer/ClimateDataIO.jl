@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 09.12.2016
-# Last Edit: 18.05.2017
+# Last Edit: 11.04.2019
 
 # TODOs:
 #	- Re-write the SLT header only instead of re-writing the entire file
@@ -20,8 +20,8 @@ Shift the initial timestamp of a range of SLT and other associated files
 * **f2**::String = Destination directory
 * **mindate**::DateTime = Minimum of the time range to shift
 * **maxdate**::DateTime = Maximum of the time range to shift
-* **dt**::Dates.Period = Amount of time shift to apply"""
-function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,dt::Base.Dates.Period)
+* **dt**::Period = Amount of time shift to apply"""
+function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,dt::Period)
 	# Constants
 	nl = "\r\n"
 	
@@ -33,15 +33,15 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 	(files,folders) = dirlist(f1,regex=r"\w\d{8}\.")
 	
 	# Parse File Dates
-	fdates = Array{DateTime}(length(files))
+	fdates = Array{DateTime}(undef,length(files))
 	i = 0
 	for i=1:1:length(files)
 		try
-			yearstr = parse(files[i][end-14:end-11])
-			daystr = parse(files[i][end-10:end-8])
-			hourstr = parse(files[i][end-7:end-6])
-			minutestr = parse(files[i][end-5:end-4])
-			fdates[i] = DateTime(yearstr) + Dates.Day(daystr) - Dates.Day(1) + Dates.Hour(hourstr) + Dates.Minute(minutestr)
+			yearstr = Meta.parse(files[i][end-14:end-11])
+			daystr = Meta.parse(files[i][end-10:end-8])
+			hourstr = Meta.parse(files[i][end-7:end-6])
+			minutestr = Meta.parse(files[i][end-5:end-4])
+			fdates[i] = DateTime(yearstr) + Day(daystr) - Day(1) + Hour(hourstr) + Minute(minutestr)
 		catch
 			println(files[i])
 			error("Failed to parse the header of " * files[i])
@@ -54,15 +54,15 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 	files = files[f]
 	
 	# Save Config files before dates are filtered
-	f = [ismatch(r"\.cfg$",i) for i in files]
+	f = [occursin(r"\.cfg$",i) for i in files]
 	cfgfiles = files[f]
 	cfgdates = fdates[f]
 	
 	# Remove files beyond the given time bounds
-	f = find(mindate .<= fdates)
+	f = findall(mindate .<= fdates)
 	fdates = fdates[f]
 	files = files[f]
-	f = find(maxdate .> fdates)
+	f = findall(maxdate .> fdates)
 	fdates = fdates[f]
 	files = files[f]
 	
@@ -74,82 +74,95 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 	println("   Time Shift: " * string(dt))
 	
 	# Sort Files by Type
-	f = [ismatch(r"\.slt$",i) for i in files]
+	f = [occursin(r"\.slt$",i) for i in files]
 	sltfiles = files[f]
 	sltdates = fdates[f]
-	f = [ismatch(r"\.csr$",i) for i in files]
+	f = [occursin(r"\.csr$",i) for i in files]
 	csrfiles = files[f]
 	csrdates = fdates[f]
-	f = [ismatch(r"\.csu$",i) for i in files]
+	f = [occursin(r"\.csu$",i) for i in files]
 	csufiles = files[f]
 	csudates = fdates[f]
-	f = [ismatch(r"\.flx$",i) for i in files]
+	f = [occursin(r"\.flx$",i) for i in files]
 	flxfiles = files[f]
 	flxdates = fdates[f]
-	f = [ismatch(r"\.log$",i) for i in files]
+	f = [occursin(r"\.log$",i) for i in files]
 	logfiles = files[f]
 	logdates = fdates[f]
-	f = [ismatch(r"\.csv$",i) for i in files]
+	f = [occursin(r"\.csv$",i) for i in files]
 	csvfiles = files[f]
 	csvdates = fdates[f]
 	
 	# Load the CFG info
 	configs = slt_config(cfgfiles)
-	begin
-		temp = configs[end,:]
-		temp[:Time] = DateTime(9999) # Setup a fake final row with a time well beyond any real file name
-		configs = [configs;temp]
-	end
+	configs = [configs;deepcopy(configs[1])] # Setup a fake final row with a time well beyond any real file name
+	configs[end]["Time"] = DateTime(9999)
 	
 	# Process the CFG Files
 	println("\nProcessing CFG Files")
 	for i=1:1:size(configs,1) - 1
-		new_time = configs[:Time][i] + dt
-		println("   " * configs[:FileName][i][end-15:end])
+		new_time = get(configs[i],"Time",DateTime(0)) + dt
+		println("   " * get(configs[i],"FileName","")[end-15:end])
 		
 		doy = @sprintf("%03u",Dates.dayofyear(new_time))
 		temp = Dates.format(new_time,"yyyy" * doy * "HHMM")
-		#temp = string(Int(Dates.Year(new_time))) *
-		#	@sprintf("%03u",1 + Int(Dates.Day(DateTime(Dates.Year(new_time),Dates.Month(new_time),Dates.Day(new_time)) - DateTime(Dates.Year(new_time))))) *
-		#	@sprintf("%02u",Int(Dates.Hour(new_time))) *
-		#	@sprintf("%02u",Int(Dates.Minute(new_time)))
+		#temp = string(Int(Year(new_time))) *
+		#	@sprintf("%03u",1 + Int(Day(DateTime(Year(new_time),Month(new_time),Day(new_time)) - DateTime(Year(new_time))))) *
+		#	@sprintf("%02u",Int(Hour(new_time))) *
+		#	@sprintf("%02u",Int(Minute(new_time)))
 		
-		#temp = string(Int(Dates.Year(new_time))) *
-		#	@sprintf("%03u",Int(Dates.Day(new_time - DateTime(Dates.Year(new_time))) + Dates.Day(1))) *
-		#	@sprintf("%02u",Int(Dates.Hour(new_time))) *
-		#	@sprintf("%02u",Int(Dates.Minute(new_time)))
-		new_filename = joinpath(f2,string(configs[:FileName][i][end-15]) * temp * ".cfg")
+		#temp = string(Int(Year(new_time))) *
+		#	@sprintf("%03u",Int(Day(new_time - DateTime(Year(new_time))) + Day(1))) *
+		#	@sprintf("%02u",Int(Hour(new_time))) *
+		#	@sprintf("%02u",Int(Minute(new_time)))
+		new_filename = joinpath(f2,string(get(configs[i],"FileName","")[end-15]) * temp * ".cfg")
 		
 		# Correct the Data
-		configs[:Time][i] = configs[:Time][i] + dt
+		#configs[:Time][i] = configs[:Time][i] + dt
+		configs[i]["Time"] = get(configs[i],"Time",DateTime(0)) + dt
 		
 		# Write the Data
 		fid = open(new_filename,"w+")
 		try
 			write(fid,"[Settings for EddyMeas]" * nl)
-			write(fid,"Sonic: " * configs[:Sonic][i] * nl)
-			write(fid,"Analyzer: " * configs[:Analyzer][i] * nl)
-			write(fid,"Sonic alignment: " * string(configs[:Sonic_Alignment][i]) * " deg" * nl)
-			write(fid,"Sample frequency: " * configs[:Frequency][i] * " hz" * nl)
-			write(fid,"Average time: " * string(configs[:Average_Time][i]) * " min" * nl)
+			#write(fid,"Sonic: " * configs[:Sonic][i] * nl)
+			write(fid,"Sonic: " * get(configs[i],"Sonic","") * nl)
+			#write(fid,"Analyzer: " * configs[:Analyzer][i] * nl)
+			write(fid,"Analyzer: " * get(configs[i],"Analyzer","") * nl)
+			#write(fid,"Sonic alignment: " * string(configs[:Sonic_Alignment][i]) * " deg" * nl)
+			write(fid,"Sonic alignment: " * string(get(configs[i],"Sonic_Alignment",0)) * " deg" * nl)
+			#write(fid,"Sample frequency: " * configs[:Frequency][i] * " hz" * nl)
+			write(fid,"Sample frequency: " * get(configs[i],"Frequency","0") * " hz" * nl)
+			#write(fid,"Average time: " * string(configs[:Average_Time][i]) * " min" * nl)
+			write(fid,"Average time: " * string(get(configs[i],"Average_Time",0)) * " min" * nl)
 			for j=1:1:6
-				f = findin(configs[:Analog_Inputs][i],j)
+				#f = findall((in)(j),configs[:Analog_Inputs][i])
+				f = findall((in)(j),get(configs[i],"Analog_Inputs",[0]))
 				if !isempty(f)
 					f = f[1]
-					write(fid,configs[:Analog_Names][i][f] * ", " * string(configs[:Analog_Lower][i][f]) * " , " * string(configs[:Analog_Upper][i][f]) * " , " * configs[:Analog_Units][i][f] * " , " * string(configs[:Analog_Delay][i][f]) * " , E" * nl)
+					#write(fid,configs[:Analog_Names][i][f] * ", " * string(configs[:Analog_Lower][i][f]) * " , " * string(configs[:Analog_Upper][i][f]) * " , " * configs[:Analog_Units][i][f] * " , " * string(configs[:Analog_Delay][i][f]) * " , E" * nl)
+					write(fid,get(configs[i],"Analog_Names",[""])[f] * ", " * string(get(configs[i],"Analog_Lower",[0])[f]) * " , " * string(get(configs[i],"Analog_Upper",[0])[f]) * " , " * get(configs[i],"Analog_Units",[""])[f] * " , " * string(get(configs[i],"Analog_Delay",[0])[f]) * " , E" * nl)
 				else
 					write(fid,"Analog " * string(j) * ", 0, 5000 , mV , 0 , D" * nl)
 				end
 			end
-			write(fid,"Station height: " * configs[:Station_Height][i] * " m" * nl)
+			#write(fid,"Station height: " * configs[:Station_Height][i] * " m" * nl)
+			write(fid,"Station height: " * get(configs[i],"Station_Height","0") * " m" * nl)
 			write(fid,"[Settings for EddyFlux]" * nl)
-			write(fid,"Measurement height: " * configs[:Measurement_Height][i] * " m" * nl)
-			write(fid,"Vegetation height: " * configs[:Vegetation_Height][i] * " m" * nl)
-			write(fid,"Inductance for CO2: " * configs[:Inductance_CO2][i] * " " * nl)
-			write(fid,"Inductance for H2O: " * configs[:Inductance_H2O][i] * " " * nl)
-			write(fid,"Coordinate rotation: " * configs[:Coordinate_Rotation][i] * nl)
-			write(fid,"Webb correction: " * (configs[:Webb_Correction][i] ? "yes" : "no") * nl)
-			write(fid,"Linear detrending: " * (configs[:Linear_Detrend][i] ? "yes" : "no") * nl)
+			#write(fid,"Measurement height: " * configs[:Measurement_Height][i] * " m" * nl)
+			write(fid,"Measurement height: " * get(configs[i],"Measurement_Height","0") * " m" * nl)
+			#write(fid,"Vegetation height: " * configs[:Vegetation_Height][i] * " m" * nl)
+			write(fid,"Vegetation height: " * get(configs[i],"Vegetation_Height","0") * " m" * nl)
+			#write(fid,"Inductance for CO2: " * configs[:Inductance_CO2][i] * " " * nl)
+			write(fid,"Inductance for CO2: " * get(configs[i],"Inductance_CO2","0") * " " * nl)
+			#write(fid,"Inductance for H2O: " * configs[:Inductance_H2O][i] * " " * nl)
+			write(fid,"Inductance for H2O: " * get(configs[i],"Inductance_H2O","0") * " " * nl)
+			#write(fid,"Coordinate rotation: " * configs[:Coordinate_Rotation][i] * nl)
+			write(fid,"Coordinate rotation: " * get(configs[i],"Coordinate_Rotation","") * nl)
+			#write(fid,"Webb correction: " * (configs[:Webb_Correction][i] ? "yes" : "no") * nl)
+			write(fid,"Webb correction: " * (get(configs[i],"Webb_Correction",false) ? "yes" : "no") * nl)
+			#write(fid,"Linear detrending: " * (configs[:Linear_Detrend][i] ? "yes" : "no") * nl)
+			write(fid,"Linear detrending: " * (get(configs[i],"Linear_Detrend",false) ? "yes" : "no") * nl)
 		catch
 			close(fid)
 			error("Error saving config settings")
@@ -183,7 +196,7 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 	
 	# Process the LOG Files
 	println("\nProcessing Log Files")
-	dfmt = Dates.DateFormat("dd.mm.yyyy  HH:MM:SS")
+	dfmt = DateFormat("dd.mm.yyyy  HH:MM:SS")
 	for i=1:1:length(logfiles)
 		println("   " * logfiles[i][end-15:end])
 		new_time = logdates[i] + dt
@@ -206,7 +219,7 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 	
 	# Process the CSR Files
 	println("\nProcessing CSR Files")
-	dfmt = Dates.DateFormat("dd.mm.yyyy HH:MM")
+	dfmt = DateFormat("dd.mm.yyyy HH:MM")
 	for i=1:1:length(csrfiles)
 		println("   " * csrfiles[i][end-15:end])
 		new_time = csrdates[i] + dt
@@ -280,15 +293,18 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 	offset = 1 # File processing list offset
 	sltdates = sltdates .+ dt # Shift the SLT file dates so they match the shifted CFG dates
 	while offset < length(sltfiles)
-		f = find(configs[:Time] .<= sltdates[offset])[end] # Find latest config
+		f = findall(get.(configs,"Time",DateTime(0)) .<= sltdates[offset])[end] # Find latest config
 		config1 = configs[f,:] # Current config and lower bound on file list
 		config2 = configs[f+1,:] # Upper bound on file list
 		
-		f = find(config1[:Time] .<= sltdates .< config2[:Time])
+		f = findall(get.(config1,"Time",DateTime(0)) .<= sltdates .< get.(config2,"Time",DateTime(0)))
 		tempfiles = sltfiles[f]
-		analog_count = config1[:Analog_Count][1] # Length?
-		sample_frequency = parse(config1[:Frequency][1])
+		analog_count = get(config1[1],"Analog_Count",0) # Length?
+		sample_frequency = Meta.parse(get(config1[1],"Frequency","0"))
 		for i=1:1:length(tempfiles)
+			#println(tempfiles[i]) # Temp
+			#println(analog_count) # Temp
+			#println(sample_frequency) # Temp
 			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
 			temp[:Analog_Count] = analog_count
 			temp[:Sample_Frequency] = sample_frequency
@@ -314,14 +330,14 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		# Write the header
 		write(fid,Int8(sltinfo[:BytesPerRecord][i]))
 		write(fid,Int8(sltinfo[:EddyMeas_Version][i]))
-		write(fid,Int8(Dates.value(Dates.Day(new_time))))
-		write(fid,Int8(Dates.value(Dates.Month(new_time))))
-		yr1 = Int8(floor(Int(Dates.value(Dates.Year(new_time)))/100))
-		yr2 = Int8(Int(Dates.value(Dates.Year(new_time))) - 100*floor(Int(Dates.value(Dates.Year(new_time)))/100))
+		write(fid,Int8(Day(new_time).value))
+		write(fid,Int8(Month(new_time).value))
+		yr1 = Int8(floor(Int(Year(new_time).value)/100))
+		yr2 = Int8(Int(Year(new_time).value) - 100*floor(Int(Year(new_time).value)/100))
 		write(fid,yr1)
 		write(fid,yr2)
-		write(fid,Int8(Dates.value(Dates.Hour(new_time))))
-		write(fid,Int8(Dates.value(Dates.Minute(new_time))))
+		write(fid,Int8(Hour(new_time).value))
+		write(fid,Int8(Minute(new_time).value))
 		
 		# Write Channels and Bit Masks
 		for j=1:1:sltinfo[:Analog_Count][i]
@@ -337,7 +353,8 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 			if eof(fid0)
 				early_end = true
 			else
-				temp_data = read(fid0,Int16,1)
+				#temp_data = read(fid0,Int16,1)
+				temp_data = read!(fid0,Array{Int16}(undef,1))
 				write(fid,temp_data)
 			end
 		end
@@ -345,4 +362,4 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		close(fid0) # Close Original File
 		close(fid) # Close New File
 	end
-end # slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,dt::Base.Dates.Period)
+end # slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,dt::Period)

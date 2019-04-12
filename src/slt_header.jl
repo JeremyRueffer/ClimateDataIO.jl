@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 09.12.2016
-# Last Edit: 12.05.2017
+# Last Edit: 28.06.2018
 
 """# slt_header
 
@@ -33,20 +33,20 @@ function slt_header(f::String,AnalogIn::Int,freq::Number)
 	fid = open(f,"r")
 	try
 		# Header
-		bpr = Int(read(fid,Int8,1)[1]) # Bytes Per Record
-		eddymeasver = read(fid,Int8,1)
-		dom = Int(read(fid,Int8,1)[1]) # Day of Month
-		m = Int(read(fid,Int8,1)[1]) # Month number
-		yr = 100*Int(read(fid,Int8,1)[1]) + Int(read(fid,Int8,1)[1]) # Year
-		h = Int(read(fid,Int8,1)[1]) # Hour
-		minut = Int(read(fid,Int8,1)[1]) # Minute
+		bpr = Int(read!(fid,Array{Int8}(undef,1))[1]) # Bytes Per Record
+		eddymeasver = read!(fid,Array{Int8}(undef,1))
+		dom = Int(read!(fid,Array{Int8}(undef,1))[1]) # Day of Month
+		m = Int(read!(fid,Array{Int8}(undef,1))[1]) # Month number
+		yr = 100*Int(read!(fid,Array{Int8}(undef,1))[1]) + Int(read!(fid,Array{Int8}(undef,1))[1]) # Year
+		h = Int(read!(fid,Array{Int8}(undef,1))[1]) # Hour
+		minut = Int(read!(fid,Array{Int8}(undef,1))[1]) # Minute
 		t0 = DateTime(yr,m,dom,h,minut,0) # Initial file time
 		
 		fs = stat(f).size # File size in bytes
 		l = (fs - 8 - 2*AnalogIn)/bpr # Number of rows of data
 		
 		# Bit Masks and Channels
-		bm = read(fid,Int8,2*AnalogIn)
+		bm = read!(fid,Array{Int8}(undef,2*AnalogIn))
 		ch = bm[2:2:end] # Channels
 		bm = bm[1:2:end] # Bit masks
 		

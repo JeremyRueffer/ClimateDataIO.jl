@@ -4,88 +4,139 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 09.12.2016
-# Last Edit: 12.12.2017
+# Last Edit: 13.12.2018
 
 """# slt_configload
 
 Load a list of .CFG files
 
-`slt_configload{T<:String}(files::Array{T,1})`\n
+`slt_configload(files::Array{T,1}) where T <: String`\n
 * **files**::Array{String,1} = Array of CFG file names"""
-function slt_configload{T<:String}(files::Array{T,1})::DataFrame
+function slt_configload(files::Array{T,1})::Array{Dict,1} where T <: String
+	# Dict Prep
+	Time = DateTime(9999)			# DateTime
+	FileName = ""					# String
+	Sonic = ""						# String
+	Analyzer = ""					# String
+	Sonic_Alignment = 0.0			# Float64
+	Frequency = ""					# String
+	Average_Time = 0.0				# Float64
+	Station_Height = ""				# String
+	Measurement_Height = ""			# String
+	Vegetation_Height = ""			# String
+	Inductance_CO2 = ""				# String
+	Inductance_H2O = ""				# String
+	Coordinate_Rotation = ""		# String
+	Webb_Correction = false			# Bool
+	Linear_Detrend = false			# Bool
+	Analog_Inputs = zeros(Int,6)	# Array{Int,1}
+	Analog_Names = Array{String}(undef,6)		# Array{String,1}
+	Analog_Lower = zeros(Int,6)					# Array{Int,1}
+	Analog_Upper = zeros(Int,6)					# Array{Int,1}
+	Analog_Units = Array{String}(undef,6)		# Array{String,1}
+	Analog_Delay = zeros(Int,6)					# Array{Int,1}
+	Slope = zeros(Float64,6)			# Array{Float64,1}
+	Analog_Count = 0					# Int
+	
+	configs = Array{Dict}(undef,length(files))
+	
 	# DataFrame Setup
-	col_names = [:Time,:FileName,:Sonic,:Analyzer,:Sonic_Alignment,:Frequency,
-		:Average_Time,:Station_Height,:Measurement_Height,:Vegetation_Height,
-		:Inductance_CO2,:Inductance_H2O,:Coordinate_Rotation,:Webb_Correction,
-		:Linear_Detrend,:Analog_Inputs,:Analog_Names,:Analog_Lower,:Analog_Upper,
-		:Analog_Units,:Analog_Delay,:Slope,:Analog_Count]
-	col_types = [DateTime,
-		String,
-		String,
-		String,
-		Float64,
-		String,
-		Float64,
-		String,
- 		String,
- 		String,
- 		String,
- 		String,
- 		String,
- 		Bool,
- 		Bool,
- 		Array{Int,1},
- 		Array{String,1},
- 		Array{Int,1},
- 		Array{Int,1},
- 		Array{String,1},
- 		Array{Int,1},
- 		Array{Float64,1},
- 		Int]
-	configs = DataFrame(col_types,col_names,length(files))
+	#col_names = [:Time,:FileName,:Sonic,:Analyzer,:Sonic_Alignment,:Frequency,
+	#	:Average_Time,:Station_Height,:Measurement_Height,:Vegetation_Height,
+	#	:Inductance_CO2,:Inductance_H2O,:Coordinate_Rotation,:Webb_Correction,
+	#	:Linear_Detrend,:Analog_Inputs,:Analog_Names,:Analog_Lower,:Analog_Upper,
+	#	:Analog_Units,:Analog_Delay,:Slope,:Analog_Count]
+	#col_types = [DateTime,
+	#	String,
+	#	String,
+	#	String,
+	#	Float64,
+	#	String,
+	#	Float64,
+	#	String,
+ 	#	String,
+ 	#	String,
+ 	#	String,
+ 	#	String,
+ 	#	String,
+ 	#	Bool,
+ 	#	Bool,
+ 	#	Array{Int,1},
+ 	#	Array{String,1},
+ 	#	Array{Int,1},
+ 	#	Array{Int,1},
+ 	#	Array{String,1},
+ 	#	Array{Int,1},
+ 	#	Array{Float64,1},
+	#	Int]
+	#configs = Array{DataFrame}(undef,length(files))
+	#for j=1:1:length(files)
+	#	configs[j] = DataFrame(col_types,col_names,1)
+	#end
 	
 	# Fill Fields with Single Values
 	for i=1:1:length(files)
-		# Initialiye empty arrays
-		configs[:Analog_Inputs][i] = Array{Int,1}(0)
-		configs[:Analog_Names][i] = Array{String,1}(0)
-		configs[:Analog_Lower][i] = Array{Int,1}(0)
-		configs[:Analog_Upper][i] = Array{Int,1}(0)
-		configs[:Analog_Units][i] = Array{String,1}(0)
-		configs[:Analog_Delay][i] = Array{Int,1}(0)
-		configs[:Slope][i] = Array{Float64,1}(0)
+		# Initialize empty arrays
+		#configs[i][:Analog_Inputs] = [Array{Int}(undef,6)]
+		Analog_Inputs = zeros(Int,6)
+		#configs[i][:Analog_Names] = [Array{String}(undef,6)]
+		Analog_Names = Array{String}(undef,0)
+		#configs[i][:Analog_Lower] = [Array{Int}(undef,6)]
+		Analog_Lower = zeros(Int,6)
+		#configs[i][:Analog_Upper] = [Array{Int}(undef,6)]
+		Analog_Upper = zeros(Int,6)
+		#configs[i][:Analog_Units] = [Array{String}(undef,6)]
+		Analog_Units = Array{String}(undef,0)
+		#configs[i][:Analog_Delay] = [Array{Int}(undef,6)]
+		Analog_Delay = zeros(Int,6)
+		#configs[i][:Slope] = [Array{Float64}(undef,6)]
+		Slope = zeros(Float64,6)
 		
-		configs[:FileName][i] = files[i]
-		time = DateTime(parse(files[i][end-14:end-11])) + Dates.Day(parse(files[i][end-10:end-8])) - Dates.Day(1) + Dates.Hour(parse(files[i][end-7:end-6])) + Dates.Minute(parse(files[i][end-5:end-4]))
-		configs[:Time][i] = time
+		#configs[i][:FileName] = files[i]
+		FileName = files[i]
+		Time = DateTime(Meta.parse(files[i][end-14:end-11])) + Dates.Day(Meta.parse(files[i][end-10:end-8])) - Dates.Day(1) + Dates.Hour(Meta.parse(files[i][end-7:end-6])) + Dates.Minute(Meta.parse(files[i][end-5:end-4]))
+		#configs[i][:Time] = Time
 		
 		# Load Config File
-		analog = Array{String,1}(6)
+		analog = Array{String}(undef,6)
 		fid = open(files[i],"r")
 		try
 			readline(fid)
-			configs[:Sonic][i] = readline(fid)[8:end]
-			configs[:Analyzer][i] = readline(fid)[11:end]
-			configs[:Sonic_Alignment][i] = parse(readline(fid)[18:end-4])
-			configs[:Frequency][i] = readline(fid)[19:end-3]
-			configs[:Average_Time][i] = parse(readline(fid)[15:end-4])
+			#configs[i][:Sonic] = readline(fid)[8:end]
+			Sonic = readline(fid)[8:end]
+			#configs[i][:Analyzer] = readline(fid)[11:end]
+			Analyzer = readline(fid)[11:end]
+			#configs[i][:Sonic_Alignment] = Meta.parse(readline(fid)[18:end-4])
+			Sonic_Alignment = Meta.parse(readline(fid)[18:end-4])
+			#configs[i][:Frequency] = readline(fid)[19:end-3]
+			Frequency = readline(fid)[19:end-3]
+			#configs[i][:Average_Time] = Meta.parse(readline(fid)[15:end-4])
+			Average_Time = Meta.parse(readline(fid)[15:end-4])
 			analog[1] = readline(fid)
 			analog[2] = readline(fid)
 			analog[3] = readline(fid)
 			analog[4] = readline(fid)
 			analog[5] = readline(fid)
 			analog[6] = readline(fid)
-			configs[:Station_Height][i] = readline(fid)[17:end-2]
+			#configs[i][:Station_Height] = readline(fid)[17:end-2]
+			Station_Height = readline(fid)[17:end-2]
 			readline(fid)
-			configs[:Measurement_Height][i] = readline(fid)[21:end-2]
-			configs[:Vegetation_Height][i] = readline(fid)[20:end-2]
-			configs[:Inductance_CO2][i] = readline(fid)[21:end-1]
-			configs[:Inductance_H2O][i] = readline(fid)[21:end-1]
-			configs[:Coordinate_Rotation][i] = readline(fid)[22:end]
-			configs[:Webb_Correction][i] = readline(fid)[18:end] == "yes"
-			configs[:Linear_Detrend][i] = readline(fid)[20:end] == "yes"
+			#configs[i][:Measurement_Height] = readline(fid)[21:end-2]
+			Measurement_Height = readline(fid)[21:end-2]
+			#configs[i][:Vegetation_Height] = readline(fid)[20:end-2]
+			Vegetation_Height = readline(fid)[20:end-2]
+			#configs[i][:Inductance_CO2] = readline(fid)[21:end-1]
+			Inductance_CO2 = readline(fid)[21:end-1]
+			#configs[i][:Inductance_H2O] = readline(fid)[21:end-1]
+			Inductance_H2O = readline(fid)[21:end-1]
+			#configs[i][:Coordinate_Rotation] = readline(fid)[22:end]
+			Coordinate_Rotation = readline(fid)[22:end]
+			#configs[i][:Webb_Correction] = readline(fid)[18:end] == "yes"
+			Webb_Correction = readline(fid)[18:end] == "yes"
+			#configs[i][:Linear_Detrend] = readline(fid)[20:end] == "yes"
+			Linear_Detrend = readline(fid)[20:end] == "yes"
 		catch e
 			println("Problem loading configuration: " * files[1])
 			println(e)
@@ -95,23 +146,35 @@ function slt_configload{T<:String}(files::Array{T,1})::DataFrame
 		# Parse Analog Inputs
 		for j=1:1:length(analog)
 			if analog[j][end] == 'E'
-				f = readcsv(IOBuffer(analog[j]))
+				f = readdlm(IOBuffer(analog[j]),',')
 				
-				configs[:Analog_Inputs][i] = [configs[:Analog_Inputs][i];j]
-				configs[:Analog_Names][i] = [configs[:Analog_Names][i];String(strip(f[1]))]
-				configs[:Analog_Lower][i] = [configs[:Analog_Lower][i];f[2]]
-				configs[:Analog_Units][i] = [configs[:Analog_Units][i];String(strip(f[4]))]
-				configs[:Analog_Upper][i] = [configs[:Analog_Upper][i];f[3]]
-				configs[:Analog_Delay][i] = [configs[:Analog_Delay][i];f[5]]
-				configs[:Slope][i] = [configs[:Slope][i];(f[3] - f[2])/5000]
+				#configs[i][:Analog_Inputs][1][j] = j
+				Analog_Inputs[j] = j
+				#configs[i][:Analog_Names][1][j] = String(strip(f[1]))
+				Analog_Names = [Analog_Names;String(strip(f[1]))]
+				#configs[i][:Analog_Lower][1][j] = f[2]
+				Analog_Lower[j] = f[2]
+				#configs[i][:Analog_Units][1][j] = String(strip(f[4]))
+				Analog_Units = [Analog_Units;String(strip(f[4]))]
+				#configs[i][:Analog_Upper][1][j] = f[3]
+				Analog_Upper[j] = f[3]
+				#configs[i][:Analog_Delay][1][j] = f[5]
+				Analog_Delay[j] = f[5]
+				#configs[i][:Slope][1][j] = (f[3] - f[2])/5000
+				Slope[j] = (f[3] - f[2])/5000
 			end
 		end
-		configs[:Analog_Count][i] = length(configs[:Analog_Names][])
+		#configs[i][:Analog_Count] = [length(configs[i][:Analog_Names][1])]
+		Analog_Count = length(Analog_Names)
+		#println(Analog_Names) # Temp
+		#println(Analog_Count) # Temp
+		
+		configs[i] = Dict("Time"=>Time,"FileName"=>FileName,"Sonic"=>Sonic,"Analyzer"=>Analyzer,"Sonic_Alignment"=>Sonic_Alignment,"Frequency"=>Frequency,"Average_Time"=>Average_Time,"Station_Height"=>Station_Height,"Measurement_Height"=>Measurement_Height,"Vegetation_Height"=>Vegetation_Height,"Inductance_CO2"=>Inductance_CO2,"Inductance_H2O"=>Inductance_H2O,"Coordinate_Rotation"=>Coordinate_Rotation,"Webb_Correction"=>Webb_Correction,"Linear_Detrend"=>Linear_Detrend,"Analog_Inputs"=>Analog_Inputs,"Analog_Names"=>Analog_Names,"Analog_Lower"=>Analog_Lower,"Analog_Upper"=>Analog_Upper,"Analog_Units"=>Analog_Units,"Analog_Delay"=>Analog_Delay,"Slope"=>Slope,"Analog_Count"=>Analog_Count)
 	end
 	
 	# Sort Config Files
-	I = sortperm(configs[:Time])
-	configs = configs[I,:]
-	
+	#I = sortperm(map(x -> configs[x][:Time][1],collect(1:length(files))))
+	I = sortperm(get.(configs,"Time",DateTime(9999)))
+	configs = configs[I]
 	return configs
-end # slt_configload{T<:String}(files::Array{T,1})
+end # slt_configload(files::Array{T,1}) where T <: String

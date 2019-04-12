@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 09.12.2016
-# Last Edit: 06.12.2017
+# Last Edit: 10.04.2019
 
 """# slt_trim
 
@@ -37,14 +37,14 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 	(files,folders) = dirlist(f1,regex=r"\w\d{8}\.")
 	
 	# Parse File Dates
-	fdates = Array{DateTime}(length(files))
+	fdates = Array{DateTime}(undef,length(files))
 	i = 0
 	for i=1:1:length(files)
 		try
-			yearstr = parse(files[i][end-14:end-11])
-			daystr = parse(files[i][end-10:end-8])
-			hourstr = parse(files[i][end-7:end-6])
-			minutestr = parse(files[i][end-5:end-4])
+			yearstr = Meta.parse(files[i][end-14:end-11])
+			daystr = Meta.parse(files[i][end-10:end-8])
+			hourstr = Meta.parse(files[i][end-7:end-6])
+			minutestr = Meta.parse(files[i][end-5:end-4])
 			fdates[i] = DateTime(yearstr) + Dates.Day(daystr) - Dates.Day(1) + Dates.Hour(hourstr) + Dates.Minute(minutestr)
 		catch
 			println(files[i])
@@ -58,15 +58,15 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 	files = files[f]
 	
 	# Save Config files before dates are filtered
-	f = [ismatch(r"\.cfg$",i) for i in files]
+	f = [occursin(r"\.cfg$",i) for i in files]
 	cfgfiles = files[f]
 	cfgdates = fdates[f]
 	
 	# Remove files beyond the given time bounds
-	f = find(mindate .<= fdates)
+	f = findall(mindate .<= fdates)
 	fdates = fdates[f]
 	files = files[f]
-	f = find(maxdate .> fdates)
+	f = findall(maxdate .> fdates)
 	fdates = fdates[f]
 	files = files[f]
 	
@@ -77,46 +77,52 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 	println("   Number of files: " * string(length(files)))
 	
 	# Sort Files by Type
-	f = [ismatch(r"\.slt$",i) for i in files]
+	f = [occursin(r"\.slt$",i) for i in files]
 	sltfiles = files[f]
 	sltdates = fdates[f]
-	f = [ismatch(r"\.csr$",i) for i in files]
+	f = [occursin(r"\.csr$",i) for i in files]
 	csrfiles = files[f]
 	csrdates = fdates[f]
-	f = [ismatch(r"\.csu$",i) for i in files]
+	f = [occursin(r"\.csu$",i) for i in files]
 	csufiles = files[f]
 	csudates = fdates[f]
-	f = [ismatch(r"\.flx$",i) for i in files]
+	f = [occursin(r"\.flx$",i) for i in files]
 	flxfiles = files[f]
 	flxdates = fdates[f]
-	f = [ismatch(r"\.log$",i) for i in files]
+	f = [occursin(r"\.log$",i) for i in files]
 	logfiles = files[f]
 	logdates = fdates[f]
-	f = [ismatch(r"\.csv$",i) for i in files]
+	f = [occursin(r"\.csv$",i) for i in files]
 	csvfiles = files[f]
 	csvdates = fdates[f]
 	
 	# Load the CFG info
 	configs = slt_config(cfgfiles)
-	begin
-		temp = configs[end,:]
-		temp[:Time] = DateTime(9999) # Setup a fake final row with a time well beyond any real file name
-		configs = [configs;temp]
-	end
+	configs = [configs;deepcopy(configs[1])] # Setup a fake final row with a time well beyond any real file name
+	configs[end]["Time"] = DateTime(9999)
+	
+	# Temp
+	#println("======================") # Temp
+	#println(sltdates) # Temp
+	#println("======================") # Temp
+	#println(configs) # Temp
+	#println("======================") # Temp
+	#println(get.(configs,"Time",Array{DateTime}(undef,1))) # Temp
+	#println("======================") # Temp
 	
 	# Load the SLT header data
 	println("\nLoading SLT Header Data")
 	sltinfo = DataFrame()
 	offset = 1 # File processing list offset
 	while offset < length(sltfiles)
-		f = find(configs[:Time] .<= sltdates[offset])[end] # Find latest config
+		f = findall(get.(configs,"Time",Array{DateTime}(undef,1)) .<= sltdates[offset])[end] # Find latest config
 		config1 = configs[f,:] # Current config and lower bound on file list
 		config2 = configs[f+1,:] # Upper bound on file list
 		
-		f = find(config1[:Time] .<= sltdates .< config2[:Time])
+		f = findall(get.(config1,"Time",Array{DateTime}(undef,1)) .<= sltdates .< get.(config2,"Time",Array{DateTime}(undef,1)))
 		tempfiles = sltfiles[f]
-		analog_count = config1[:Analog_Count][1] # Length?
-		sample_frequency = parse(config1[:Frequency][1])
+		analog_count = get(config1[1],"Analog_Count",0) # Length?
+		sample_frequency = Meta.parse(get(config1[1],"Frequency",0))
 		for i=1:1:length(tempfiles)
 			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
 			temp[:Analog_Count] = analog_count
@@ -172,7 +178,7 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 				if eof(fid0)
 					early_end = true
 				else
-					temp_data = read(fid0,Int16,1)
+					temp_data = read!(fid0,Array{Int16}(undef,1))
 					
 					# Only save columns within column limit
 					write(fid,temp_data)
@@ -182,7 +188,7 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 				if eof(fid0)
 					early_end = true
 				else
-					temp_data = read(fid0,Int16,1)
+					temp_data = read!(fid0,Array{Int16}(undef,1))
 				end
 			end
 		end
@@ -201,7 +207,7 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 		fid2 = open(joinpath(f2,splitdir(i)[2]),"w+")
 		
 		for j=1:1:6 + maxanalogcols
-			write(fid2,[readline(fid1,chomp=false)])
+			write(fid2,readline(fid1,keep=true))
 		end
 		
 		for j=1:1:6 - maxanalogcols
@@ -210,7 +216,7 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 		end
 		
 		for j=1:1:9
-			write(fid2,[readline(fid1,chomp=false)])
+			write(fid2,readline(fid1,keep=true))
 		end
 		
 		close(fid1)

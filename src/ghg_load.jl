@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.3
+# Julia 0.7
 # 18.11.2014
-# Last Edit: 19.06.2018
+# Last Edit: 11.04.2019
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -58,7 +58,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	###################################
 	##  Convert File Times and Sort  ##
 	###################################
-	times = Array{DateTime}(length(files))
+	times = Array{DateTime}(undef,length(files))
 	df = Dates.DateFormat("yyyy-mm-ddTHHMMSS")
 	for i=1:1:length(files)
 		temp = basename(files[i])
@@ -71,7 +71,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	######################################
 	##  Remove Files Out of Time Range  ##
 	######################################
-	f = find(mindate .<= times .< maxdate)
+	f = findall(mindate .<= times .< maxdate)
 	times = times[f]
 	files = files[f]
 	
@@ -105,10 +105,11 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			##  Average the Data  ##
 			########################
 			verbose ? println("\t   Averaging Data") : nothing
-			f = [findnewton(t_temp,[minimum(t_temp) - Dates.Millisecond(minimum(t_temp)):Dates.Minute(30):maximum(t_temp);]),length(t_temp) + 1;]
+			#f = [findnewton(t_temp,[(minimum(t_temp) - Dates.Millisecond(minimum(t_temp))):Dates.Minute(30):maximum(t_temp);]),length(t_temp) + 1;] # Julia 0.6, TEMP
+			f = [findnewton(t_temp,[(minimum(t_temp) - Dates.Millisecond(minimum(t_temp))):Dates.Minute(30):maximum(t_temp)]);(length(t_temp) + 1)]
 			
 			# Preallocate DataFrames
-			type_list = Array{DataType}(size(D_temp)[2])
+			type_list = Array{DataType}(undef,size(D_temp)[2])
 			for j=1:1:size(D_temp)[2]
 				temp = typeof(D_temp[j][1])
 				if temp <: Integer

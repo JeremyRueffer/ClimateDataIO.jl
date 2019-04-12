@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 09.12.2016
-# Last Edit: 24.05.2017
+# Last Edit: 28.06.2018
 
 " findnewton{T<:Any}(x,target::Array{T,1};max_iterations::Int,verbose::Bool)
 
@@ -27,8 +27,8 @@ In a sorted data set, search iteratively for the target value/s. Uses Newtonian 
 * searchsorted
 * searchsortedfirst
 * searchsortedlast"
-function findnewton{T<:Any}(x,target::Array{T,1};max_iterations::Int=1000,verbose::Bool=false)
-	answer = Array{Int}(length(target))
+function findnewton(x,target::Array{T,1};max_iterations::Int=1000,verbose::Bool=false) where T <: Any
+	answer = Array{Int}(undef,length(target))
 	answer[1] = findnewton(x,target[1];max_iterations=max_iterations,verbose=verbose)
 	lastgood = Int(1)
 	temp = []
@@ -48,7 +48,7 @@ function findnewton{T<:Any}(x,target::Array{T,1};max_iterations::Int=1000,verbos
 
 	# Remove Bad Values
 	if bad_vals
-		answer = answer[find(answer .!= -1)]
+		answer = answer[findall(answer .!= -1)]
 	end
 
 	return answer

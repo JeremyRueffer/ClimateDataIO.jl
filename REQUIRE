@@ -1,4 +1,9 @@
-julia 0.6
-DataFrames 0.11.0
-ZipFile
+julia 0.7
 CSV
+DataFrames
+DelimitedFiles
+Dates
+Printf
+StatsBase
+Statistics
+ZipFile

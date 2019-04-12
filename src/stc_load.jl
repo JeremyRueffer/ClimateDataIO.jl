@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 16.12.2016
-# Last Edit: 13.12.2017
+# Last Edit: 11.04.2019
 
 """# stc_load
 
@@ -69,9 +69,9 @@ function stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	# Remove Files Out of Range
 	begin
 		# STC Files
-		f = findin(Tstc .== mindate,true)
+		f = findall((in)(Tstc .== mindate),true)
 		if isempty(f)
-			f = findin(Tstc .< mindate,true)
+			f = findall((in)(Tstc .< mindate),true)
 			if isempty(f)
 				f = 1
 			else
@@ -96,7 +96,7 @@ function stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 		# Ensure all rows are defined in SPEFile
 		if in(true,[isequal(:SPEFile,i) for i in names(Dstc)]) # See if :SPEFile exists first
 			f = ismissing.(Dstc[:SPEFile])
-			Dstc[:SPEFile][f] = ""
+			Dstc[:SPEFile][f] .= ""
 		end
 		
 		f = Tstc .>= mindate
@@ -110,7 +110,7 @@ function stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	return Tstc,Dstc
 end # End of stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=false,cols::Array{String,1}=String[],recur::Int=9999)
 
-function stc_load{T<:String}(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[])
+function stc_load(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[]) where T <: String
 	## Load a list of file names ##
 	
 	# Sort files by dates
@@ -125,18 +125,21 @@ function stc_load{T<:String}(F::Array{T,1};verbose::Bool=false,cols::Array{Strin
 	end
 	
 	return t,D
-end # End stc_load{T<:String}(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[])
+end # End stc_load(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[]) where T <: String
 
 function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
-	ext = F[rsearch(F,'.') + 1:end] # Save the extension
+	#ext = F[rsearch(F,'.') + 1:end] # Save the extension
+	ext = splitext(F)[2][2:end] # Save the extension
 	
 	verbose ? println("  " * F) : nothing
 	
 	## Check for a proper file
-	if isempty(ext) == true
-		error("No file extension")
-	elseif isdir(F) == true
+	#println(F) # Temp
+	#println(ext) # Temp
+	if isdir(F) == true
 		return stc_load(F,DateTime(0,1,1,0,0,0),DateTime(9999,1,1,0,0,0),verbose=verbose,cols=cols)
+	elseif isempty(ext) == true
+		error("No file extension")
 	elseif ext != "stc"
 		error("Extension is not STC. Returning nothing...")
 		return
@@ -150,12 +153,12 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	h1 = readline(fid)
 	h2 = readline(fid)
 	
-	h3 = permutedims(readcsv(IOBuffer("\"" * replace(h2[1:end],",","\",\"") * "\"")),[2,1])
-	h = Array{String}(length(h3))
+	h3 = permutedims(readdlm(IOBuffer("\"" * replace(h2[1:end],"," => "\",\"") * "\""),','),[2,1])
+	h = Array{String}(undef,length(h3))
 	#h[end] = "Empty"
 	for i=1:1:length(h3)
 		h[i] = strip(String(h3[i])) # Remove leading and trailing whitespace
-		h[i] = replace(h[i]," ","_") # Replace remaining whitespace with _
+		h[i] = replace(h[i]," " => "_") # Replace remaining whitespace with _
 	end
 	close(fid)
 	
@@ -200,7 +203,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	#########################
 	##  Parse Time Format  ##
 	#########################
-	time = Array{DateTime}(length(D[:time])) # Preallocate time column
+	time = Array{DateTime}(undef,length(D[:time])) # Preallocate time column
 	secs = Dates.Second # Initialize so it doesn't have to do it every time in the loop
 	millisecs = Dates.Millisecond # Initialize so it doesn't have to do it every time in the loop
 	for i=1:1:length(D[:time])
@@ -215,7 +218,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	if !isempty(cols)
 		# Check cols' type
 		if typeof(cols) != Array{Symbol,1} && typeof(cols) != Symbol
-			temp = Array{Symbol}(length(cols))
+			temp = Array{Symbol}(undef,length(cols))
 			for i=1:1:length(cols)
 				temp[i] = Symbol(cols[i]) # Convert all the values to symbols
 			end
@@ -224,7 +227,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 		
 		# Make sure each entry exists
 		fields = names(D)
-		cols_bool = fill!(Array{Bool}(length(cols)),false) # Preallocate false
+		cols_bool = fill!(Array{Bool}(undef,length(cols)),false) # Preallocate false
 		for i=1:1:length(cols)
 			for j=1:1:length(fields)
 				if fields[j] == cols[i]
@@ -237,7 +240,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 		# Remove Unwanted column
 		if isempty(cols)
 			D = DataFrame()
-			time = Array{DateTime}(0)
+			time = Array{DateTime}(undef,0)
 		else
 			D = D[cols]
 		end

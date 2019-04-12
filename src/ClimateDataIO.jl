@@ -7,9 +7,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.6.1
+# Julia 0.7
 # 09.12.2016
-# Last Edit: 14.12.2017
+# Last Edit: 13.12.2018
 
 __precompile__(true)
 
@@ -70,12 +70,15 @@ For more specific information see each functions' help.
 module ClimateDataIO
 
 	using DataFrames
-	using ZipFile # Only needed for ziptextfiles.jl (licor_split.jl)
+	using Dates
+	using Printf
+	using DelimitedFiles
+	using StatsBase
+	using ZipFile # Used in ghg_read (and therefore ghg_load) and licor_split
 	using CSV
+	using Statistics
 	
 	export AerodyneStatus,
-		ghg_load,
-		ghg_read,
 		str_load,
 		stc_load,
 		slt_read,
@@ -90,6 +93,8 @@ module ClimateDataIO
 		csci_times,
 		lgr_load,
 		lgr_read,
+		ghg_load,
+		ghg_read,
 		licor_split
 	
 	dir = splitdir(@__FILE__)[1]
