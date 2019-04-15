@@ -3,7 +3,5 @@ CSV
 DataFrames
 DelimitedFiles
 Dates
-Printf
 StatsBase
-Statistics
 ZipFile

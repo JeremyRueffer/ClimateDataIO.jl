@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 16.12.2016
-# Last Edit: 26.06.2018
+# Last Edit: 15.04.2019
 
 """# str_load
 
@@ -69,9 +69,9 @@ function str_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	# Remove Files Out of Range
 	begin
 		# STR Files
-		f = findin(Tstr .== mindate,true)
+		f = findall(x -> x .== mindate,Tstr)
 		if isempty(f)
-			f = findin(Tstr .< mindate,true)
+			f = findall(x -> x .< mindate,Tstr)
 			if isempty(f)
 				f = 1
 			else
@@ -124,16 +124,16 @@ function str_load(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String
 end # End str_load(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[]) where T <: String
 
 function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
-	ext = F[rsearch(F,'.') + 1:end] # Save the extension
+	ext = splitext(F)[2]
 	
 	verbose ? println("  " * F) : nothing
 	
 	## Check for a proper file
-	if isempty(ext) == true
-		error("No file extension")
-	elseif isdir(F) == true
+	if isdir(F) == true
 		return str_load(F,DateTime(0,1,1,0,0,0),DateTime(9999,1,1,0,0,0),verbose=verbose,cols=cols)
-	elseif ext != "str"
+	elseif isempty(ext) == true
+		error("No file extension")
+	elseif ext != ".str"
 		error("Extension is not STR. Returning nothing...")
 		return
 	end
@@ -144,14 +144,15 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	## Load Header Information
 	fid = open(F,"r")
 	h1 = readline(fid)
-	h1 = h1[rsearch(h1,"SPEC:")[end]+1:end] # Remove everything including and before the SPEC:
-	h2 = readdlm(IOBuffer("\"" * replace(h1,",","\",\"") * "\""),',')
-	h = Array{String}(length(h2) + 2)
+	#h1 = h1[rsearch(h1,"SPEC:")[end]+1:end] # Remove everything including and before the SPEC:
+	h1 = split(h1,"SPEC:")[2] # Remove everything including and before the SPEC:
+	h2 = readdlm(IOBuffer("\"" * replace(h1,"," => "\",\"") * "\""),',')
+	h = Array{String}(undef,length(h2) + 2)
 	h[1] = "time"
 	h[end] = "Empty"
 	for i=1:1:length(h2)
 		h[i+1] = strip(String(h2[i])) # Remove leading and trailing whitespace
-		h[i+1] = replace(h[i+1]," ","_") # Replace remaining whitespace with _
+		h[i+1] = replace(h[i+1]," " => "_") # Replace remaining whitespace with _
 	end
 	close(fid)
 	
@@ -197,7 +198,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	#########################
 	##  Parse Time Format  ##
 	#########################
-	time = Array{DateTime}(length(D[:time])) # Preallocate time column
+	time = Array{DateTime}(undef,length(D[:time])) # Preallocate time column
 	secs = Dates.Second # Initialize so it doesn't have to do it every time in the loop
 	millisecs = Dates.Millisecond # Initialize so it doesn't have to do it every time in the loop
 	for i=1:1:length(D[:time])
@@ -212,7 +213,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	if !isempty(cols)
 		# Check cols' type
 		if typeof(cols) != Array{Symbol,1} && typeof(cols) != Symbol
-			temp = Array{Symbol}(length(cols))
+			temp = Array{Symbol}(undef,length(cols))
 			for i=1:1:length(cols)
 				temp[i] = Symbol(cols[i]) # Convert all the values to symbols
 			end
@@ -221,7 +222,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 		
 		# Make sure each entry exists
 		fields = names(D)
-		cols_bool = fill!(Array{Bool}(length(cols)),false) # Preallocate false
+		cols_bool = fill!(Array{Bool}(undef,length(cols)),false) # Preallocate false
 		for i=1:1:length(cols)
 			for j=1:1:length(fields)
 				if fields[j] == cols[i]

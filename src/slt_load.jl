@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 09.12.2016
-# Last Edit: 10.04.2019
+# Last Edit: 15.04.2019
 
 """# slt_load
 
@@ -313,10 +313,10 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		for j=1:1:length(f)-1
 			try
 				tmean[j] = D[f[j],1]
-				temp_Dmean = mean(convert(Array,D[f[j]:f[j+1]-1,2:end]),dims=1)
-				temp_Dstd = std(convert(Array,D[f[j]:f[j+1]-1,2:end]),dims=1)
-				temp_Dmin = minimum(convert(Array,D[f[j]:f[j+1]-1,2:end]),dims=1)
-				temp_Dmax = maximum(convert(Array,D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dmean = mean(convert(Matrix,D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dstd = std(convert(Matrix,D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dmin = minimum(convert(Matrix,D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dmax = maximum(convert(Matrix,D[f[j]:f[j+1]-1,2:end]),dims=1)
 				
 				for k=1:1:length(temp_Dmean)
 					Dmean[j,k] = temp_Dmean[k]

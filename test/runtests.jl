@@ -2,10 +2,10 @@ using ClimateDataIO
 using Test
 using Dates
 
-# Last Edit: 12.04.19
+# Last Edit: 15.04.19
 
 # TODO: Add tests for GHG_LOAD and GHG_READ Biomet loading scenarios
-#=
+
 # SLTLOAD: Check a known set of data
 println("\n====  SLTLOAD  ====")
 src = splitdir(@__FILE__)[1]
@@ -63,6 +63,7 @@ end
 
 src = joinpath(splitdir(@__FILE__)[1],"W20163280930.slt")
 header = ClimateDataIO.slt_header(src,6,10)
+println("SLTLOAD Test Complete")
 
 
 
@@ -76,6 +77,7 @@ Time,Data = ClimateDataIO.slt_read(src,analog_inputs,sample_frequency)
 @test size(Data) == (18003,10) || "SLTREAD: Output size incorrect, should be (18003,10)"
 @test Time[1] == DateTime(2016,11,23,10) || "SLTREAD: First timestamp should be 2016-11-23T10:00:00"
 @test Time[end] == DateTime(2016,11,23,10,30,00,200) || "SLTREAD: Last timestamp should be 2016-11-23T10:30:00.2"
+println("SLTREAD Test Complete")
 
 
 
@@ -106,6 +108,7 @@ for i in f
 end
 @test Data[:Time][1] == DateTime(2016,11,23,18,4) || "SLT_TIMESHIFT: Last timestamp should be 2016-11-23T18:04:00"
 @test Data[:Time][end] == DateTime(2016,11,23,21,0,0,100) || "SLT_TIMESHIFT: Last timestamp should be 2016-11-23T21:00:00.1"
+println("SLT_TIMESHIFT Test Complete")
 
 
 
@@ -128,6 +131,7 @@ D1[:,4] = D1[:,4].*50
 D1 = convert(Array{Int16},floor.(D1))
 D2 = abs.(D1 .- D0) .> 1
 @test isempty(LinearIndices(D2)[findall(D2)]) || "SLT_WRITE: The differences between the original array and the reloaded array should be no greater than 1 (rounding errors)."
+println("SLT_WRITE Test Complete")
 
 
 
@@ -143,6 +147,7 @@ src = joinpath(src,"W20163281404.cfg")
 cfgs = ClimateDataIO.slt_config(src)
 @test get(cfgs[1],"Time",DateTime(0)) == DateTime(2016,11,23,14,4) || "SLT_CONFIG: cfgs[:Time] should be 2016-11-23T14:04:00"
 @test length(keys(cfgs[1])) == 23 || "SLT_CONFIG: length(keys(cfgs[1])) should be 23 (ie 23 Dict keys)"
+println("SLT_CONFIG Test Complete")
 
 
 
@@ -164,6 +169,7 @@ Time,Data = ClimateDataIO.str_load(src,verbose=true)
 @test Time[1] == DateTime(2016,12,10,0,0,0,525) || "STR_LOAD: First timestamp should be 2016-12-10T00:00:00.525"
 @test Time[end] == DateTime(2016,12,10,3,59,59,917) || "STR_LOAD: Last timestamp should be 2016-12-10T03:59:59.917"
 @test size(Data) == (140645,2) || "STR_LOAD: Output size incorrect, should be (140645,2)"
+println("STR_LOAD Test Complete")
 
 
 
@@ -207,6 +213,7 @@ src = splitdir(@__FILE__)[1]
 src = joinpath(src,"161210_000000.stc")
 Time,Data = ClimateDataIO.stc_load(src,verbose=true,cols = ["Praw","time"])
 @test names(Data) == [:Praw,:time] || "STC_LOAD: Fields should be [:Praw,:time]"
+println("STC_LOAD Test Complete")
 
 
 
@@ -233,6 +240,7 @@ h4 = "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\""
 @test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
 @test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
 @test size(Data) == (11520,10) || "CSCI_TEXTREAD: Data output size incorrect, should be (11520,10)"
+println("CSCI_TEXTREAD Test Complete")
 
 
 
@@ -258,6 +266,7 @@ Data = ClimateDataIO.csci_textload(src,rootname,DateTime(2016,12),DateTime(2017,
 @test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
 @test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
 @test size(Data) == (11520,10) || "CSCI_TEXTLOAD: Data output size incorrect, should be (11520,10)"
+println("CSCI_TEXTLOAD Test Complete")
 
 
 
@@ -269,8 +278,9 @@ maxtime = DateTime(2016,12,4,23,59,30)
 mintimes, maxtimes = ClimateDataIO.csci_times(srcs,headerlines=4)
 @test [mintime;mintime] == mintimes || "CSCI_TIME: Both minimum time values should be 2016-12-01T00:00:00"
 @test [maxtime;maxtime] == maxtimes || "CSCI_TIME: Both maximum time values should be 2016-12-04T23:59:30"
+println("CSCI_TIMES Test Complete")
 
-=#
+
 #=
 # GHGREAD: Load one file
 println("\n====  GHGREAD Tests  ====")
@@ -391,5 +401,6 @@ rm(joinpath(dest,"2016-12-11T213000_AIU-1359.ghg"))
 @test Time[end] == DateTime(2016,12,11,23,59,59,950) || "LICOR_SPLIT: Time[end] last timestamp should be 2016-12-11T23:59:59.95"
 @test size(Data) == (180000,48) || "LGR_SPLIT: Data output size incorrect, should be (180000,48)"
 =#
+src = splitdir(@__FILE__)[1]
 rm(joinpath(src,"temporary_files"))
 println("\n\nAll Tests Complete Successfully")
