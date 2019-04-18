@@ -85,7 +85,7 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 					
 					verbose ? println("      " * j.name) : nothing
 					fid = open(joinpath(dest,j.name),"w")
-					write(fid,readstring(j))
+					write(fid,read(j,String))
 					close(fid)
 				end
 			end

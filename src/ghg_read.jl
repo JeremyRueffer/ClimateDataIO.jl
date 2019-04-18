@@ -135,6 +135,7 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 			end
 		end
 	end
+	close(fid)
 	
 	##########################################################
 	##  Delete Temporary Files (until ZipFile.jl is fixed)  ##

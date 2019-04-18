@@ -53,6 +53,7 @@ function lgr_read(source::String;verbose::Bool=false)
 		readline(fid)
 		footerlines += 1
 	end
+	close(fid)
 	
 	# Column Types
 	col_types = fill!(Array{DataType}(undef,length(cols)),Float64)
