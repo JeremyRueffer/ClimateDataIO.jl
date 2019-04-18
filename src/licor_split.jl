@@ -162,8 +162,6 @@ function licor_split(Dr::String,Dest::String;verbose::Bool=true)
 				
 			    # Write or Close
 				ft = findall(x -> x == '\t',l)
-				#println(l) # Temp
-				#println(l[ft[6]+1:ft[8]-1]) # Temp
 			    temp_end = DateTime(l[ft[6]+1:ft[8]-1],"yyyy-mm-dd\tHH:MM:SS:sss")
 			    if temp_end >= next_start
 				    # The current line is newer than the start of the next file, close the current file

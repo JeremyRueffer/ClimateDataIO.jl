@@ -2,7 +2,7 @@ using ClimateDataIO
 using Test
 using Dates
 
-# Last Edit: 15.04.19
+# Last Edit: 18.04.2019
 
 # TODO: Add tests for GHG_LOAD and GHG_READ Biomet loading scenarios
 
@@ -281,7 +281,7 @@ mintimes, maxtimes = ClimateDataIO.csci_times(srcs,headerlines=4)
 println("CSCI_TIMES Test Complete")
 
 
-#=
+
 # GHGREAD: Load one file
 println("\n====  GHGREAD Tests  ====")
 src = splitdir(@__FILE__)[1]
@@ -321,16 +321,16 @@ Data = ClimateDataIO.lgr_load(src,verbose=true)
 
 
 # LGR_READ Error Check
-err = true
+global err = true
 try
-	Data = ClimateDataIO.lgr_read("blahblahblah")
-	err = false
+	global Data = ClimateDataIO.lgr_read("blahblahblah")
+	global err = false
 catch
 	
 end
 @test err == true || "LGR_READ: Should throw an error, invalid file given"
 
-=#
+
 #=
 # LICOR_SPLIT
 println("\n====  LICOR_SPLIT Tests  ====")
@@ -402,5 +402,7 @@ rm(joinpath(dest,"2016-12-11T213000_AIU-1359.ghg"))
 @test size(Data) == (180000,48) || "LGR_SPLIT: Data output size incorrect, should be (180000,48)"
 =#
 src = splitdir(@__FILE__)[1]
-rm(joinpath(src,"temporary_files"))
+if isdir(joinpath(src,"temporary_files"))
+	rm(joinpath(src,"temporary_files"))
+end
 println("\n\nAll Tests Complete Successfully")

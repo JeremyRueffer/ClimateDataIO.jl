@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 09.12.2016
-# Last Edit: 28.06.2018
+# Last Edit: 18.04.2019
 
 " findnewton{T<:Any}(x,target::Array{T,1};max_iterations::Int,verbose::Bool)
 
@@ -108,7 +108,7 @@ function findnewton(x,target;max_iterations::Int=1000,verbose::Bool=false)
 	end
 
 	if verbose
-		println("\nIndex = " * string(int(answer)))
+		println("\nIndex = " * string(Int(answer)))
 		println("Answer = " * string(x[answer]) * "\n")
 	end
 	return Int(answer)

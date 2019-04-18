@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 07.11.2014
-# Last Edit: 26.06.2018
+# Last Edit: 18.04.2019
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -33,47 +33,37 @@ function lgr_read(source::String;verbose::Bool=false)
 	#############################################
 	##  Prepare Settings for Loading the Data  ##
 	#############################################
-	# Data Line Count
+	# Header Info
 	fsize = stat(source).size
 	fid = open(source,"r")
 	readline(fid)
-	cols = readline(fid,chomp=false)[1:end-1]
-	cols = permutedims(readdlm(IOBuffer("\"" * replace(replace(cols," ",""),",","\",\"") * "\""),','),[2,1])
+	cols = readline(fid,keep=true)[1:end-1]
+	cols = permutedims(readdlm(IOBuffer("\"" * replace(replace(cols," " => ""),"," => "\",\"") * "\""),','),[2,1])
 	startpos = position(fid)
-	l = readline(fid,chomp=false)
-	llength = length(l) # Line Length
-	endpos = 1
-	f = false
-	while !f
-		seek(fid,fsize-endpos)
-		l = readline(fid,chomp=false)
-		l = l[1:findfirst(l,',')] # Find the first comma
-		if !isempty(l)
-			if length(findin(l,'/')) == 2 && length(findin(l,':')) == 2
-				f = true # Found the last line
-			end
-		end
-		endpos += 1
+	
+	# Determine Line Count
+	l = readline(fid)
+	l_count = 1
+	while !isempty(l)
+		l = readline(fid)
+		l_count += 1
 	end
-	endpos = position(fid) # Position of the end of data
-	footerlines = 0
+	footerlines = 1
 	while !eof(fid)
 		readline(fid)
 		footerlines += 1
 	end
-	close(fid)
-	l_count = Int((endpos - startpos)/llength) # Number of data lines
 	
 	# Column Types
-	col_types = fill!(Array{DataType}(length(cols)),Float64)
+	col_types = fill!(Array{DataType}(undef,length(cols)),Float64)
 	col_types[length(col_types)] = String
 	col_types[1] = DateTime
 	
 	# Column Names
-	col_names = Array{String}(length(cols))
+	col_names = Array{String}(undef,length(cols))
 	for i=1:length(cols)
-		col_names[i] = replace(cols[i],"[","")
-		col_names[i] = replace(col_names[i],"]","")
+		col_names[i] = replace(cols[i],"[" => "")
+		col_names[i] = replace(col_names[i],"]" => "")
 	end
 	
 	#####################

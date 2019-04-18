@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 09.12.2016
-# Last Edit: 10.04.2019
+# Last Edit: 18.04.2019
 
 """# slt_trim
 
@@ -100,15 +100,6 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 	configs = slt_config(cfgfiles)
 	configs = [configs;deepcopy(configs[1])] # Setup a fake final row with a time well beyond any real file name
 	configs[end]["Time"] = DateTime(9999)
-	
-	# Temp
-	#println("======================") # Temp
-	#println(sltdates) # Temp
-	#println("======================") # Temp
-	#println(configs) # Temp
-	#println("======================") # Temp
-	#println(get.(configs,"Time",Array{DateTime}(undef,1))) # Temp
-	#println("======================") # Temp
 	
 	# Load the SLT header data
 	println("\nLoading SLT Header Data")

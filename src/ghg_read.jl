@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 18.11.2014
-# Last Edit: 26.06.2018
+# Last Edit: 18.04.2019
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -34,7 +34,6 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 	##  Load Data  ##
 	#################
 	# Load Header
-	println(source) # Temp
 	list = ZipFile.Reader(source) # List the files in the GHG file
 	iData = 0
 	hf = false # High frequency?
@@ -54,12 +53,37 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 	(name,ext) = splitext(basename(source))
 	verbose ? println("\t   Loading " * name * ".data") : nothing
 	
+	#########################################
+	##  Unzip  (Until ZipFile.jl is fixed) ##
+	#########################################
+	verbose ? println("\t   Unzipping") : nothing
+	temp_dir = tempdir() # Temporary directory for unzipped files
+	if Sys.iswindows()
+		list = ZipFile.Reader(source) # List the files in the GHG file
+		open(joinpath(temp_dir,list.files[iData].name),"w") do io
+			write(io,read(list.files[iData]))
+		end
+	elseif Sys.islinux()
+		if filetype == "primary"
+			ext = ".data"
+		else
+			ext = "-biomet.data"
+		end
+		try
+			run(pipeline(`unzip -p $[source] $[splitext(splitdir(source)[2])[1]]$[ext]`,joinpath(temp_dir,splitext(splitdir(source)[2])[1] * ext)))
+		catch
+			warn("Failed to unzip " * source)
+			return
+		end
+	end
+	
 	###########################
 	##  High Frequency Data  ##
 	###########################
 	t = Array{DateTime}(undef,0)
 	D = DataFrame()
 	cols = Array{Any}(undef,0,0)
+	fid = open(joinpath(temp_dir,list.files[iData].name),"r") # ZipFile.jl temporary fix
 	if iData != 0
 		if filetype == "primary"
 			header_line = 9
@@ -67,9 +91,11 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 			header_line = 7
 		end
 		for j=1:1:header_line - 2
-			readline(list.files[iData])
+			readline(fid) # ZipFile.jl temporary fix
+			#readline(list.files[iData])
 		end
-		l_columns = readline(list.files[iData])
+		l_columns = readline(fid) # ZipFile.jl temporary fix
+		#l_columns = readline(list.files[iData])
 		cols = permutedims(readdlm(IOBuffer("\"" * replace(l_columns,"\t" => "\",\"") * "\""),','),[2,1])
 		new_names = Array{String}(undef,length(cols))
 		temp_name = ""
@@ -85,20 +111,17 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 		# Load Data
 		col_types = fill!(Array{DataType}(undef,length(cols)),Float64)
 		if filetype == "primary"
-			col_types[1:8] = [String;Int;Int;Int;Int;Int;String;String]
-			col_types[end] = Int
+			col_types[1:8] = [String;Int32;Int32;Int32;Int32;Int32;String;String]
+			col_types[end] = Int32
 		else
 			col_types[1:3] = [String;String;String]
-			col_types[end] = Int
+			col_types[end] = Int32
 		end
 		# datarow = 1, the position within the file is just at the start of the data already because of the header loading
-		println(col_types) # Temp
-		println(new_names) # Temp
-		println(iData) # Temp
-		D = CSV.read(list.files[iData],types = col_types,header = new_names,delim = '\t',datarow = 1)
+		D = CSV.read(joinpath(temp_dir,list.files[iData].name),types = col_types,header = new_names,delim = '\t',datarow = header_line) # # ZipFile.jl temporary fix
+		#D = CSV.read(list.files[iData],types = col_types,header = new_names,delim = '\t',datarow = 1)
 		
 		# Convert Time
-		#t = epoch + map(Dates.Second,Array(D[:Seconds])) + map(Dates.Millisecond,floor.(Array(D[:Nanoseconds])./1e6))
 		t = Array{DateTime}(undef,size(D,1)) # Preallocate
 		if hf
 			for j=1:1:length(t)
@@ -110,6 +133,17 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 				# Biomet
 				t[j] = DateTime.(D[:DATE][j] * " " * D[:TIME][j],dfmt)
 			end
+		end
+	end
+	
+	##########################################################
+	##  Delete Temporary Files (until ZipFile.jl is fixed)  ##
+	##########################################################
+	junk = ""
+	for i = 1:1:length(list.files)
+		junk = joinpath(temp_dir,list.files[i].name)
+		if isfile(junk)
+			rm(junk)
 		end
 	end
 	

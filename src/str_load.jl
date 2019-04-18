@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 16.12.2016
-# Last Edit: 15.04.2019
+# Last Edit: 18.04.2019
 
 """# str_load
 
@@ -144,7 +144,6 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	## Load Header Information
 	fid = open(F,"r")
 	h1 = readline(fid)
-	#h1 = h1[rsearch(h1,"SPEC:")[end]+1:end] # Remove everything including and before the SPEC:
 	h1 = split(h1,"SPEC:")[2] # Remove everything including and before the SPEC:
 	h2 = readdlm(IOBuffer("\"" * replace(h1,"," => "\",\"") * "\""),',')
 	h = Array{String}(undef,length(h2) + 2)
@@ -188,7 +187,6 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	## Load data
 	D = DataFrame()
 	try
-		#D = DataFrames.readtable(F,eltypes = coltypes,separator = ' ',header = false,skipstart = 2*1)
 		D = CSV.read(F;delim=" ",header=h,datarow=2)[:,1:end-1]
 	catch
 		println("Cannot load " * F)

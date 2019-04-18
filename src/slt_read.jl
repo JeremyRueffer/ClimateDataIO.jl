@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 09.12.2016
-# Last Edit: 28.06.2018
+# Last Edit: 18.04.2019
 
 """# slt_read
 
@@ -40,7 +40,6 @@ function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 		t0 = DateTime(yr,m,dom,h,minut,0) # Initial file time
 		
 		fs = stat(F).size # File size in bytes
-		#l = Int((fs - 8 - 2*a_inputs)/bpr) # Number of rows of data, trusting the file
 		l = (fs - 8 - 2*a_inputs)/(8 + 2*a_inputs) # Number of rows of data, trusting the user inputs
 		if l - floor(l) != 0
 			warn(F * " either has a different column count than " * string(a_input + 4) * " or was terminated early.")
@@ -64,8 +63,6 @@ function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 			d[i,2] = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # v
 			d[i,3] = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # w
 			d[i,4] = Float64(read!(fid,Array{Int16}(undef,1))[1])/50 # c, # Speed of Sound
-			#d[i,5] = d[i,4]^2/403 - 273.15 # Tc, # Temperature
-			#println("u = " * string(d[i,1]) * " m/s , v = " * string(d[i,2]) * " m/s , w = " * string(d[i,3]) * " m/s , c = " * string(d[i,4]) * " K") # Temp
 			
 			for j=1:1:a_inputs
 				V = Float64(read!(fid,Array{Int16}(undef,1))[1]) # V1
@@ -74,7 +71,6 @@ function slt_read(F::String,a_inputs::Int,sample_rate::Int)
 					V = (V[1] + 25000)/10 # Binary to mV
 				end
 				d[i,j+4] = V
-				#println("   V = " * string(d[i,j+4]) * " mV") # Temp
 			end
 		end
 	catch

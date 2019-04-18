@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # Created: 04.11.2013
-# Last Edit: 11.04.2019
+# Last Edit: 18.04.2019
 
 """# csci_textread
 
@@ -99,7 +99,6 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	
 	## Load Data
 	D = CSV.read(F;types = types,header=cols,delim = ',',datarow = headerlines,dateformat = df)
-	#D = readtable(F,eltypes = types,separator = ',',header = false,skipstart = headerlines)
 	
 	if headeroutput
 		return D,loggerStr,colsStr,unitsStr,processingStr

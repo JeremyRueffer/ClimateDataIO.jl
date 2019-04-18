@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 09.12.2016
-# Last Edit: 28.06.2018
+# Last Edit: 18.04.2019
 
 """# slt_header
 
@@ -57,7 +57,6 @@ function slt_header(f::String,AnalogIn::Int,freq::Number)
 	close(fid)
 	
 	# Format Output
-	#output = DataFrame(FileName = f,T0 = t0,Line_Count = l,Start_Pos = stpos,Channels = 1,Bit_Mask = 1,EddyMeas_Version = eddymeasver,BytesPerRecord = bpr)
 	output = DataFrame(FileName = f,T0 = t0,Line_Count = l,Start_Pos = stpos,Channels = collect(Array[ch]),Bit_Mask = collect(Array[bm]),EddyMeas_Version = eddymeasver,BytesPerRecord = bpr)
 	
 	return output

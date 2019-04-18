@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 18.11.2014
-# Last Edit: 11.04.2019
+# Last Edit: 18.04.2019
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -44,11 +44,6 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	end
 	!isdir(source) ? error("Date Ranges can only be used when a directory is given as an input") : nothing
 	maxdate <= mindate ? error("Maximum date must be greater than the minimum date") : nothing
-	
-	#################
-	##  Constants  ##
-	#################
-	#epoch = DateTime(1970,1,1,1)
 	
 	##################
 	##  List Files  ##
@@ -105,8 +100,8 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			##  Average the Data  ##
 			########################
 			verbose ? println("\t   Averaging Data") : nothing
-			#f = [findnewton(t_temp,[(minimum(t_temp) - Dates.Millisecond(minimum(t_temp))):Dates.Minute(30):maximum(t_temp);]),length(t_temp) + 1;] # Julia 0.6, TEMP
-			f = [findnewton(t_temp,[(minimum(t_temp) - Dates.Millisecond(minimum(t_temp))):Dates.Minute(30):maximum(t_temp)]);(length(t_temp) + 1)]
+			target = collect((minimum(t_temp) - Dates.Millisecond(minimum(t_temp))):Dates.Minute(30):maximum(t_temp))
+			f = [findnewton(t_temp,target);(length(t_temp) + 1)]
 			
 			# Preallocate DataFrames
 			type_list = Array{DataType}(undef,size(D_temp)[2])

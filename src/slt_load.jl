@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 09.12.2016
-# Last Edit: 15.04.2019
+# Last Edit: 18.04.2019
 
 """# slt_load
 
@@ -112,19 +112,9 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	cfgfiles = cfgfiles[f]
 	
 	# Load CFG info
-	#println(cfgfiles) # Temp
 	configs = slt_config(cfgfiles)
 	configs = [configs;deepcopy(configs[1])] # Setup a fake final row with a time well beyond any real file name
 	configs[end]["Time"] = DateTime(9999)
-	#println("-------------------------") # Temp
-	#println(mindate) # Temp
-	#println("-------------------------") # Temp
-	#println(maxdate) # Temp
-	#println("-------------------------") # Temp
-	#println(files) # Temp
-	#println("-------------------------") # Temp
-	#println(configs) # Temp
-	#println("-------------------------") # Temp
 	
 	# Check for column changes
 	if length(unique(get.(configs,"Analog_Inputs",[-9999.0.*ones(Int,6)]))) > 1
@@ -162,9 +152,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	end
 	
 	# Rename DataFrame columns
-	#println(configs) # Temp
 	h = ["Time";"u";"v";"w";"sonic_temp";"speed_of_sound";"wind_direction";get(configs[1],"Analog_Names","")]
-	#println(h) # Temp
 	h_unique = unique(h);
 	if length(h) !== length(unique(h_unique))
 		for i = 1:1:length(h_unique)

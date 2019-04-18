@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 09.12.2016
-# Last Edit: 11.04.2019
+# Last Edit: 18.04.2019
 
 # TODOs:
 #	- Re-write the SLT header only instead of re-writing the entire file
@@ -106,62 +106,37 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		
 		doy = @sprintf("%03u",Dates.dayofyear(new_time))
 		temp = Dates.format(new_time,"yyyy" * doy * "HHMM")
-		#temp = string(Int(Year(new_time))) *
-		#	@sprintf("%03u",1 + Int(Day(DateTime(Year(new_time),Month(new_time),Day(new_time)) - DateTime(Year(new_time))))) *
-		#	@sprintf("%02u",Int(Hour(new_time))) *
-		#	@sprintf("%02u",Int(Minute(new_time)))
-		
-		#temp = string(Int(Year(new_time))) *
-		#	@sprintf("%03u",Int(Day(new_time - DateTime(Year(new_time))) + Day(1))) *
-		#	@sprintf("%02u",Int(Hour(new_time))) *
-		#	@sprintf("%02u",Int(Minute(new_time)))
 		new_filename = joinpath(f2,string(get(configs[i],"FileName","")[end-15]) * temp * ".cfg")
 		
 		# Correct the Data
-		#configs[:Time][i] = configs[:Time][i] + dt
 		configs[i]["Time"] = get(configs[i],"Time",DateTime(0)) + dt
 		
 		# Write the Data
 		fid = open(new_filename,"w+")
 		try
 			write(fid,"[Settings for EddyMeas]" * nl)
-			#write(fid,"Sonic: " * configs[:Sonic][i] * nl)
 			write(fid,"Sonic: " * get(configs[i],"Sonic","") * nl)
-			#write(fid,"Analyzer: " * configs[:Analyzer][i] * nl)
 			write(fid,"Analyzer: " * get(configs[i],"Analyzer","") * nl)
-			#write(fid,"Sonic alignment: " * string(configs[:Sonic_Alignment][i]) * " deg" * nl)
 			write(fid,"Sonic alignment: " * string(get(configs[i],"Sonic_Alignment",0)) * " deg" * nl)
-			#write(fid,"Sample frequency: " * configs[:Frequency][i] * " hz" * nl)
 			write(fid,"Sample frequency: " * get(configs[i],"Frequency","0") * " hz" * nl)
-			#write(fid,"Average time: " * string(configs[:Average_Time][i]) * " min" * nl)
 			write(fid,"Average time: " * string(get(configs[i],"Average_Time",0)) * " min" * nl)
 			for j=1:1:6
-				#f = findall((in)(j),configs[:Analog_Inputs][i])
 				f = findall((in)(j),get(configs[i],"Analog_Inputs",[0]))
 				if !isempty(f)
 					f = f[1]
-					#write(fid,configs[:Analog_Names][i][f] * ", " * string(configs[:Analog_Lower][i][f]) * " , " * string(configs[:Analog_Upper][i][f]) * " , " * configs[:Analog_Units][i][f] * " , " * string(configs[:Analog_Delay][i][f]) * " , E" * nl)
 					write(fid,get(configs[i],"Analog_Names",[""])[f] * ", " * string(get(configs[i],"Analog_Lower",[0])[f]) * " , " * string(get(configs[i],"Analog_Upper",[0])[f]) * " , " * get(configs[i],"Analog_Units",[""])[f] * " , " * string(get(configs[i],"Analog_Delay",[0])[f]) * " , E" * nl)
 				else
 					write(fid,"Analog " * string(j) * ", 0, 5000 , mV , 0 , D" * nl)
 				end
 			end
-			#write(fid,"Station height: " * configs[:Station_Height][i] * " m" * nl)
 			write(fid,"Station height: " * get(configs[i],"Station_Height","0") * " m" * nl)
 			write(fid,"[Settings for EddyFlux]" * nl)
-			#write(fid,"Measurement height: " * configs[:Measurement_Height][i] * " m" * nl)
 			write(fid,"Measurement height: " * get(configs[i],"Measurement_Height","0") * " m" * nl)
-			#write(fid,"Vegetation height: " * configs[:Vegetation_Height][i] * " m" * nl)
 			write(fid,"Vegetation height: " * get(configs[i],"Vegetation_Height","0") * " m" * nl)
-			#write(fid,"Inductance for CO2: " * configs[:Inductance_CO2][i] * " " * nl)
 			write(fid,"Inductance for CO2: " * get(configs[i],"Inductance_CO2","0") * " " * nl)
-			#write(fid,"Inductance for H2O: " * configs[:Inductance_H2O][i] * " " * nl)
 			write(fid,"Inductance for H2O: " * get(configs[i],"Inductance_H2O","0") * " " * nl)
-			#write(fid,"Coordinate rotation: " * configs[:Coordinate_Rotation][i] * nl)
 			write(fid,"Coordinate rotation: " * get(configs[i],"Coordinate_Rotation","") * nl)
-			#write(fid,"Webb correction: " * (configs[:Webb_Correction][i] ? "yes" : "no") * nl)
 			write(fid,"Webb correction: " * (get(configs[i],"Webb_Correction",false) ? "yes" : "no") * nl)
-			#write(fid,"Linear detrending: " * (configs[:Linear_Detrend][i] ? "yes" : "no") * nl)
 			write(fid,"Linear detrending: " * (get(configs[i],"Linear_Detrend",false) ? "yes" : "no") * nl)
 		catch
 			close(fid)
@@ -302,9 +277,6 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		analog_count = get(config1[1],"Analog_Count",0) # Length?
 		sample_frequency = Meta.parse(get(config1[1],"Frequency","0"))
 		for i=1:1:length(tempfiles)
-			#println(tempfiles[i]) # Temp
-			#println(analog_count) # Temp
-			#println(sample_frequency) # Temp
 			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
 			temp[:Analog_Count] = analog_count
 			temp[:Sample_Frequency] = sample_frequency
@@ -327,6 +299,7 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		new_filename = joinpath(f2,string(sltinfo[:FileName][i][end-15]) * temp * ".slt")
 		
 		fid = open(new_filename,"w+") # Open New File
+		
 		# Write the header
 		write(fid,Int8(sltinfo[:BytesPerRecord][i]))
 		write(fid,Int8(sltinfo[:EddyMeas_Version][i]))
@@ -353,7 +326,6 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 			if eof(fid0)
 				early_end = true
 			else
-				#temp_data = read(fid0,Int16,1)
 				temp_data = read!(fid0,Array{Int16}(undef,1))
 				write(fid,temp_data)
 			end

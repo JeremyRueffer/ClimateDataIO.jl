@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 16.12.2016
-# Last Edit: 11.04.2019
+# Last Edit: 18.04.2019
 
 """# stc_load
 
@@ -128,14 +128,11 @@ function stc_load(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String
 end # End stc_load(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String[]) where T <: String
 
 function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
-	#ext = F[rsearch(F,'.') + 1:end] # Save the extension
 	ext = splitext(F)[2][2:end] # Save the extension
 	
 	verbose ? println("  " * F) : nothing
 	
 	## Check for a proper file
-	#println(F) # Temp
-	#println(ext) # Temp
 	if isdir(F) == true
 		return stc_load(F,DateTime(0,1,1,0,0,0),DateTime(9999,1,1,0,0,0),verbose=verbose,cols=cols)
 	elseif isempty(ext) == true
@@ -155,7 +152,6 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	
 	h3 = permutedims(readdlm(IOBuffer("\"" * replace(h2[1:end],"," => "\",\"") * "\""),','),[2,1])
 	h = Array{String}(undef,length(h3))
-	#h[end] = "Empty"
 	for i=1:1:length(h3)
 		h[i] = strip(String(h3[i])) # Remove leading and trailing whitespace
 		h[i] = replace(h[i]," " => "_") # Replace remaining whitespace with _
