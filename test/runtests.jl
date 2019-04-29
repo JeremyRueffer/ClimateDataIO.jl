@@ -362,22 +362,23 @@ cp(F2,F3)
 # Add Data
 fid = open(F2,"r")
 fid2 = open(F3,"a")
-l = ""
-t = []
-ft = []
-s = []
+#l = ""
+#t = []
+#ft = []
+#s = []
 for i=1:1:8
     # Skip Header
-    l = readline(fid,keep=true)
+    readline(fid,keep=true)
 end
 p = position(fid) # File position
 for j=1:1:4 # 20 for another eight hours
-    seek(fid,p) # Reset file position
+	seek(fid,p) # Reset file position
+	global l = ""
+	t = []
+	ft = []
     while !eof(fid)
 		l = readline(fid,keep=true)
         ft = findall(x -> x == '\t',l)
-        #fsec = findfirst(l[6:end],'\t')+5 # Location of second column
-        #fmsec = findfirst(l[fsec+1:end],'\t')+fsec # Location of nanosecond column
         t = epoch + Dates.Second(Meta.parse(l[ft[1]+1:ft[2]])) + Dates.Millisecond(round(parse(Float64,l[ft[2]+1:ft[3]-1])/10^6))
         t = t + Dates.Second(1800*j)
 		l = l[1:5] * string(parse(Int,l[ft[1]+1:ft[2]]) + 1800*j) * l[ft[2]:ft[6]] * Dates.format(t,"yyyy-mm-dd\tHH:MM:SS:sss") * l[ft[8]:end]
