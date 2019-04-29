@@ -1,8 +1,9 @@
 using ClimateDataIO
 using Test
 using Dates
+using ZipFile
 
-# Last Edit: 18.04.2019
+# Last Edit: 29.04.2019
 
 # TODO: Add tests for GHG_LOAD and GHG_READ Biomet loading scenarios
 
@@ -345,7 +346,7 @@ elseif Sys.iswindows()
 	l = ZipFile.Reader(F1)
 	for j in l.files
 		fid = open(joinpath(dest,j.name),"w")
-		write(fid,readstring(j))
+		write(fid,read(j,String))
 		close(fid)
 	end
 	close(l) # Close Zip File
