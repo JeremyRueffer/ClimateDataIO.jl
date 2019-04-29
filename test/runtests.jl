@@ -331,7 +331,7 @@ end
 @test err == true || "LGR_READ: Should throw an error, invalid file given"
 
 
-#=
+
 # LICOR_SPLIT
 println("\n====  LICOR_SPLIT Tests  ====")
 src = splitdir(@__FILE__)[1]
@@ -400,7 +400,7 @@ rm(joinpath(dest,"2016-12-11T213000_AIU-1359.ghg"))
 @test Time[1] == DateTime(2016,12,11,21,30) || "LICOR_SPLIT: Time[1] first timestamp should be 2016-12-11T21:30:00"
 @test Time[end] == DateTime(2016,12,11,23,59,59,950) || "LICOR_SPLIT: Time[end] last timestamp should be 2016-12-11T23:59:59.95"
 @test size(Data) == (180000,48) || "LGR_SPLIT: Data output size incorrect, should be (180000,48)"
-=#
+
 src = splitdir(@__FILE__)[1]
 if isdir(joinpath(src,"temporary_files"))
 	rm(joinpath(src,"temporary_files"))

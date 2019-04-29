@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 07.11.2014
-# Last Edit: 18.04.2019
+# Last Edit: 29.04.2019
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -78,5 +78,11 @@ function lgr_read(source::String;verbose::Bool=false)
 		footerskip=footerlines, # PGP signed
 		types=col_types)
 	
+	close(fid)
+	if Sys.iswindows()
+		# Garbage collection ensures the temporary file is closed so that it can be deleted.
+		# Windows does not seem to close it in time whereas Linux does
+		GC.gc()
+	end
 	return D
 end

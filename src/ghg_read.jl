@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 18.11.2014
-# Last Edit: 18.04.2019
+# Last Edit: 29.04.2019
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -136,6 +136,11 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 		end
 	end
 	close(fid)
+	if Sys.iswindows()
+		# Garbage collection ensures the temporary file is closed so that it can be deleted.
+		# Windows does not seem to close it in time whereas Linux does
+		GC.gc()
+	end
 	
 	##########################################################
 	##  Delete Temporary Files (until ZipFile.jl is fixed)  ##

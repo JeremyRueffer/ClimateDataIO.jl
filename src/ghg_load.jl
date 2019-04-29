@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 18.11.2014
-# Last Edit: 18.04.2019
+# Last Edit: 29.04.2019
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -94,6 +94,11 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			println("\t" * string(i) * ": " * files[i])
 		end
 		(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose,filetype=filetype)
+		if Sys.iswindows()
+			# Garbage collection ensures the temporary file is closed so that it can be deleted.
+			# Windows does not seem to close it in time whereas Linux does
+			GC.gc()
+		end
 		
 		if average
 			########################
