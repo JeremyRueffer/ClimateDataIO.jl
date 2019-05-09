@@ -65,9 +65,14 @@ For more specific information see each functions' help.
 ---
 
 #### Requirements
-* DataFrames
 * CSV
-* ZipFiles (only for licor\_split and ghg\_read)"""
+* DataFrames
+* Dates
+* DelimitedFiles
+* Printf
+* Statistics
+* StatsBase
+* ZipFiles (only for licor`_`split and ghg`_`read)"""
 module ClimateDataIO
 
 	using DataFrames
