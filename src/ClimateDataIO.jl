@@ -9,7 +9,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 09.12.2016
-# Last Edit: 29.04.2019
+# Last Edit: 09.05.2019
 
 __precompile__(true)
 
@@ -67,7 +67,7 @@ For more specific information see each functions' help.
 #### Requirements
 * DataFrames
 * CSV
-* ZipFiles (only for licor_split and ghg_read)"""
+* ZipFiles (only for licor\_split and ghg\_read)"""
 module ClimateDataIO
 
 	using DataFrames
