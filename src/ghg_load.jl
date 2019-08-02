@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.1.0
 # 18.11.2014
-# Last Edit: 29.04.2019
+# Last Edit: 30.07.2019
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -81,6 +81,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	D_min = Float64[]
 	D_max = Float64[]
 	cols = String[]
+	pos = 1
 	
 	###################
 	## Load the Data ##
@@ -163,12 +164,37 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			##################
 			##  No Average  ##
 			##################
+			# Constants
+			buffer = 0.02 # 2%, extra pre-allocation space for unforseen file irregularities
 			if isempty(D)
-				t = t_temp
-				D = D_temp
+				# Determine time range of files to be loaded
+				pos = 1 # Writing start position
+				min = minimum(times)
+				max = maximum(times)
+				dT = median(Dates.value.(diff(t_temp)))
+				dTfiles = median(Dates.value.(diff(times)))
+				
+				# Estimate the number of lines based on the first file
+				est = Int64(floor((1 + buffer)*((max - min)/Millisecond(dT) + dTfiles/dT)))
+				println("Estimated Line Count: " * string(est))
+				
+				# Preallocate the final array
+				t = Array{DateTime}(undef,est)
+				Dinfo = describe(D_temp)
+				D = DataFrame(Dinfo.eltype,Dinfo.variable,est)
+				
+				# Add the initial dataset
+				lD = size(D_temp,1) # Length of first dataframe
+				t[1:lD] = t_temp
+				D[1:lD,:] = D_temp
+				
+				# Initialize array indexer
+				pos = lD + 1 # Position to start writing the current dataset
 			else
-				t = [t;t_temp]
-				D = [D;D_temp]
+				lD = length(t_temp) # Length of the dataframe to be added
+				t[pos:pos+lD-1] = t_temp
+				D[pos:pos+lD-1,:] = D_temp
+				pos = pos + lD
 			end
 		end
 		verbose ? println("") : nothing
@@ -181,6 +207,6 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	if average
 		return t_mean, D_mean, D_std, D_min, D_max
 	else
-		return t, D
+		return t[1:pos-1], D[1:pos-1,:]
 	end
 end
