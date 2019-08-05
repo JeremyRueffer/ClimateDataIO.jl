@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 09.12.2016
-# Last Edit: 18.04.2019
+# Last Edit: 05.08.2019
 
 """# slt_load
 
@@ -139,9 +139,9 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		for i=1:1:length(tempfiles)
 			cfg[offset] = cfgf
 			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
-			temp[:Analog_Count] = analog_count
-			temp[:Sample_Frequency] = sample_frequency
-			temp[:Slope] = collect(Array[slope])
+			temp[!,:Analog_Count] .= analog_count
+			temp[!,:Sample_Frequency] .= sample_frequency
+			temp[!,:Slope] = collect(Array[slope])
 			if isempty(sltinfo)
 				sltinfo = temp
 			else
@@ -169,13 +169,13 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	end
 	
 	# Preallocate Final Arrays
-	verbose ? println("Preallocating Final Arrays (" * string(Int(sum(sltinfo[:Line_Count]))) * "," * string(4+get(configs[1],"Analog_Count",0)) * ")") : nothing
-	l = Int(sum(sltinfo[:Line_Count]))
+	verbose ? println("Preallocating Final Arrays (" * string(Int(sum(sltinfo.Line_Count))) * "," * string(4+get(configs[1],"Analog_Count",0)) * ")") : nothing
+	l = Int(sum(sltinfo.Line_Count))
 	col_types = fill!(Array{DataType}(undef,length(h)),Float64)
 	col_types[1] = DateTime
 	D = DataFrame(col_types,Symbol[Symbol(i) for i in h],l)
-	D[:,2:end] = NaN
-	D[:,1] = DateTime(0)
+	D[:,2:end] .= NaN
+	D[:,1] .= DateTime(0)
 	
 	###################
 	## Load the Data ##
@@ -202,11 +202,11 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		
 		fid = open(files[i],"r")
 		try
-			seek(fid,sltinfo[:Start_Pos][i])
+			seek(fid,sltinfo.Start_Pos[i])
 			
-			for j=1:1:Int(sltinfo[:Line_Count][i])
-				ms = Int(floor((j-1)*(1/sltinfo[:Sample_Frequency][i])*1000)) # milliseconds
-				D[j+offset,1] = sltinfo[:T0][i] + Dates.Millisecond(ms) # Years, Months, Days, Hours, Minutes, Seconds, Milliseconds
+			for j=1:1:Int(sltinfo.Line_Count[i])
+				ms = Int(floor((j-1)*(1/sltinfo.Sample_Frequency[i])*1000)) # milliseconds
+				D[j+offset,1] = sltinfo.T0[i] + Dates.Millisecond(ms) # Years, Months, Days, Hours, Minutes, Seconds, Milliseconds
 				u = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # u
 				v = Float64(read!(fid,Array{Int16}(undef,1))[1])/100 # v
 				D[j+offset,2] = u
@@ -227,9 +227,9 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 					end
 				end
 				
-				for k=1:1:sltinfo[:Analog_Count][i]
+				for k=1:1:sltinfo.Analog_Count[i]
 					V = Float64(read!(fid,Array{Int16}(undef,1))[1]) # V1
-					if sltinfo[:Bit_Mask][i][k] & 2^(1-1) > 0 # If the first bit is high
+					if sltinfo.Bit_Mask[i][k] & 2^(1-1) > 0 # If the first bit is high
 						# If the bit mask is high, use the following formula to convert the binary value to mV
 						V = (V[1] + 25000)/10 # Binary to mV
 					end
@@ -238,7 +238,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 					D[j+offset,k+7] = m*V + b # Convert to a value
 				end
 			end
-			offset += Int(sltinfo[:Line_Count][i])
+			offset += Int(sltinfo.Line_Count[i])
 		catch e
 			println("Error loading file: " * files[i])
 			println(e)
@@ -249,10 +249,10 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	##############################
 	##  Correct Wind Direction  ##
 	##############################
-	f = findall(D[7] .> 360.0)
+	f = findall(D[!,7] .> 360.0)
 	D[f,7] = D[f,7] .- 360.0
 	
-	f = findall(D[7] .< 0.0)
+	f = findall(D[!,7] .< 0.0)
 	D[f,7] = D[f,7] .+ 360.0
 	
 	####################
@@ -266,9 +266,9 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	if average
 		verbose ? println("\tAveraging SLT Data") : nothing
 		
-		targets = collect(minimum(D[:Time]) - Dates.Millisecond(minimum(D[:Time])):Dates.Minute(30):maximum(D[:Time]))
-		actual = findnewton(D[:Time],targets)
-		f = [actual;length(D[:Time]) + 1]
+		targets = collect(minimum(D.Time) - Dates.Millisecond(minimum(D.Time)):Dates.Minute(30):maximum(D.Time))
+		actual = findnewton(D.Time,targets)
+		f = [actual;length(D.Time) + 1]
 		
 		# Preallocate
 		tmean = fill!(Array{DateTime}(undef,length(f) - 1),DateTime(0))

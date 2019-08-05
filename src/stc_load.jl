@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 0.7
 # 16.12.2016
-# Last Edit: 18.04.2019
+# Last Edit: 05.08.2019
 
 """# stc_load
 
@@ -95,8 +95,8 @@ function stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	begin
 		# Ensure all rows are defined in SPEFile
 		if in(true,[isequal(:SPEFile,i) for i in names(Dstc)]) # See if :SPEFile exists first
-			f = ismissing.(Dstc[:SPEFile])
-			Dstc[:SPEFile][f] .= ""
+			f = ismissing.(Dstc.SPEFile)
+			Dstc.SPEFile[f] .= ""
 		end
 		
 		f = Tstc .>= mindate
@@ -199,12 +199,12 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	#########################
 	##  Parse Time Format  ##
 	#########################
-	time = Array{DateTime}(undef,length(D[:time])) # Preallocate time column
+	time = Array{DateTime}(undef,length(D.time)) # Preallocate time column
 	secs = Dates.Second # Initialize so it doesn't have to do it every time in the loop
 	millisecs = Dates.Millisecond # Initialize so it doesn't have to do it every time in the loop
-	for i=1:1:length(D[:time])
-		secs = Dates.Second(floor(D[:time][i]))
-		millisecs = Dates.Millisecond(floor(1000(D[:time][i] - floor(D[:time][i]))))
+	for i=1:1:length(D.time)
+		secs = Dates.Second(floor(D.time[i]))
+		millisecs = Dates.Millisecond(floor(1000(D.time[i] - floor(D.time[i]))))
 		time[i] = DateTime(1904,1,1,0,0,0) + secs + millisecs
 	end
 	
@@ -238,7 +238,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 			D = DataFrame()
 			time = Array{DateTime}(undef,0)
 		else
-			D = D[cols]
+			D = D[:,cols]
 		end
 	end
 	

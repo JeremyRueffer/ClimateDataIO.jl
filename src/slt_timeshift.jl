@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.1.0
 # 09.12.2016
-# Last Edit: 18.04.2019
+# Last Edit: 05.08.2019
 
 # TODOs:
 #	- Re-write the SLT header only instead of re-writing the entire file
@@ -278,8 +278,8 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		sample_frequency = Meta.parse(get(config1[1],"Frequency","0"))
 		for i=1:1:length(tempfiles)
 			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
-			temp[:Analog_Count] = analog_count
-			temp[:Sample_Frequency] = sample_frequency
+			temp[!,:Analog_Count] .= analog_count
+			temp[!,:Sample_Frequency] .= sample_frequency
 			if isempty(sltinfo)
 				sltinfo = temp
 			else
@@ -292,17 +292,17 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 	# Process the SLT Files
 	println("\nProcessing SLT Files")
 	for i = 1:1:size(sltinfo,1)
-		new_time = sltinfo[:T0][i] + dt
-		println("   " * sltinfo[:FileName][i][end-15:end])
+		new_time = sltinfo.T0[i] + dt
+		println("   " * sltinfo.FileName[i][end-15:end])
 		doy = @sprintf("%03u",Dates.dayofyear(new_time))
 		temp = Dates.format(new_time,"yyyy" * doy * "HHMM")
-		new_filename = joinpath(f2,string(sltinfo[:FileName][i][end-15]) * temp * ".slt")
+		new_filename = joinpath(f2,string(sltinfo.FileName[i][end-15]) * temp * ".slt")
 		
 		fid = open(new_filename,"w+") # Open New File
 		
 		# Write the header
-		write(fid,Int8(sltinfo[:BytesPerRecord][i]))
-		write(fid,Int8(sltinfo[:EddyMeas_Version][i]))
+		write(fid,Int8(sltinfo.BytesPerRecord[i]))
+		write(fid,Int8(sltinfo.EddyMeas_Version[i]))
 		write(fid,Int8(Day(new_time).value))
 		write(fid,Int8(Month(new_time).value))
 		yr1 = Int8(floor(Int(Year(new_time).value)/100))
@@ -313,16 +313,16 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 		write(fid,Int8(Minute(new_time).value))
 		
 		# Write Channels and Bit Masks
-		for j=1:1:sltinfo[:Analog_Count][i]
-			write(fid,Int8(sltinfo[:Bit_Mask][i][j])) # Bit Mask
-			write(fid,Int8(sltinfo[:Channels][i][j])) # Channel
+		for j=1:1:sltinfo.Analog_Count[i]
+			write(fid,Int8(sltinfo.Bit_Mask[i][j])) # Bit Mask
+			write(fid,Int8(sltinfo.Channels[i][j])) # Channel
 		end
 		
 		# Read and Write Data
-		fid0 = open(sltinfo[:FileName][i]) # Open Original File
-		seek(fid0,sltinfo[:Start_Pos][i]) # Move file position to data
+		fid0 = open(sltinfo.FileName[i]) # Open Original File
+		seek(fid0,sltinfo.Start_Pos[i]) # Move file position to data
 		early_end = false
-		for j=1:1:sltinfo[:Line_Count][i]*(4 + length(sltinfo[:Channels][i]))
+		for j=1:1:sltinfo.Line_Count[i]*(4 + length(sltinfo.Channels[i]))
 			if eof(fid0)
 				early_end = true
 			else
@@ -330,7 +330,7 @@ function slt_timeshift(f1::String,f2::String,mindate::DateTime,maxdate::DateTime
 				write(fid,temp_data)
 			end
 		end
-		early_end ? println("    Early End of File: " * string(sltinfo[:Line_Count][i]) * " lines") : nothing # Temp
+		early_end ? println("    Early End of File: " * string(sltinfo.Line_Count[i]) * " lines") : nothing # Temp
 		close(fid0) # Close Original File
 		close(fid) # Close New File
 	end

@@ -116,8 +116,8 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 		sample_frequency = Meta.parse(get(config1[1],"Frequency",0))
 		for i=1:1:length(tempfiles)
 			temp = slt_header(tempfiles[i],analog_count,sample_frequency)
-			temp[:Analog_Count] = analog_count
-			temp[:Sample_Frequency] = sample_frequency
+			temp[!,:Analog_Count] .= analog_count
+			temp[!,:Sample_Frequency] .= sample_frequency
 			if isempty(sltinfo)
 				sltinfo = temp
 			else
@@ -130,11 +130,11 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 	# Process the SLT Files
 	println("\nProcessing SLT Files")
 	for i = 1:1:size(sltinfo,1)
-		temp = splitdir(sltinfo[:FileName][i])[2]
+		temp = splitdir(sltinfo.FileName[i])[2]
 		new_filename = joinpath(f2,temp)
 		
 		# Column Difference
-		colldiff = length(sltinfo[:Channels][i]) - maxanalogcols
+		colldiff = length(sltinfo.Channels[i]) - maxanalogcols
 		if colldiff <= 0
 			println("   ## " * temp * " ##   - Too few columns, skipped")
 			continue
@@ -144,28 +144,28 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 		fid = open(new_filename,"w+") # Open New File
 		# Write the header
 		write(fid,Int8(2(maxanalogcols + 4))) # Bytes per record = Number of columns x 2
-		write(fid,Int8(sltinfo[:EddyMeas_Version][i]))
-		write(fid,Int8(Dates.value(Dates.Day(sltinfo[:T0][i]))))
-		write(fid,Int8(Dates.value(Dates.Month(sltinfo[:T0][i]))))
-		yr1 = Int8(floor(Float64(Dates.value(Dates.Year(sltinfo[:T0][i])))/100))
-		yr2 = Int8(Int(Dates.value(Dates.Year(sltinfo[:T0][i]))) - 100*floor(Float64(Dates.value(Dates.Year(sltinfo[:T0][i])))/100))
+		write(fid,Int8(sltinfo.EddyMeas_Version[i]))
+		write(fid,Int8(Dates.value(Dates.Day(sltinfo.T0[i]))))
+		write(fid,Int8(Dates.value(Dates.Month(sltinfo.T0[i]))))
+		yr1 = Int8(floor(Float64(Dates.value(Dates.Year(sltinfo.T0[i])))/100))
+		yr2 = Int8(Int(Dates.value(Dates.Year(sltinfo.T0[i]))) - 100*floor(Float64(Dates.value(Dates.Year(sltinfo.T0[i])))/100))
 		write(fid,yr1)
 		write(fid,yr2)
-		write(fid,Int8(Dates.value(Dates.Hour(sltinfo[:T0][i]))))
-		write(fid,Int8(Dates.value(Dates.Minute(sltinfo[:T0][i]))))
+		write(fid,Int8(Dates.value(Dates.Hour(sltinfo.T0[i]))))
+		write(fid,Int8(Dates.value(Dates.Minute(sltinfo.T0[i]))))
 		
 		# Write Channels and Bit Masks
-		for j=1:1:sltinfo[:Analog_Count][i] - colldiff
-			write(fid,Int8(sltinfo[:Bit_Mask][i][j])) # Bit Mask
-			write(fid,Int8(sltinfo[:Channels][i][j])) # Channel
+		for j=1:1:sltinfo.Analog_Count[i] - colldiff
+			write(fid,Int8(sltinfo.Bit_Mask[i][j])) # Bit Mask
+			write(fid,Int8(sltinfo.Channels[i][j])) # Channel
 		end
 		
 		# Read and Write Data
-		fid0 = open(sltinfo[:FileName][i]) # Open Original File
-		seek(fid0,sltinfo[:Start_Pos][i]) # Move file position to data
+		fid0 = open(sltinfo.FileName[i]) # Open Original File
+		seek(fid0,sltinfo.Start_Pos[i]) # Move file position to data
 		early_end = false
-		for j=1:1:sltinfo[:Line_Count][i]
-			for k=1:1:4 + length(sltinfo[:Channels][i]) - colldiff
+		for j=1:1:sltinfo.Line_Count[i]
+			for k=1:1:4 + length(sltinfo.Channels[i]) - colldiff
 				if eof(fid0)
 					early_end = true
 				else
@@ -184,7 +184,7 @@ function slt_trim(f1::String,f2::String,mindate::DateTime,maxdate::DateTime,maxa
 			end
 		end
 		if early_end
-			println("    Early End of File: " * string(sltinfo[:Line_Count][i]) * " lines") # Temp
+			println("    Early End of File: " * string(sltinfo.Line_Count[i]) * " lines") # Temp
 		end
 		close(fid0) # Close Original File
 		close(fid) # Close New File

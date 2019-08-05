@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.1.0
 # 18.11.2014
-# Last Edit: 30.07.2019
+# Last Edit: 05.08.2019
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -112,7 +112,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			# Preallocate DataFrames
 			type_list = Array{DataType}(undef,size(D_temp)[2])
 			for j=1:1:size(D_temp)[2]
-				temp = typeof(D_temp[j][1])
+				temp = typeof(D_temp[!,j][1])
 				if temp <: Integer
 					temp = typeof(1.0)
 				end
@@ -172,11 +172,16 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 				min = minimum(times)
 				max = maximum(times)
 				dT = median(Dates.value.(diff(t_temp)))
-				dTfiles = median(Dates.value.(diff(times)))
-				
-				# Estimate the number of lines based on the first file
-				est = Int64(floor((1 + buffer)*((max - min)/Millisecond(dT) + dTfiles/dT)))
-				println("Estimated Line Count: " * string(est))
+				if length(times) > 1
+					# Case: Multiple Files
+					dTfiles = median(Dates.value.(diff(times)))
+					
+					# Estimate the number of lines based on the first file
+					est = Int64(floor((1 + buffer)*((max - min)/Millisecond(dT) + dTfiles/dT)))
+				else
+					# Case: Single File
+					est = length(t_temp)
+				end
 				
 				# Preallocate the final array
 				t = Array{DateTime}(undef,est)
@@ -186,14 +191,14 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 				# Add the initial dataset
 				lD = size(D_temp,1) # Length of first dataframe
 				t[1:lD] = t_temp
-				D[1:lD,:] = D_temp
+				D[1:lD,:] .= D_temp
 				
 				# Initialize array indexer
 				pos = lD + 1 # Position to start writing the current dataset
 			else
 				lD = length(t_temp) # Length of the dataframe to be added
 				t[pos:pos+lD-1] = t_temp
-				D[pos:pos+lD-1,:] = D_temp
+				D[pos:pos+lD-1,:] .= D_temp
 				pos = pos + lD
 			end
 		end

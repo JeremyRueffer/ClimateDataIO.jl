@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.1.0
 # 07.11.2014
-# Last Edit: 29.04.2019
+# Last Edit: 05.08.2019
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -28,7 +28,7 @@ function lgr_read(source::String;verbose::Bool=false)
 	# Check for file
 	!isfile(source) ? error(source * " must be a file") : nothing
 	
-	df = Dates.DateFormat("dd/mm/yyyy HH:MM:SS.sss") # Date format
+	dfmt = Dates.DateFormat("dd/mm/yyyy HH:MM:SS.sss") # Date format
 	
 	#############################################
 	##  Prepare Settings for Loading the Data  ##
@@ -44,7 +44,7 @@ function lgr_read(source::String;verbose::Bool=false)
 	# Determine Line Count
 	l = readline(fid)
 	l_count = 1
-	while !isempty(l)
+	while !isempty(l) && !eof(fid)
 		l = readline(fid)
 		l_count += 1
 	end
@@ -72,10 +72,11 @@ function lgr_read(source::String;verbose::Bool=false)
 	#####################
 	D = CSV.read(source,
 		datarow=3,
-		dateformat=Dates.DateFormat("  dd/mm/yyyy HH:MM:SS.sss"),
+		dateformat=dfmt,
 		delim=',',
 		header=col_names,
-		footerskip=footerlines, # PGP signed
+		limit=l_count-1, # Read up until the PGP signature but not beyond it
+		#footerskip=footerlines, # PGP signed
 		types=col_types)
 	
 	close(fid)

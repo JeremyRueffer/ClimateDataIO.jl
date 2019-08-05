@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.1.0
 # Created: 04.11.2013
-# Last Edit: 11.04.2019
+# Last Edit: 05.08.2019
 
 """# csci_textload
 
@@ -103,7 +103,7 @@ function csci_textload(F::String,rootname::String,mindate::DateTime=DateTime(0),
 		D = csci_textload(files,headerlines=headerlines,headeroutput=headeroutput,verbose=verbose,strlist=strlist,intlist=intlist,timelist=timelist)
 		
 		# Remove Values Still Out of Range
-		f = findall(mindate .<= D[1] .< maxdate)
+		f = findall(mindate .<= D[!,1] .< maxdate)
 		D = D[f,:]
 		
 		return D

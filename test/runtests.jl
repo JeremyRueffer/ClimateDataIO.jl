@@ -3,7 +3,7 @@ using Test
 using Dates
 using ZipFile
 
-# Last Edit: 29.04.2019
+# Last Edit: 05.08.2019
 
 # TODO: Add tests for GHG_LOAD and GHG_READ Biomet loading scenarios
 
@@ -15,8 +15,8 @@ maxdate = DateTime(2016,11,23,18)
 Data = ClimateDataIO.slt_load(src,mindate,maxdate,verbose=true)
 tmean, Dmean, Dstd, Dmin, Dmax = ClimateDataIO.slt_load(src,mindate,maxdate,verbose=true,average=true)
 @test size(Data) == (141377,13) || "SLTLOAD: Output size incorrect, should be (141377,13)"
-@test Data[:Time][1] == DateTime(2016,11,23,14,4) || "SLTLOAD: First timestamp should be 2016-11-23T14:04:00"
-@test Data[:Time][end] == DateTime(2016,11,23,17,59,59,900) || "SLTLOAD: Last timestamp should be 2016-11-23T17:59:59.9"
+@test Data.Time[1] == DateTime(2016,11,23,14,4) || "SLTLOAD: First timestamp should be 2016-11-23T14:04:00"
+@test Data.Time[end] == DateTime(2016,11,23,17,59,59,900) || "SLTLOAD: Last timestamp should be 2016-11-23T17:59:59.9"
 
 
 
@@ -57,8 +57,8 @@ for i in f
 	rm(joinpath(dest,i))
 end
 @test size(Data) == (141377,9) || "SLTLOAD: Output size incorrect, should be (141377,9)"
-@test Data[:Time][1] == DateTime(2016,11,23,14,4) || "SLTLOAD: First timestamp should be 2016-11-23T14:04:00"
-@test Data[:Time][end] == DateTime(2016,11,23,17,59,59,900) || "SLTLOAD: Last timestamp should be 2016-11-23T17:59:59.9"
+@test Data.Time[1] == DateTime(2016,11,23,14,4) || "SLTLOAD: First timestamp should be 2016-11-23T14:04:00"
+@test Data.Time[end] == DateTime(2016,11,23,17,59,59,900) || "SLTLOAD: Last timestamp should be 2016-11-23T17:59:59.9"
 
 
 
@@ -86,6 +86,9 @@ println("SLTREAD Test Complete")
 println("\n====  SLT_TIMESHIFT Tests  ====")
 src = splitdir(@__FILE__)[1]
 dest = joinpath(splitdir(@__FILE__)[1],"temporary_files")
+if !isdir(dest)
+	mkdir(dest)
+end
 mindate = DateTime(2016,11,23,14,4)
 maxdate = DateTime(2016,11,23,17)
 dt = Dates.Hour(4)
@@ -107,13 +110,17 @@ for i in f
 	println(joinpath(dest,i))
 	rm(joinpath(dest,i))
 end
-@test Data[:Time][1] == DateTime(2016,11,23,18,4) || "SLT_TIMESHIFT: Last timestamp should be 2016-11-23T18:04:00"
-@test Data[:Time][end] == DateTime(2016,11,23,21,0,0,100) || "SLT_TIMESHIFT: Last timestamp should be 2016-11-23T21:00:00.1"
+@test Data.Time[1] == DateTime(2016,11,23,18,4) || "SLT_TIMESHIFT: Last timestamp should be 2016-11-23T18:04:00"
+@test Data.Time[end] == DateTime(2016,11,23,21,0,0,100) || "SLT_TIMESHIFT: Last timestamp should be 2016-11-23T21:00:00.1"
 println("SLT_TIMESHIFT Test Complete")
 
 
 
 println("\n===  SLT_WRITE  ===")
+dest = joinpath(splitdir(@__FILE__)[1],"temporary_files")
+if !isdir(dest)
+	mkdir(dest)
+end
 src = joinpath(joinpath(splitdir(@__FILE__)[1],"temporary_files"),"X")
 t0 = DateTime(2017,1,31,14)
 ch = convert(Vector{Int8},[1,1])
@@ -195,7 +202,7 @@ Time,Data = ClimateDataIO.stc_load(src,verbose=true)
 
 
 println("\nStatus Values")
-statuses = ClimateDataIO.AerodyneStatus(Data[:StatusW])
+statuses = ClimateDataIO.AerodyneStatus(Data.StatusW)
 temp = fill!(Array{Bool}(undef,14399),false)
 @test temp == statuses.Valve1 || "AERODYNESTATUS: All values in statuses.Valve1 should be FALSE"
 @test temp == statuses.Valve2 || "AERODYNESTATUS: All values in statuses.Valve2 should be FALSE"
@@ -223,8 +230,8 @@ println("\n====  CSCI_TEXTREAD Tests  ====")
 src = splitdir(@__FILE__)[1]
 src = joinpath(src,"CampbellScientific_HC2S3_20161201-000000.dat")
 Data = ClimateDataIO.csci_textread(src,verbose=true)
-@test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
-@test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
+@test Data.Timestamp[1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
+@test Data.Timestamp[end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
 @test size(Data) == (11520,10) || "CSCI_TEXTREAD: Data output size incorrect, should be (11520,10)"
 
 
@@ -238,21 +245,23 @@ h4 = "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\""
 @test colsStr == h2 || "colsStr should be \"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\""
 @test unitsStr == h3 || "unitsStr should be \"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\""
 @test processingStr == h4 || "processingStr should be \"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\""
-@test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
-@test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
+@test Data.Timestamp[1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
+@test Data.Timestamp[end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
 @test size(Data) == (11520,10) || "CSCI_TEXTREAD: Data output size incorrect, should be (11520,10)"
 println("CSCI_TEXTREAD Test Complete")
 
 
 
 println("\n===  CSCI_TEXTLOAD  ===")
+src = splitdir(@__FILE__)[1]
+src = joinpath(src,"CampbellScientific_HC2S3_20161201-000000.dat")
 Data, HeaderInfo, HeaderColumns, HeaderUnits, HeaderSample = ClimateDataIO.csci_textload([src],verbose=true,headerlines=4,headeroutput=true)
 h1 = "\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\""
 h2 = "\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\""
 h3 = "\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\""
 h4 = "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\""
-@test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
-@test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
+@test Data.Timestamp[1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
+@test Data.Timestamp[end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
 @test size(Data) == (11520,10) || "CSCI_TEXTLOAD: Data output size incorrect, should be (11520,10)"
 @test h1 == HeaderInfo || "CSCI_TEXTLOAD: HeaderInfo should be \"\"TOA5\",\"CR1000 - IP\",\"CR1000\",\"E2948\",\"CR1000.Std.22\",\"CPU:LoggerCode.CR1\",\"35271\",\"Rotronics_HC2S3\"\""
 @test h2 == HeaderColumns || "CSCI_TEXTLOAD: HeaderColumns should be \"\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\""
@@ -264,14 +273,15 @@ h4 = "\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\""
 src = splitdir(@__FILE__)[1]
 rootname = "CampbellScientific"
 Data = ClimateDataIO.csci_textload(src,rootname,DateTime(2016,12),DateTime(2017,1))
-@test Data[:Timestamp][1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
-@test Data[:Timestamp][end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
+@test Data.Timestamp[1] == DateTime(2016,12,1,0,0,0) || "CSCI_TEXTREAD: Data[:Timestamp] first timestamp should be 2016-12-01T00:00:00"
+@test Data.Timestamp[end] == DateTime(2016,12,4,23,59,30) || "CSCI_TEXTREAD: Data[:Timestamp] last timestamp should be 2016-12-04T23:59:30"
 @test size(Data) == (11520,10) || "CSCI_TEXTLOAD: Data output size incorrect, should be (11520,10)"
 println("CSCI_TEXTLOAD Test Complete")
 
 
 
 println("\n===  CSCI_TIMES  ===")
+src = splitdir(@__FILE__)[1]
 src = joinpath(src,"CampbellScientific_HC2S3_20161201-000000.dat")
 srcs = [src,src]
 mintime = DateTime(2016,12,1)
@@ -315,8 +325,8 @@ Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=true,filetype="prima
 println("\n====  LGR_LOAD Tests  ====")
 src = splitdir(@__FILE__)[1]
 Data = ClimateDataIO.lgr_load(src,verbose=true)
-@test Data[:Time][1] == DateTime(2015,1,30,15,13,47,994) || "LGR_LOAD: Time[1] first timestamp should be 2015-01-30T15:13:47.994"
-@test Data[:Time][end] == DateTime(2015,1,31,15,13,55,727) || "LGR_LOAD: Time[end] last timestamp should be 2015-01-31T15:13:55.727"
+@test Data.Time[1] == DateTime(2015,1,30,15,13,47,994) || "LGR_LOAD: Time[1] first timestamp should be 2015-01-30T15:13:47.994"
+@test Data.Time[end] == DateTime(2015,1,31,15,13,55,727) || "LGR_LOAD: Time[end] last timestamp should be 2015-01-31T15:13:55.727"
 @test size(Data) == (78272,23) || "LGR_LOAD: Data output size incorrect, should be (78272,23)"
 
 

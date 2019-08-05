@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.1.0
 # 18.11.2014
-# Last Edit: 29.04.2019
+# Last Edit: 05.08.2019
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -126,12 +126,12 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 		if hf
 			for j=1:1:length(t)
 				# Normal Data
-				t[j] = DateTime.(D[:Date][j] * " " * D[:Time][j],dfmt)
+				t[j] = DateTime.(D.Date[j] * " " * D.Time[j],dfmt)
 			end
 		else
 			for j=1:1:length(t)
 				# Biomet
-				t[j] = DateTime.(D[:DATE][j] * " " * D[:TIME][j],dfmt)
+				t[j] = DateTime.(D.DATE[j] * " " * D.TIME[j],dfmt)
 			end
 		end
 	end
