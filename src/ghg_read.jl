@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.1.0
 # 18.11.2014
-# Last Edit: 05.08.2019
+# Last Edit: 20.08.2019
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -19,8 +19,9 @@
 
 #### Keywords:\n
 * verbose::Bool = Display information as the function runs, TRUE is default
-* filetype::String = Data file type to load, \"primary\" is default and loads the primary high frequency file. \"biomet\" would load the BIOMET file if it is present.\n\n"
-function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
+* filetype::String = Data file type to load, \"primary\" is default and loads the primary high frequency file. \"biomet\" would load the BIOMET file if it is present.
+* errorlog::String = Log each loading error, \"\" is default\n\n"
+function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",errorlog::String="")
 	##################
 	##  Initialize  ##
 	##################
@@ -34,7 +35,21 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 	##  Load Data  ##
 	#################
 	# Load Header
-	list = ZipFile.Reader(source) # List the files in the GHG file
+	try
+		list = ZipFile.Reader(source) # List the files in the GHG file
+	catch
+		@warn("Failed to read " * source)
+		if !isempty(errorlog)
+			try
+				fid3 = open(errorlog,"a+")
+				write(fid3,filetype * ", failed to read: " * source * "\r\n")
+				close(fid3)
+			catch
+				@warn("Writing problem \"failed to read\"")
+			end
+		end
+		return Array{DateTime}(undef,0), DataFrame(), ""
+	end
 	iData = 0
 	hf = false # High frequency?
 	for i=1:1:length(list.files)
@@ -72,8 +87,17 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 		try
 			run(pipeline(`unzip -p $[source] $[splitext(splitdir(source)[2])[1]]$[ext]`,joinpath(temp_dir,splitext(splitdir(source)[2])[1] * ext)))
 		catch
-			warn("Failed to unzip " * source)
-			return
+			@warn("Failed to unzip " * source)
+			if !isempty(errorlog)
+				try
+					fid3 = open(errorlog,"a+")
+					write(fid3,filetype * ", failed to unzip: " * source * "\r\n")
+					close(fid3)
+				catch
+					@warn("Writing problem \"failed to unzip\"")
+				end
+			end
+			return Array{DateTime}(undef,0), DataFrame(), ""
 		end
 	end
 	
@@ -93,6 +117,20 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary")
 		for j=1:1:header_line - 2
 			readline(fid) # ZipFile.jl temporary fix
 			#readline(list.files[iData])
+		end
+		if eof(fid)
+			# Erroneous Biomet file, it has no column names or data
+			@warn("No data: " * joinpath(temp_dir,list.files[iData].name))
+			if !isempty(errorlog)
+				try
+					fid3 = open(errorlog,"a+")
+					write(fid3,filetype * ", no data: " * source * "\r\n")
+					close(fid3)
+				catch
+					@warn("Writing problem \"no data\"")
+				end
+			end
+			return Array{DateTime}(undef,0), DataFrame(), ""
 		end
 		l_columns = readline(fid) # ZipFile.jl temporary fix
 		#l_columns = readline(list.files[iData])

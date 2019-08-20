@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.1.0
 # 18.11.2014
-# Last Edit: 05.08.2019
+# Last Edit: 20.08.2019
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -34,14 +34,16 @@
 * recur::Int = Subdirectory recursion depth. 1 is the root directory.
 * verbose::Bool = Display information as the function runs, TRUE is default
 * average::Bool = Half hour average the data starting at the first data point, TRUE is default
-* filetype::String = Data file type to load, \"primary\" is default and loads the primary high frequency file. \"biomet\" would load the BIOMET file if it is present.\n\n"
-function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);filetype::String="primary",recur::Int=1,verbose::Bool=true,average::Bool=true)
+* filetype::String = Data file type to load, \"primary\" is default and loads the primary high frequency file. \"biomet\" would load the BIOMET file if it is present.
+* errorlog::String = Log each loading error, \"\" is default\n\n"
+function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);filetype::String="primary",recur::Int=1,verbose::Bool=true,average::Bool=true,errorlog::String="")
 	##############
 	##  Checks  ##
 	##############
 	if isfile(source)
-		return ghg_read(source,verbose=verbose)
+		return ghg_read(source,verbose=verbose,filetype=filetype,errorlog=errorlog)
 	end
+	
 	!isdir(source) ? error("Date Ranges can only be used when a directory is given as an input") : nothing
 	maxdate <= mindate ? error("Maximum date must be greater than the minimum date") : nothing
 	
@@ -94,7 +96,11 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		if verbose
 			println("\t" * string(i) * ": " * files[i])
 		end
-		(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose,filetype=filetype)
+		(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose,filetype=filetype,errorlog=errorlog)
+		if isempty(t_temp) && isempty(D_temp) && isempty(cols)
+			# Likely a corrupt file, skip to the next
+			continue
+		end
 		if Sys.iswindows()
 			# Garbage collection ensures the temporary file is closed so that it can be deleted.
 			# Windows does not seem to close it in time whereas Linux does
