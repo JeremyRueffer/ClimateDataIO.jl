@@ -3,7 +3,7 @@ using Test
 using Dates
 using ZipFile
 
-# Last Edit: 05.08.2019
+# Last Edit: 21.08.2019
 
 # TODO: Add tests for GHG_LOAD and GHG_READ Biomet loading scenarios
 

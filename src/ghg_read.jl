@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.1.0
+# Julia 1.2.0
 # 18.11.2014
-# Last Edit: 20.08.2019
+# Last Edit: 21.08.2019
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -30,6 +30,21 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 	t = DateTime[]
 	dfmt = Dates.DateFormat("yyyy-mm-dd HH:MM:SS:sss")
 	rootnamereg = r"\d{4}\-\d{2}\-\d{2}T\d{6}_AIU\-\d{4}" # Regular expression for the basic file name
+	
+	function ghg_cleanup(list::ZipFile.Reader,temp_dir::String)
+		##########################################################
+		##  Delete Temporary Files (until ZipFile.jl is fixed)  ##
+		##########################################################
+		junk = ""
+		for i = 1:1:length(list.files)
+			junk = joinpath(temp_dir,list.files[i].name)
+			if isfile(junk)
+				rm(junk)
+			end
+		end
+		
+		return
+	end
 	
 	#################
 	##  Load Data  ##
@@ -65,45 +80,51 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 			end
 		end
 	end
-	(name,ext) = splitext(basename(source))
-	verbose ? println("\t   Loading " * name * ".data") : nothing
 	
 	#########################################
 	##  Unzip  (Until ZipFile.jl is fixed) ##
 	#########################################
 	verbose ? println("\t   Unzipping") : nothing
 	temp_dir = tempdir() # Temporary directory for unzipped files
-	if Sys.iswindows()
-		list = ZipFile.Reader(source) # List the files in the GHG file
-		open(joinpath(temp_dir,list.files[iData].name),"w") do io
-			write(io,read(list.files[iData]))
-		end
-	elseif Sys.islinux()
-		if filetype == "primary"
-			ext = ".data"
-		else
-			ext = "-biomet.data"
-		end
-		try
-			run(pipeline(`unzip -p $[source] $[splitext(splitdir(source)[2])[1]]$[ext]`,joinpath(temp_dir,splitext(splitdir(source)[2])[1] * ext)))
-		catch
-			@warn("Failed to unzip " * source)
-			if !isempty(errorlog)
-				try
-					fid3 = open(errorlog,"a+")
-					write(fid3,filetype * ", failed to unzip: " * source * "\r\n")
-					close(fid3)
-				catch
-					@warn("Writing problem \"failed to unzip\"")
-				end
+	if iData > 0
+		if Sys.iswindows()
+			list = ZipFile.Reader(source) # List the files in the GHG file
+			open(joinpath(temp_dir,list.files[iData].name),"w") do io
+				write(io,read(list.files[iData]))
 			end
-			return Array{DateTime}(undef,0), DataFrame(), ""
+		elseif Sys.islinux()
+			if filetype == "primary"
+				ext = ".data"
+			else
+				ext = "-biomet.data"
+			end
+			try
+				run(pipeline(`unzip -p $[source] $[splitext(splitdir(source)[2])[1]]$[ext]`,joinpath(temp_dir,splitext(splitdir(source)[2])[1] * ext)))
+			catch
+				@warn("Failed to unzip " * source)
+				if !isempty(errorlog)
+					try
+						fid3 = open(errorlog,"a+")
+						write(fid3,filetype * ", failed to unzip: " * source * "\r\n")
+						close(fid3)
+					catch
+						@warn("Writing problem \"failed to unzip\"")
+					end
+				end
+				ghg_cleanup(list,temp_dir)
+				return Array{DateTime}(undef,0), DataFrame(), ""
+			end
 		end
+	else
+		@warn("No Biomet file found: " * source)
+		ghg_cleanup(list,temp_dir)
+		return Array{DateTime}(undef,0), DataFrame(), ""
 	end
 	
-	###########################
-	##  High Frequency Data  ##
-	###########################
+	#################
+	##  Load Data  ##
+	#################
+	verbose ? println("\t   Loading " * joinpath(temp_dir,list.files[iData].name)) : nothing
 	t = Array{DateTime}(undef,0)
 	D = DataFrame()
 	cols = Array{Any}(undef,0,0)
@@ -130,6 +151,8 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 					@warn("Writing problem \"no data\"")
 				end
 			end
+			close(fid)
+			ghg_cleanup(list,temp_dir)
 			return Array{DateTime}(undef,0), DataFrame(), ""
 		end
 		l_columns = readline(fid) # ZipFile.jl temporary fix
@@ -183,13 +206,7 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 	##########################################################
 	##  Delete Temporary Files (until ZipFile.jl is fixed)  ##
 	##########################################################
-	junk = ""
-	for i = 1:1:length(list.files)
-		junk = joinpath(temp_dir,list.files[i].name)
-		if isfile(junk)
-			rm(junk)
-		end
-	end
+	ghg_cleanup(list,temp_dir)
 	
 	##############
 	##  Output  ##

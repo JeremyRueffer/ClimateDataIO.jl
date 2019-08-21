@@ -7,9 +7,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.2.0
 # 09.12.2016
-# Last Edit: 09.05.2019
+# Last Edit: 21.08.2019
 
 __precompile__(true)
 
@@ -72,6 +72,7 @@ For more specific information see each functions' help.
 * Printf
 * Statistics
 * StatsBase
+* Test
 * ZipFiles (only for licor`_`split and ghg`_`read)"""
 module ClimateDataIO
 
@@ -83,6 +84,7 @@ module ClimateDataIO
 	using ZipFile # Used in ghg_read (and therefore ghg_load) and licor_split
 	using CSV
 	using Statistics
+	using Test
 	
 	export AerodyneStatus,
 		str_load,

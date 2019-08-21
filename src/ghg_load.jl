@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.1.0
+# Julia 1.2.0
 # 18.11.2014
-# Last Edit: 20.08.2019
+# Last Edit: 21.08.2019
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
