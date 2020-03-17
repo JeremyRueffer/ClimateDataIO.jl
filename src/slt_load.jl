@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.3.1
 # 09.12.2016
-# Last Edit: 05.08.2019
+# Last Edit: 17.03.2020
 
 """# slt_load
 
@@ -288,10 +288,14 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 				Dmax[j,i] = NaN
 			end
 		end
-		names!(Dmean,names(D)[2:end])
-		names!(Dstd,names(D)[2:end])
-		names!(Dmin,names(D)[2:end])
-		names!(Dmax,names(D)[2:end])
+		#names!(Dmean,names(D)[2:end])
+		rename!(Dmean,names(D)[2:end])
+		#names!(Dstd,names(D)[2:end])
+		rename!(Dmean,names(D)[2:end])
+		#names!(Dmin,names(D)[2:end])
+		rename!(Dmean,names(D)[2:end])
+		#names!(Dmax,names(D)[2:end])
+		rename!(Dmean,names(D)[2:end])
 		
 		# Process the Data
 		temp_Dmean = []

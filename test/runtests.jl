@@ -202,18 +202,18 @@ Time,Data = ClimateDataIO.stc_load(src,verbose=true)
 
 
 println("\nStatus Values")
-statuses = ClimateDataIO.AerodyneStatus(Data.StatusW)
+statuses = ClimateDataIO.AerodyneStatus.(Data.StatusW)
 temp = fill!(Array{Bool}(undef,14399),false)
-@test temp == statuses.Valve1 || "AERODYNESTATUS: All values in statuses.Valve1 should be FALSE"
-@test temp == statuses.Valve2 || "AERODYNESTATUS: All values in statuses.Valve2 should be FALSE"
-@test temp == statuses.Valve3 || "AERODYNESTATUS: All values in statuses.Valve3 should be FALSE"
-@test temp != statuses.Valve4 || "AERODYNESTATUS: All values in statuses.Valve4 should not all be FALSE"
-@test temp == statuses.Valve5 || "AERODYNESTATUS: All values in statuses.Valve5 should be FALSE"
-@test temp == statuses.Valve6 || "AERODYNESTATUS: All values in statuses.Valve6 should be FALSE"
-@test temp == statuses.Valve7 || "AERODYNESTATUS: All values in statuses.Valve7 should be FALSE"
-@test temp != statuses.Valve8 || "AERODYNESTATUS: All values in statuses.Valve8 should not all be FALSE"
+@test temp == getfield.(statuses,:Valve1) || "AERODYNESTATUS: All values in statuses.Valve1 should be FALSE"
+@test temp == getfield.(statuses,:Valve2) || "AERODYNESTATUS: All values in statuses.Valve2 should be FALSE"
+@test temp == getfield.(statuses,:Valve3) || "AERODYNESTATUS: All values in statuses.Valve3 should be FALSE"
+@test temp != getfield.(statuses,:Valve4) || "AERODYNESTATUS: All values in statuses.Valve4 should not all be FALSE"
+@test temp == getfield.(statuses,:Valve5) || "AERODYNESTATUS: All values in statuses.Valve5 should be FALSE"
+@test temp == getfield.(statuses,:Valve6) || "AERODYNESTATUS: All values in statuses.Valve6 should be FALSE"
+@test temp == getfield.(statuses,:Valve7) || "AERODYNESTATUS: All values in statuses.Valve7 should be FALSE"
+@test temp != getfield.(statuses,:Valve8) || "AERODYNESTATUS: All values in statuses.Valve8 should not all be FALSE"
 known_names = (:AutoBG,:AutoCal,:FrequencyLock,:BinomialFilter,:AltMode,:GuessLast,:PowerNorm,:ContRefLock,:AutoSpectSave,:PressureLock,:WriteData,:RS232,:ElectronicBGSub,:Valve1,:Valve2,:Valve3,:Valve4,:Valve5,:Valve6,:Valve7,:Valve8)
-@test known_names == fieldnames(typeof(statuses)) || "AERODYNESTATUS: statuses field names should be as follows - \n21-element Array{Symbol,1}:\n  :AutoBG\n  :AutoCal\n  :FrequencyLock\n  :BinomialFilter\n  :AltMode\n  :GuessLast\n  :PowerNorm\n  :ContRefLock\n  :AutoSpectSave\n  :PressureLock\n  :WriteData\n  :RS232\n  :ElectronicBGSub\n  :Valve1\n  :Valve2\n  :Valve3\n  :Valve4\n  :Valve5\n  :Valve6\n  :Valve7\n  :Valve8"
+@test known_names == propertynames(statuses[1]) || "AERODYNESTATUS: statuses field names should be as follows - \n21-element Array{Symbol,1}:\n  :AutoBG\n  :AutoCal\n  :FrequencyLock\n  :BinomialFilter\n  :AltMode\n  :GuessLast\n  :PowerNorm\n  :ContRefLock\n  :AutoSpectSave\n  :PressureLock\n  :WriteData\n  :RS232\n  :ElectronicBGSub\n  :Valve1\n  :Valve2\n  :Valve3\n  :Valve4\n  :Valve5\n  :Valve6\n  :Valve7\n  :Valve8"
 
 
 
