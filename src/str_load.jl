@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.3.1
 # 16.12.2016
-# Last Edit: 05.08.2019
+# Last Edit: 17.03.2020
 
 """# str_load
 
@@ -69,20 +69,7 @@ function str_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	# Remove Files Out of Range
 	begin
 		# STR Files
-		f = findall(x -> x .== mindate,Tstr)
-		if isempty(f)
-			f = findall(x -> x .< mindate,Tstr)
-			if isempty(f)
-				f = 1
-			else
-				f = f[end]
-			end
-		else
-			f = f[1]
-		end
-		Tstr = Tstr[f:end]
-		Fstr = Fstr[f:end]
-		f = Tstr .< maxdate
+		f = findall(mindate .<= Tstr .< maxdate)
 		Tstr = Tstr[f]
 		Fstr = Fstr[f]
 	end
@@ -95,10 +82,7 @@ function str_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	
 	# Remove Time Values Out of Range
 	begin
-		f = Tstr .>= mindate
-		Tstr = Tstr[f]
-		Dstr = Dstr[f,:]
-		f = Tstr .<= maxdate
+		f = findall(mindate .<= Tstr .< maxdate)
 		Tstr = Tstr[f]
 		Dstr = Dstr[f,:]
 	end

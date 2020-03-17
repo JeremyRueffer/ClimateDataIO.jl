@@ -103,7 +103,8 @@ module ClimateDataIO
 		lgr_read,
 		ghg_load,
 		ghg_read,
-		licor_split
+		licor_split,
+		show
 	
 	dir = splitdir(@__FILE__)[1]
 	include(joinpath(dir,"aerodyne_parsetime.jl"))

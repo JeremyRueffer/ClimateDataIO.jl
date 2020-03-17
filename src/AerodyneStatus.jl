@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.3.1
 # 13.12.2016
-# Last Edit: 11.04.2019
+# Last Edit: 10.03.2020
 
 """# AerodyneStatus
 
@@ -16,8 +16,8 @@ Parse the StatusW column in an STC file into this custom type
 
 ### Example
 
-`statuses = AerodyneStatus(Dstc[:StatusW])`\n
-`statuses.Valve3` # Show statuses for valve 3
+`statuses = AerodyneStatus.(Dstc[:StatusW])`\n
+`valve1 = getfield.(statuses,:Valve1)` # Get all 'Valve1' field values from a vector of statuses, Dstc
 
 ---
 
@@ -45,101 +45,98 @@ Parse the StatusW column in an STC file into this custom type
 * **Valve 8** - Active/inactive
 """
 mutable struct AerodyneStatus
-	AutoBG::Vector{Bool}
-	AutoCal::Vector{Bool}
-	FrequencyLock::Vector{Bool}
-	BinomialFilter::Vector{Bool}
-	AltMode::Vector{Bool}
-	GuessLast::Vector{Bool}
-	PowerNorm::Vector{Bool}
-	ContRefLock::Vector{Bool}
+	AutoBG::Bool
+	AutoCal::Bool
+	FrequencyLock::Bool
+	BinomialFilter::Bool
+	AltMode::Bool
+	GuessLast::Bool
+	PowerNorm::Bool
+	ContRefLock::Bool
 	
-	AutoSpectSave::Vector{Bool}
-	PressureLock::Vector{Bool}
-	#b11::Vector{Bool}
-	#b12::Vector{Bool}
-	WriteData::Vector{Bool}
-	RS232::Vector{Bool}
-	ElectronicBGSub::Vector{Bool}
-	#b16::Vector{Bool}
+	AutoSpectSave::Bool
+	PressureLock::Bool
+	#b11::Bool
+	#b12::Bool
+	WriteData::Bool
+	RS232::Bool
+	ElectronicBGSub::Bool
+	#b16::Bool
 	
-	Valve1::Vector{Bool}
-	Valve2::Vector{Bool}
-	Valve3::Vector{Bool}
-	Valve4::Vector{Bool}
-	Valve5::Vector{Bool}
-	Valve6::Vector{Bool}
-	Valve7::Vector{Bool}
-	Valve8::Vector{Bool}
-	
-	# Constructor for AerodyneStatus type
-	function AerodyneStatus(vals::Array{T,1}) where T <: Float64
-		AerodyneStatus(Array{Int}(vals))
-	end # End AerodyneStatus(vals::Array{T,1}) where T <: Float64 constructor
+	Valve1::Bool
+	Valve2::Bool
+	Valve3::Bool
+	Valve4::Bool
+	Valve5::Bool
+	Valve6::Bool
+	Valve7::Bool
+	Valve8::Bool
 	
 	# Constructor for AerodyneStatus type
-	function AerodyneStatus(vals::Array{Int})
-		l = Int(length(vals))
+	function AerodyneStatus(val::Float64)
+		AerodyneStatus(Int(val))
+	end # End AerodyneStatus(val::Float64) constructor
+	
+	# Constructor for AerodyneStatus type
+	function AerodyneStatus(val::Int)
+		####################
+		##  Parse Inputs  ##
+		####################
+		# Byte 1
+		AutoBG = val & 2^(1-1) > 0
+		AutoCal = val & 2^(2-1) > 0
+		FrequencyLock = val & 2^(3-1) > 0
+		BinomialFilter = val & 2^(4-1) > 0
+		AltMode = val & 2^(5-1) > 0
+		GuessLast = val & 2^(6-1) > 0
+		PowerNorm = val & 2^(7-1) > 0
+		ContRefLock = val & 2^(8-1) > 0
 		
-		AutoBG = Array{Bool}(undef,l)
-		AutoCal = Array{Bool}(undef,l)
-		FrequencyLock = Array{Bool}(undef,l)
-		BinomialFilter = Array{Bool}(undef,l)
-		AltMode = Array{Bool}(undef,l)
-		GuessLast = Array{Bool}(undef,l)
-		PowerNorm = Array{Bool}(undef,l)
-		ContRefLock = Array{Bool}(undef,l)
+		# Byte 2
+		AutoSpectSave = val & 2^(9-1) > 0
+		PressureLock = val & 2^(10-1) > 0
+		#b11 = val & 2^(11-1) > 0
+		#b12 = val & 2^(12-1) > 0
+		WriteData = val & 2^(13-1) > 0
+		RS232 = val & 2^(14-1) > 0
+		ElectronicBGSub = val & 2^(15-1) > 0
+		#b16 = val & 2^(16-1) > 0
 		
-		AutoSpectSave = Array{Bool}(undef,l)
-		PressureLock = Array{Bool}(undef,l)
-		#b11 = Array{Bool}(undef,l)
-		#b12 = Array{Bool}(undef,l)
-		WriteData = Array{Bool}(undef,l)
-		RS232 = Array{Bool}(undef,l)
-		ElectronicBGSub = Array{Bool}(undef,l)
-		#b16 = Array{Bool}(undef,l)
+		# Byte 3
+		Valve1 = val & 2^(17-1) > 0
+		Valve2 = val & 2^(18-1) > 0
+		Valve3 = val & 2^(19-1) > 0
+		Valve4 = val & 2^(20-1) > 0
+		Valve5 = val & 2^(21-1) > 0
+		Valve6 = val & 2^(22-1) > 0
+		Valve7 = val & 2^(23-1) > 0
+		Valve8 = val & 2^(24-1) > 0
 		
-		Valve1 = Array{Bool}(undef,l)
-		Valve2 = Array{Bool}(undef,l)
-		Valve3 = Array{Bool}(undef,l)
-		Valve4 = Array{Bool}(undef,l)
-		Valve5 = Array{Bool}(undef,l)
-		Valve6 = Array{Bool}(undef,l)
-		Valve7 = Array{Bool}(undef,l)
-		Valve8 = Array{Bool}(undef,l)
-		
-		# Parse Inputs
-		for i=1:l
-			# Byte 1
-			AutoBG[i] = vals[i] & 2^(1-1) > 0
-			AutoCal[i] = vals[i] & 2^(2-1) > 0
-			FrequencyLock[i] = vals[i] & 2^(3-1) > 0
-			BinomialFilter[i] = vals[i] & 2^(4-1) > 0
-			AltMode[i] = vals[i] & 2^(5-1) > 0
-			GuessLast[i] = vals[i] & 2^(6-1) > 0
-			PowerNorm[i] = vals[i] & 2^(7-1) > 0
-			ContRefLock[i] = vals[i] & 2^(8-1) > 0
-			
-			# Byte 2
-			AutoSpectSave[i] = vals[i] & 2^(9-1) > 0
-			PressureLock[i] = vals[i] & 2^(10-1) > 0
-			#b11[i] = vals[i] & 2^(11-1) > 0
-			#b12[i] = vals[i] & 2^(12-1) > 0
-			WriteData[i] = vals[i] & 2^(13-1) > 0
-			RS232[i] = vals[i] & 2^(14-1) > 0
-			ElectronicBGSub[i] = vals[i] & 2^(15-1) > 0
-			#b16[i] = vals[i] & 2^(16-1) > 0
-			
-			# Byte 3
-			Valve1[i] = vals[i] & 2^(17-1) > 0
-			Valve2[i] = vals[i] & 2^(18-1) > 0
-			Valve3[i] = vals[i] & 2^(19-1) > 0
-			Valve4[i] = vals[i] & 2^(20-1) > 0
-			Valve5[i] = vals[i] & 2^(21-1) > 0
-			Valve6[i] = vals[i] & 2^(22-1) > 0
-			Valve7[i] = vals[i] & 2^(23-1) > 0
-			Valve8[i] = vals[i] & 2^(24-1) > 0
-		end # End of conversion
 		new(AutoBG,AutoCal,FrequencyLock,BinomialFilter,AltMode,GuessLast,PowerNorm,ContRefLock,AutoSpectSave,PressureLock,WriteData,RS232,ElectronicBGSub,Valve1,Valve2,Valve3,Valve4,Valve5,Valve6,Valve7,Valve8)
 	end # End of constructor
 end # End of type
+
+function Base.show(io::IO, status::AerodyneStatus)
+	#println("| AutoBG | AutoCal | Frequency Lock | Binomial Filter | AltMode | Guess Last | Power Norm. | Cont. Ref. Lock | Auto Spec. Save | Press. Lock | Write Data | RS232 | Elec. BG Sub. | Valve 1 | Valve 2 | Valve 3 | Valve 4 | Valve 5 | Valve 6 | Valve 7 | Valve 8 |")
+	status.Valve1 ? print("| Valve1") : nothing
+	status.Valve2 ? print("| Valve2") : nothing
+	status.Valve3 ? print("| Valve3") : nothing
+	status.Valve4 ? print("| Valve4") : nothing
+	status.Valve5 ? print("| Valve5") : nothing
+	status.Valve6 ? print("| Valve6") : nothing
+	status.Valve7 ? print("| Valve7") : nothing
+	status.Valve8 ? print("| Valve8") : nothing
+	status.WriteData ? print("| Write Data") : nothing
+	status.RS232 ? print("| RS232 Output") : nothing
+	status.GuessLast ? print("| Guess Last Fit") : nothing
+	status.ContRefLock ? print("| Continuous Reference Lock") : nothing
+	status.AutoSpectSave ? print("| Auto Spectrum Save") : nothing
+	status.AutoBG ? print("| Auto Background") : nothing
+	status.AutoCal ? print("| Auto Calibration") : nothing
+	status.FrequencyLock ? print("| Frequency Lock") : nothing
+	status.BinomialFilter ? print("| Binomial Filter") : nothing
+	status.AltMode ? print("| AltMode") : nothing
+	status.PowerNorm ? print("| Power Normalization") : nothing
+	status.PressureLock ? print("| Pressure Lock") : nothing
+	status.ElectronicBGSub ? print("| Electronic Background Subtraction") : nothing
+end

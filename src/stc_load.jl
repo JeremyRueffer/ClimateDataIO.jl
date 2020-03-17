@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.3.1
 # 16.12.2016
-# Last Edit: 05.08.2019
+# Last Edit: 17.03.2020
 
 """# stc_load
 
@@ -69,20 +69,7 @@ function stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	# Remove Files Out of Range
 	begin
 		# STC Files
-		f = findall((in)(Tstc .== mindate),true)
-		if isempty(f)
-			f = findall((in)(Tstc .< mindate),true)
-			if isempty(f)
-				f = 1
-			else
-				f = f[end]
-			end
-		else
-			f = f[1]
-		end
-		Tstc = Tstc[f:end]
-		Fstc = Fstc[f:end]
-		f = Tstc .< maxdate
+		f = findall(mindate .<= Tstc .< maxdate)
 		Tstc = Tstc[f]
 		Fstc = Fstc[f]
 	end
@@ -99,10 +86,7 @@ function stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 			Dstc.SPEFile[f] .= ""
 		end
 		
-		f = Tstc .>= mindate
-		Tstc = Tstc[f]
-		Dstc = Dstc[f,:]
-		f = Tstc .<= maxdate
+		f = findall(mindate .<= Tstc .< maxdate)
 		Tstc = Tstc[f]
 		Dstc = Dstc[f,:]
 	end
@@ -190,7 +174,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	## Load data
 	D = DataFrame()
 	try
-		D = CSV.read(F;delim=",",types=coltypes,header=h,datarow=3)
+		D = CSV.read(F;delim=",",types=coltypes,header=h,datarow=3,missingstring="-")
 	catch
 		println("Cannot load " * F)
 		error("ERROR loading file")
