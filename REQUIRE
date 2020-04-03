@@ -4,5 +4,4 @@ DataFrames
 DelimitedFiles
 Dates
 StatsBase
-ZipFile
 Test
