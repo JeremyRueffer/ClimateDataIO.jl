@@ -7,9 +7,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.2.0
+# Julia 1.4.0
 # 09.12.2016
-# Last Edit: 21.08.2019
+# Last Edit: 01.04.2020
 
 __precompile__(true)
 
@@ -72,8 +72,7 @@ For more specific information see each functions' help.
 * Printf
 * Statistics
 * StatsBase
-* Test
-* ZipFiles (only for licor`_`split and ghg`_`read)"""
+* Test"""
 module ClimateDataIO
 
 	using DataFrames
@@ -81,7 +80,6 @@ module ClimateDataIO
 	using Printf
 	using DelimitedFiles
 	using StatsBase
-	using ZipFile # Used in ghg_read (and therefore ghg_load) and licor_split
 	using CSV
 	using Statistics
 	using Test
@@ -130,4 +128,15 @@ module ClimateDataIO
 	include(joinpath(dir,"lgr_read.jl"))
 	include(joinpath(dir,"licor_split.jl"))
 	include(joinpath(dir,"ziptextfiles.jl"))
+	
+	# Define 7zip location constant
+	if Sys.iswindows() & (VERSION >= VersionNumber("1.3.0"))
+		const exe7z = joinpath(splitdir(Sys.BINDIR)[1],"libexec","7z.exe")
+	elseif Sys.iswindows() & (VERSION < VersionNumber("1.3.0"))
+		const exe7z = joinpath(splitdir(Sys.BINDIR)[1],"7z.exe")
+	elseif Sys.isunix() & (VERSION >= VersionNumber("1.3.0"))
+		const exe7z = joinpath(splitdir(Sys.BINDIR)[1],"libexec","7z")
+	elseif Sys.isunix() & (VERSION < VersionNumber("1.3.0"))
+		const exe7z = joinpath(splitdir(Sys.BINDIR)[1],"7z")
+	end
 end

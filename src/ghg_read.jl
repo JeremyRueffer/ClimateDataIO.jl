@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.2.0
+# Julia 1.4.0
 # 18.11.2014
-# Last Edit: 21.08.2019
+# Last Edit: 01.04.2020
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -31,27 +31,13 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 	dfmt = Dates.DateFormat("yyyy-mm-dd HH:MM:SS:sss")
 	rootnamereg = r"\d{4}\-\d{2}\-\d{2}T\d{6}_AIU\-\d{4}" # Regular expression for the basic file name
 	
-	function ghg_cleanup(list::ZipFile.Reader,temp_dir::String)
-		##########################################################
-		##  Delete Temporary Files (until ZipFile.jl is fixed)  ##
-		##########################################################
-		junk = ""
-		for i = 1:1:length(list.files)
-			junk = joinpath(temp_dir,list.files[i].name)
-			if isfile(junk)
-				rm(junk)
-			end
-		end
-		
-		return
-	end
-	
 	#################
 	##  Load Data  ##
 	#################
 	# Load Header
+	list = []
 	try
-		list = ZipFile.Reader(source) # List the files in the GHG file
+		list = zipList(source) # List the files in the GHG file
 	catch
 		@warn("Failed to read " * source)
 		if !isempty(errorlog)
@@ -67,13 +53,13 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 	end
 	iData = 0
 	hf = false # High frequency?
-	for i=1:1:length(list.files)
-		if length(list.files[i].name) >= 31
-			if occursin(rootnamereg,list.files[i].name[1:26])
-				if filetype == "primary" && length(list.files[i].name) == 31
+	for i=1:1:length(list)
+		if length(list[i]) >= 31
+			if occursin(rootnamereg,list[i][1:26])
+				if filetype == "primary" && length(list[i]) == 31
 					iData = i
 					hf = true
-				elseif filetype == "biomet" && list.files[i].name[end-10:end] == "biomet.data"
+				elseif filetype == "biomet" && list[i][end-10:end] == "biomet.data"
 					iData = i
 					hf = false
 				end
@@ -81,17 +67,21 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 		end
 	end
 	
-	#########################################
-	##  Unzip  (Until ZipFile.jl is fixed) ##
-	#########################################
+	#############
+	##  Unzip  ##
+	#############
 	verbose ? println("\t   Unzipping") : nothing
 	temp_dir = tempdir() # Temporary directory for unzipped files
 	if iData > 0
 		if Sys.iswindows()
-			list = ZipFile.Reader(source) # List the files in the GHG file
-			open(joinpath(temp_dir,list.files[iData].name),"w") do io
-				write(io,read(list.files[iData]))
+			if filetype == "biomet"
+				subfile = splitext(basename(source))[1] * "-biomet.data"
+			else
+				subfile = splitext(basename(source))[1] * ".data"
 			end
+			
+			#read(`$exe7z x $source -y -o$temp_dir $subfile`); # Temp
+			zipExtractFile(source,temp_dir,subfile)
 		elseif Sys.islinux()
 			if filetype == "primary"
 				ext = ".data"
@@ -124,11 +114,11 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 	#################
 	##  Load Data  ##
 	#################
-	verbose ? println("\t   Loading " * joinpath(temp_dir,list.files[iData].name)) : nothing
+	verbose ? println("\t   Loading " * joinpath(temp_dir,list[iData])) : nothing
 	t = Array{DateTime}(undef,0)
 	D = DataFrame()
 	cols = Array{Any}(undef,0,0)
-	fid = open(joinpath(temp_dir,list.files[iData].name),"r") # ZipFile.jl temporary fix
+	fid = open(joinpath(temp_dir,list[iData]),"r")
 	if iData != 0
 		if filetype == "primary"
 			header_line = 9
@@ -136,12 +126,11 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 			header_line = 7
 		end
 		for j=1:1:header_line - 2
-			readline(fid) # ZipFile.jl temporary fix
-			#readline(list.files[iData])
+			readline(fid)
 		end
 		if eof(fid)
 			# Erroneous Biomet file, it has no column names or data
-			@warn("No data: " * joinpath(temp_dir,list.files[iData].name))
+			@warn("No data: " * joinpath(temp_dir,list[iData]))
 			if !isempty(errorlog)
 				try
 					fid3 = open(errorlog,"a+")
@@ -155,8 +144,7 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 			ghg_cleanup(list,temp_dir)
 			return Array{DateTime}(undef,0), DataFrame(), ""
 		end
-		l_columns = readline(fid) # ZipFile.jl temporary fix
-		#l_columns = readline(list.files[iData])
+		l_columns = readline(fid)
 		cols = permutedims(readdlm(IOBuffer("\"" * replace(l_columns,"\t" => "\",\"") * "\""),','),[2,1])
 		new_names = Array{String}(undef,length(cols))
 		temp_name = ""
@@ -179,8 +167,8 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 			col_types[end] = Int32
 		end
 		# datarow = 1, the position within the file is just at the start of the data already because of the header loading
-		D = CSV.read(joinpath(temp_dir,list.files[iData].name),types = col_types,header = new_names,delim = '\t',datarow = header_line) # # ZipFile.jl temporary fix
-		#D = CSV.read(list.files[iData],types = col_types,header = new_names,delim = '\t',datarow = 1)
+		D = CSV.read(joinpath(temp_dir,list[iData]),types = col_types,header = new_names,delim = '\t',datarow = header_line) # # ZipFile.jl temporary fix
+		#D = CSV.read(list[iData],types = col_types,header = new_names,delim = '\t',datarow = 1)
 		
 		# Convert Time
 		t = Array{DateTime}(undef,size(D,1)) # Preallocate
@@ -197,11 +185,11 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 		end
 	end
 	close(fid)
-	if Sys.iswindows()
-		# Garbage collection ensures the temporary file is closed so that it can be deleted.
-		# Windows does not seem to close it in time whereas Linux does
-		GC.gc()
-	end
+	#if Sys.iswindows()
+	#	# Garbage collection ensures the temporary file is closed so that it can be deleted.
+	#	# Windows does not seem to close it in time whereas Linux does
+	#	GC.gc()
+	#end
 	
 	##########################################################
 	##  Delete Temporary Files (until ZipFile.jl is fixed)  ##
@@ -212,4 +200,14 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 	##  Output  ##
 	##############
 	return t,D,cols
+end
+
+function ghg_cleanup(list::Array{String,1},temp_dir::String)
+	junk = ""
+	for i = 1:1:length(list)
+		junk = joinpath(temp_dir,list[i])
+		if isfile(junk)
+			rm(junk)
+		end
+	end
 end

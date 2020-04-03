@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.4.0
 # Created: 01.11.2013
-# Last Edit: 26.06.2018
+# Last Edit: 01.04.2020
 
 """# dirlist(directory::ASCIIString;recur_depth::Int,regular_expression::Regex)
 
@@ -72,40 +72,29 @@ function dirlist(directories::Array{T,1};recur::Int=typemax(Int),regex::Regex=r"
 	end
 	
 	# Initialize variables to be used inside the loop
-	flist = Array{String}(undef,0) # File list
-	dlist = Array{String}(undef,0) # Directory list
+	flist = Vector{String}() # File list
+	dlist = Vector{String}() # Directory list
 	rcr = 1
-	lst = Array{String}(undef,0)
-	nextdirs = Array{String}(undef,0)
+	lst = Vector{String}()
+	nextdirs = Vector{String}()
 	
 	# Iterate through the given directory and its subdirectories
 	while rcr <= rcr_max && ~isempty(directories)
 		# While the maximum recursion level hasn't been reached and "directories" is not empty
-		nextdirs = Array{String}(undef,0) # List of directories for the next iteration
+		nextdirs = Vector{String}() # List of directories for the next iteration
 		for i=1:1:length(directories)
-			lst = Array{String}(undef,0) # Define and reset on each cycle
+			lst = Vector{String}() # Reset the file list each cycle
 			try # May fail on certain folders like K:\__Papierkorb__\
-				lst = readdir(directories[i]) # List contents of specified directory
+				lst = joinpath.(directories[i],readdir(directories[i])) # List contents of specified directory and reformat
 			catch
 				println("FAILED READING " * directories[i])
 				println("Continuing...")
 			end
-			fbool = fill!(Array{Bool}(undef,length(lst)),false) # File boolean array, true = file, false = not
-			dbool = fill!(Array{Bool}(undef,length(lst)),false) # Directory boolean array (FASTER)
+			fDirs = isdir.(lst)
 			
-			# Check for files and directories
-			for j=1:1:length(lst)
-				if isdir(joinpath(directories[i],lst[j]))
-					dbool[j] = true
-					lst[j] = joinpath(directories[i],lst[j]) # Make the directory a full path
-				elseif isfile(joinpath(directories[i],lst[j]))
-					fbool[j] = true
-					lst[j] = joinpath(directories[i],lst[j]) # Make the file a full path
-				end
-			end
-			flist = [flist;lst[fbool]] # Add the new files
-			dlist = [dlist;lst[dbool]] # Add the new directories
-			nextdirs = [nextdirs;lst[dbool]] # Add the directories to a list of future directories to search
+			append!(flist,lst[fDirs .== false]) # Add the new files
+			append!(dlist,lst[fDirs]) # Add the new directories
+			append!(nextdirs,lst[fDirs]) # Add the directories to a list of future directories to search
 		end
 		directories = nextdirs
 		rcr += 1 # Next level of recursion
@@ -113,11 +102,7 @@ function dirlist(directories::Array{T,1};recur::Int=typemax(Int),regex::Regex=r"
 	
     if regex != r""
 		# Find specific files if regular expression exists
-		matches = repeat([false],length(flist)) # Preallocate a false array
-		for i=1:1:length(flist)
-			matches[i] = occursin(regex,flist[i])
-		end
-		flist = flist[matches] # Take only matching files
+		filter!(x -> occursin(regex,x),flist)
 	end
 	
     return flist,dlist # Return the results of the file and directory listing

@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.2.0
+# Julia 1.4.0
 # 18.11.2014
-# Last Edit: 21.08.2019
+# Last Edit: 26.03.2020
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -36,7 +36,7 @@
 * average::Bool = Half hour average the data starting at the first data point, TRUE is default
 * filetype::String = Data file type to load, \"primary\" is default and loads the primary high frequency file. \"biomet\" would load the BIOMET file if it is present.
 * errorlog::String = Log each loading error, \"\" is default\n\n"
-function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);filetype::String="primary",recur::Int=1,verbose::Bool=true,average::Bool=true,errorlog::String="")
+function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);filetype::String="primary",recur::Int=1,verbose::Bool=true,average::Bool=true,errorlog::String="",multithread::Bool=false,nThreads::Int=Threads.nthreads())
 	##############
 	##  Checks  ##
 	##############
@@ -85,6 +85,13 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	cols = String[]
 	pos = 1
 	
+	#######################
+	##  Multi-threading  ##
+	#######################
+	current_thread = [1] # Which thread gets to write at this moment. It is an array so it will be passed by reference and every thread will read the same value.
+	multithread ? nThreads = nThreads : nThreads = 1
+	nThreads > Threads.nthreads() ? nThreads = Threads.nthreads() : nothing # Ensure the thread count isn't higher than the number set in JULIA_NUM_THREADS
+	
 	###################
 	## Load the Data ##
 	###################
@@ -92,11 +99,37 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		println("GHG Source: " * source)
 		println("Load " * string(length(files)) * " GHG files")
 	end
-	for i=1:1:length(files)
-		if verbose
-			println("\t" * string(i) * ": " * files[i])
+	for i=1:nThreads:length(files)
+		if nThreads == 1
+			if verbose
+				println("\t" * string(i) * ": " * files[i])
+			end
+			
+			# Single-threaded load
+			(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose,filetype=filetype,errorlog=errorlog)
+		else
+			# Multi-threaded load
+			current_thread[1] = 1 # Reset the thread tracker
+			max_count = nThreads
+			t_temp = [Array{DateTime}(undef,0)] # Preallocate empty DateTime array so new values can be appended, encasing it in an array so it ca be passed by reference
+			D_temp = [DataFrame()] # Preallocate empty dataframes so new ones can be appended, encasing it in an array so it ca be passed by reference
+			if i + max_count - 1 > length(files)
+				max_count = length(files) - i + 1
+			end
+			
+			if verbose
+				for k=i:1:i+max_count-1
+					println("\t" * string(k) * ": " * files[k])
+				end
+			end
+			Threads.@threads for j=1:1:max_count
+				cols = multithreadLoad(t_temp,D_temp,current_thread,files[i:i+max_count-1],false,filetype,errorlog)
+			end
+			
+			# Remove encasing arrays
+			t_temp = t_temp[1]
+			D_temp = D_temp[1]
 		end
-		(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose,filetype=filetype,errorlog=errorlog)
 		if isempty(t_temp) && isempty(D_temp) && isempty(cols)
 			# Likely a corrupt file, skip to the next
 			continue
@@ -220,4 +253,33 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	else
 		return t[1:pos-1], D[1:pos-1,:]
 	end
+end
+
+function multithreadLoad(timeOut::Array{Array{DateTime,1},1},dataOut::Array{DataFrame,1},current_thread::Array{Int,1},files::Array{String,1},verbose::Bool,filetype::String,errorlog::String)
+	# Constants
+	thread_start = now()
+	dt = Minute(1) # Time to timeout
+	
+	# Load the data
+	time, data, cols = ghg_read(files[Threads.threadid()],verbose=verbose,filetype=filetype,errorlog=errorlog)
+	
+	# Once the data is loaded, wait until it's this thread's turn to append the data
+	while current_thread[1] != Threads.threadid() || now() - thread_start >= dt
+		if now() - thread_start >= dt
+			error("Timeout")
+		else
+			sleep(1.0)
+		end
+	end
+	
+	# Append the data and increment current thread value
+	if !isempty(time)
+		# TODO: Check that the columns match, needed?
+		
+		timeOut[1] = [timeOut[1];time] # Append time data
+		dataOut[1] = [dataOut[1];data] # Append data
+		current_thread[1] = current_thread[1] + 1 # Update which thread is allowed to write
+	end
+	
+	return cols # Needed?
 end

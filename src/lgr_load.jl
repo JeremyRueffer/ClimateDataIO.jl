@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.4.0
 # 07.11.2014
-# Last Edit: 18.04.2019
+# Last Edit: 01.04.2020
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -71,25 +71,16 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 	# List and unzip contents
 	D = DataFrame()
 	for i=1:1:length(files)
+		println("-=-==  " * files[i] * "  ==-=-") # Temp
 		temp = files[i]
-		zipfiles = Array{String}(undef,0)
-		zipdirectories = Array{String}(undef,0)
+		zipfiles = Vector{String}()
+		zipdirectories = Vector{String}()
 		
 		# List Zip Contents
 		verbose ? println("   # " * string(i) * ": " * basename(temp)) : nothing
 		if Sys.iswindows()
-			l = ZipFile.Reader(files[i])
-			for j in l.files
-				if splitext(j.name)[2] == ".txt"
-					push!(zipfiles,joinpath(dest,j.name))
-					
-					verbose ? println("      " * j.name) : nothing
-					fid = open(joinpath(dest,j.name),"w")
-					write(fid,read(j,String))
-					close(fid)
-				end
-			end
-			close(l) # Close Zip File
+			zipfiles = joinpath.(dest,zipList(files[i])) # List the files in the archive
+			zipExtractAll(files[i],dest)
 		else
 			l = readdlm(IOBuffer(read(`unzip -l $temp`,String)),',')[4:end-2]
 			for j=1:1:length(l)
