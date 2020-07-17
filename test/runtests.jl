@@ -3,7 +3,7 @@ using Test
 using Dates
 #0using DataFrames
 
-# Last Edit: 02.04.2020
+# Last Edit: 17.07.2020
 
 # Define 7zip location constant
 if Sys.iswindows() & (VERSION >= VersionNumber("1.3.0"))
@@ -233,7 +233,7 @@ end
 	src = splitdir(@__FILE__)[1]
 	src = joinpath(src,"161210_000000.stc")
 	Time,Data = ClimateDataIO.stc_load(src,verbose=true,cols = ["Praw","time"])
-	@test names(Data) == [:Praw,:time] || "STC_LOAD: Fields should be [:Praw,:time]"
+	@test Symbol.(names(Data)) == [:Praw,:time] || "STC_LOAD: Fields should be [:Praw,:time]"
 	println("STC_LOAD Test Complete")
 end
 

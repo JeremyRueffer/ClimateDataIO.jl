@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.3.1
+# Julia 1.4.2
 # 16.12.2016
-# Last Edit: 17.03.2020
+# Last Edit: 17.07.2020
 
 """# str_load
 
@@ -171,7 +171,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	## Load data
 	D = DataFrame()
 	try
-		D = CSV.read(F;delim=" ",header=h,datarow=2)[:,1:end-1]
+		D = DataFrame!(CSV.File(F;delim=" ",header=h,datarow=2))[:,1:end-1]
 	catch
 		println("Cannot load " * F)
 		error("ERROR loading files")
@@ -203,7 +203,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 		end
 		
 		# Make sure each entry exists
-		fields = names(D)
+		fields = Symbol.(names(D))
 		cols_bool = fill!(Array{Bool}(undef,length(cols)),false) # Preallocate false
 		for i=1:1:length(cols)
 			for j=1:1:length(fields)

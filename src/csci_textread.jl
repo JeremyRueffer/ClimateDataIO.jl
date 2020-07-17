@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.4.2
 # Created: 04.11.2013
-# Last Edit: 18.04.2019
+# Last Edit: 17.07.2020
 
 """# csci_textread
 
@@ -98,7 +98,7 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	cols[2] = "Record"
 	
 	## Load Data
-	D = CSV.read(F;types = types,header=cols,delim = ',',datarow = headerlines,dateformat = df)
+	D = DataFrame!(CSV.File(F;types = types,header=cols,delim = ',',datarow = headerlines,dateformat = df))
 	
 	if headeroutput
 		return D,loggerStr,colsStr,unitsStr,processingStr
