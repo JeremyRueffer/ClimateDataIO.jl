@@ -76,7 +76,7 @@ function lgr_read(source::String;verbose::Bool=false)
 		delim=',',
 		header=col_names,
 		limit=l_count-1, # Read up until the PGP signature but not beyond it
-		#footerskip=footerlines, # PGP signed
+		footerskip=footerlines, # PGP signed
 		types=col_types))
 	
 	close(fid)

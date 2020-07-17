@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.4.0
+# Julia 1.4.2
 # 07.11.2014
-# Last Edit: 01.04.2020
+# Last Edit: 17.07.2020
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -78,29 +78,8 @@ function lgr_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 		
 		# List Zip Contents
 		verbose ? println("   # " * string(i) * ": " * basename(temp)) : nothing
-		if Sys.iswindows()
-			zipfiles = joinpath.(dest,zipList(files[i])) # List the files in the archive
-			zipExtractAll(files[i],dest)
-		else
-			l = readdlm(IOBuffer(read(`unzip -l $temp`,String)),',')[4:end-2]
-			for j=1:1:length(l)
-				if splitext(l[j][31:end])[2] == ".txt"
-					push!(zipfiles,joinpath(dest,l[j][findlast(x -> x == ' ',l[j])+1:end]))
-				else
-					push!(zipdirectories,joinpath(dest,l[j][findlast(x -> x == ' ',l[j])+1:end]))
-				end
-			end
-			zipfiles = sort(zipfiles) # Sort the files so they will be loaded chronologically
-			
-			if verbose
-				for j=1:1:length(zipfiles)
-					println("      " * zipfiles[j])
-				end
-			end
-			
-			# Unzip
-			temp2 = read(`unzip -d $dest $temp`,String)
-		end
+		zipfiles = joinpath.(dest,zipList(files[i])) # List the files in the archive
+		zipExtractAll(files[i],dest)
 		
 		# Load Each Data File
 		for j=1:1:length(zipfiles)
