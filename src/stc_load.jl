@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.4.2
+# Julia 1.5.0
 # 16.12.2016
-# Last Edit: 17.07.2020
+# Last Edit: 06.08.2020
 
 """# stc_load
 
@@ -62,7 +62,9 @@ function stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	(Tstc,Fstc) = aerodyne_parsetime(Fstc)
 	
 	# Sort Info
-	f = sortperm(Tstc)
+	f1 = findlast(Tstr .<= mindate)
+	f2 = findlast(Tstr .< maxdate)
+	f = collect(f1:f2)
 	Tstc = Tstc[f]
 	Fstc = Fstc[f]
 	
