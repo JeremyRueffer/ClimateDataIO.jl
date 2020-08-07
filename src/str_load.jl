@@ -63,6 +63,9 @@ function str_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	
 	# Sort Info
 	f1 = findlast(Tstr .<= mindate)
+	if isnothing(f1)
+		f1 = 1
+	end
 	f2 = findlast(Tstr .< maxdate)
 	f = collect(f1:f2)
 	Tstr = Tstr[f]

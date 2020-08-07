@@ -62,8 +62,11 @@ function stc_load(Dr::String,mindate::DateTime,maxdate::DateTime;verbose::Bool=f
 	(Tstc,Fstc) = aerodyne_parsetime(Fstc)
 	
 	# Sort Info
-	f1 = findlast(Tstr .<= mindate)
-	f2 = findlast(Tstr .< maxdate)
+	f1 = findlast(Tstc .<= mindate)
+	if isnothing(f1)
+		f1 = 1
+	end
+	f2 = findlast(Tstc .< maxdate)
 	f = collect(f1:f2)
 	Tstc = Tstc[f]
 	Fstc = Fstc[f]
