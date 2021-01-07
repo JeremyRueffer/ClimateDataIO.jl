@@ -62,6 +62,8 @@ For more specific information see each functions' help.
 
 `licor_split`: Split Licor text data files into smaller compressed GHG files
 
+`LI7200Diagnostic`: Parse LI-7200 diagnostic values
+
 ---
 
 #### Requirements
@@ -127,6 +129,7 @@ module ClimateDataIO
 	include(joinpath(dir,"csci_times.jl"))
 	include(joinpath(dir,"lgr_load.jl"))
 	include(joinpath(dir,"lgr_read.jl"))
+	include(joinpath(dir,"LI7200Diagnostic.jl"))
 	include(joinpath(dir,"licor_split.jl"))
 	include(joinpath(dir,"ziptextfiles.jl"))
 	
