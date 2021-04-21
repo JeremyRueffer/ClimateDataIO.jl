@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 0.7
+# Julia 1.6.0
 # Created: 04.11.2013
-# Last Edit: 11.04.2019
+# Last Edit: 21.04.2021
 
 """# csci_times
 
@@ -26,6 +26,7 @@ function csci_times(F::Array{T,1};headerlines::Int=4) where T <: String
 	maxtimes = fill!(Array{DateTime}(undef,length(F)),DateTime(0))
 	
 	df = Dates.DateFormat("\"yyyy-mm-dd HH:MM:SS\"") # Date format
+	df2 = Dates.DateFormat("\"yyyy-mm-dd HH:MM:SS.ss\"") # Date format
 	
 	datastart_pos = 1
 	for i=1:1:length(F)
@@ -37,8 +38,12 @@ function csci_times(F::Array{T,1};headerlines::Int=4) where T <: String
 		end
 		datastart_pos = position(fid) # Find start of data
 		if ~eof(fid)
-			l = readline(fid)[1:21]
-			mintimes[i] = DateTime(l,df)
+			l = readline(fid)
+			if length(l[1:findfirst(',',l)-1]) == 21
+				mintimes[i] = DateTime(l[1:findfirst(',',l)-1],df)
+			else
+				mintimes[i] = DateTime(l[1:findfirst(',',l)-1],df2)
+			end
 		end
 		
 		# Find Maximum Time
@@ -58,7 +63,11 @@ function csci_times(F::Array{T,1};headerlines::Int=4) where T <: String
 			endpos += 1
 		end
 		close(fid)
-		maxtimes[i] = DateTime(l[1:21],df)
+		if length(l[1:findfirst(',',l)-1]) == 21
+			maxtimes[i] = DateTime(l[1:findfirst(',',l)-1],df)
+		else
+			maxtimes[i] = DateTime(l[1:findfirst(',',l)-1],df2)
+		end
 	end
 	
 	return mintimes, maxtimes
