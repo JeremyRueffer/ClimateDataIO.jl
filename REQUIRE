@@ -1,6 +1,6 @@
-julia 1.6
+julia ≥1.6
 CSV
-DataFrames ≥0.21.4
+DataFrames ≥1.0.0
 DelimitedFiles
 Dates
 StatsBase
