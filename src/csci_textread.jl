@@ -98,7 +98,7 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	cols[2] = "Record"
 	
 	## Load Data
-	D = CSV.read(F,DataFrames;types = types,header=cols,delim = ',',datarow = headerlines,dateformat = df)
+	D = CSV.read(F,DataFrame;types = types,header=cols,delim = ',',datarow = headerlines,dateformat = df)
 	
 	if headeroutput
 		return D,loggerStr,colsStr,unitsStr,processingStr
