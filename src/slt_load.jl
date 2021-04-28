@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.3.1
+# Julia 1.6.0
 # 09.12.2016
-# Last Edit: 17.03.2020
+# Last Edit: 28.04.2021
 
 """# slt_load
 
@@ -173,7 +173,7 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 	l = Int(sum(sltinfo.Line_Count))
 	col_types = fill!(Array{DataType}(undef,length(h)),Float64)
 	col_types[1] = DateTime
-	D = DataFrame(col_types,Symbol[Symbol(i) for i in h],l)
+	D = DataFrame([Array{i}(undef,l) for i in col_types],Symbol[Symbol(i) for i in h])
 	D[:,2:end] .= NaN
 	D[:,1] .= DateTime(0)
 	
@@ -276,10 +276,14 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		Dcols = [:u,:v,:w,:sonic_temp,:speed_of_sound,:wind_direction,:Analog1,:Analog2,:Analog3,:Analog4,:Analog5,:Analog6]
 		Dtypes = [Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64,Float64]
 		
-		Dmean = DataFrame(Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]],Dcols[1:6+get.(configs,"Analog_Count",[0])[1]],l)
-		Dstd = DataFrame(Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]],Dcols[1:6+get.(configs,"Analog_Count",[0])[1]],l)
-		Dmin = DataFrame(Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]],Dcols[1:6+get.(configs,"Analog_Count",[0])[1]],l)
-		Dmax = DataFrame(Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]],Dcols[1:6+get.(configs,"Analog_Count",[0])[1]],l)
+		Dmean = DataFrame([Array{i}(undef,l) for i in Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]]],
+				Dcols[1:6+get.(configs,"Analog_Count",[0])[1]])
+		Dstd = DataFrame([Array{i}(undef,l) for i in Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]]],
+				Dcols[1:6+get.(configs,"Analog_Count",[0])[1]])
+		Dmin = DataFrame([Array{i}(undef,l) for i in Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]]],
+				Dcols[1:6+get.(configs,"Analog_Count",[0])[1]])
+		Dmax = DataFrame([Array{i}(undef,l) for i in Dtypes[1:6+get.(configs,"Analog_Count",[0])[1]]],
+				Dcols[1:6+get.(configs,"Analog_Count",[0])[1]])
 		for i = length(Dcols[1:4+get.(configs,"Analog_Count",[0])[1]])
 			for j = l
 				Dmean[j,i] = NaN
@@ -305,10 +309,10 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 		for j=1:1:length(f)-1
 			try
 				tmean[j] = D[f[j],1]
-				temp_Dmean = mean(convert(Matrix,D[f[j]:f[j+1]-1,2:end]),dims=1)
-				temp_Dstd = std(convert(Matrix,D[f[j]:f[j+1]-1,2:end]),dims=1)
-				temp_Dmin = minimum(convert(Matrix,D[f[j]:f[j+1]-1,2:end]),dims=1)
-				temp_Dmax = maximum(convert(Matrix,D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dmean = mean(Array(D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dstd = std(Array(D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dmin = minimum(Array(D[f[j]:f[j+1]-1,2:end]),dims=1)
+				temp_Dmax = maximum(Array(D[f[j]:f[j+1]-1,2:end]),dims=1)
 				
 				for k=1:1:length(temp_Dmean)
 					Dmean[j,k] = temp_Dmean[k]
@@ -322,8 +326,8 @@ function slt_load(dr::String,mindate::DateTime,maxdate::DateTime;average::Bool=f
 				println("\tnames(D) = " * string(names(D)))
 				println("\tsize(Dmean) = " * string(size(Dmean)))
 				println("\tsize(temp_Dmean) = " * string(size(temp_Dmean)))
-				println("\tminimum(t) = " * string(minimum(D[:Time])))
-				println("\tmaximum(t) = " * string(maximum(D[:Time])))
+				println("\tminimum(t) = " * string(minimum(D.Time)))
+				println("\tmaximum(t) = " * string(maximum(D.Time)))
 				println("\tf[j] = " * string(f[j]))
 				println("\tj = " * string(j))
 			end

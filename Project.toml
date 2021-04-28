@@ -1,6 +1,6 @@
 name = "ClimateDataIO"
 uuid = "e67dfa1b-f25f-5711-997b-b3966e4ac85c"
-version = "0.8.11"
+version = "0.8.12"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"

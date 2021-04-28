@@ -179,7 +179,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	## Load data
 	D = DataFrame()
 	try
-		D = DataFrame!(CSV.File(F;delim=",",types=coltypes,header=h,datarow=3,missingstring="-"))
+		D = CSV.read(F,DataFrame;delim=",",types=coltypes,header=h,datarow=3,missingstring="-")
 	catch
 		println("Cannot load " * F)
 		error("ERROR loading file")

@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.4.2
+# Julia 1.6.0
 # 18.11.2014
-# Last Edit: 17.07.2020
+# Last Edit: 28.04.2021
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -167,7 +167,8 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 			col_types[end] = Int32
 		end
 		# datarow = 1, the position within the file is just at the start of the data already because of the header loading
-		D = DataFrame!(CSV.File(joinpath(temp_dir,list[iData]),types = col_types,header = new_names,delim = '\t',datarow = header_line)) # # ZipFile.jl temporary fix
+		D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',datarow = header_line) # # ZipFile.jl temporary fix
+		#D = DataFrame!(CSV.File(joinpath(temp_dir,list[iData]),types = col_types,header = new_names,delim = '\t',datarow = header_line)) # # ZipFile.jl temporary fix
 		#D = DataFrame!(CSV.File(list[iData],types = col_types,header = new_names,delim = '\t',datarow = 1))
 		
 		# Convert Time

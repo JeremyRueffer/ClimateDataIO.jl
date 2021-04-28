@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.4.0
+# Julia 1.6.0
 # 18.11.2014
-# Last Edit: 26.03.2020
+# Last Edit: 28.04.2021
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -157,10 +157,14 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 				end
 				type_list[j] = temp
 			end
-			D_mean_temp = DataFrame(type_list,names(D_temp),length(f)-1)
-			D_std_temp = DataFrame(type_list,names(D_temp),length(f)-1)
-			D_min_temp = DataFrame(type_list,names(D_temp),length(f)-1)
-			D_max_temp = DataFrame(type_list,names(D_temp),length(f)-1)
+			D_mean_temp = DataFrame([Array{i}(undef,length(f)-1) for i in type_list],
+					names(D_temp))
+			D_std_temp = DataFrame([Array{i}(undef,length(f)-1) for i in type_list],
+					names(D_temp))
+			D_min_temp = DataFrame([Array{i}(undef,length(f)-1) for i in type_list],
+					names(D_temp))
+			D_max_temp = DataFrame([Array{i}(undef,length(f)-1) for i in type_list],
+					names(D_temp))
 			
 			for j=1:1:length(f)-1
 				for k=1:1:length(type_list)
@@ -225,7 +229,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 				# Preallocate the final array
 				t = Array{DateTime}(undef,est)
 				Dinfo = describe(D_temp)
-				D = DataFrame(Dinfo.eltype,Dinfo.variable,est)
+				D = DataFrame([Array{i}(undef,est) for i in Dinfo.eltype],Dinfo.variable)
 				
 				# Add the initial dataset
 				lD = size(D_temp,1) # Length of first dataframe
