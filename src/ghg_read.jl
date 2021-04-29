@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.6.0
 # 18.11.2014
-# Last Edit: 28.04.2021
+# Last Edit: 29.04.2021
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -120,6 +120,7 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 	cols = Array{Any}(undef,0,0)
 	fid = open(joinpath(temp_dir,list[iData]),"r")
 	if iData != 0
+		# Prepare header
 		if filetype == "primary"
 			header_line = 9
 		else
@@ -145,7 +146,7 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 			return Array{DateTime}(undef,0), DataFrame(), ""
 		end
 		l_columns = readline(fid)
-		cols = permutedims(readdlm(IOBuffer("\"" * replace(l_columns,"\t" => "\",\"") * "\""),','),[2,1])
+		cols = split(l_columns,'\t') # Split column line into column names
 		new_names = Array{String}(undef,length(cols))
 		temp_name = ""
 		for i=1:1:length(cols)
@@ -157,19 +158,15 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 			new_names[i] = temp_name
 		end
 		
-		# Load Data
+		# Prepare column types
 		col_types = fill!(Array{DataType}(undef,length(cols)),Float64)
-		if filetype == "primary"
-			col_types[1:8] = [String;Int32;Int32;Int32;Int32;Int32;String;String]
-			col_types[end] = Int32
-		else
-			col_types[1:3] = [String;String;String]
-			col_types[end] = Int32
-		end
-		# datarow = 1, the position within the file is just at the start of the data already because of the header loading
+		stringCols = ["DATAH","Date","Time"]
+		intCols = ["Seconds","Nanoseconds","Diagnostic Value","Diagnostic Value 2","CHK"]
+		col_types[cols .∈ (stringCols,)] .= String
+		col_types[cols .∈ (intCols,)] .= Int32
+		
+		# Load Data
 		D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',datarow = header_line) # # ZipFile.jl temporary fix
-		#D = DataFrame!(CSV.File(joinpath(temp_dir,list[iData]),types = col_types,header = new_names,delim = '\t',datarow = header_line)) # # ZipFile.jl temporary fix
-		#D = DataFrame!(CSV.File(list[iData],types = col_types,header = new_names,delim = '\t',datarow = 1))
 		
 		# Convert Time
 		t = Array{DateTime}(undef,size(D,1)) # Preallocate
