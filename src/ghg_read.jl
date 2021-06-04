@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.6.0
 # 18.11.2014
-# Last Edit: 29.04.2021
+# Last Edit: 04.06.2021
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -160,7 +160,11 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 		
 		# Prepare column types
 		col_types = fill!(Array{DataType}(undef,length(cols)),Float64)
-		stringCols = ["DATAH","Date","Time"]
+		if hf
+			stringCols = ["DATAH","Date","Time"]
+		else
+			stringCols = ["DATAH","DATE","TIME"]
+		end
 		intCols = ["Seconds","Nanoseconds","Diagnostic Value","Diagnostic Value 2","CHK"]
 		col_types[cols .∈ (stringCols,)] .= String
 		col_types[cols .∈ (intCols,)] .= Int32
