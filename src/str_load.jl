@@ -6,7 +6,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.6.0
 # 16.12.2016
-# Last Edit: 28.04.2021
+# Last Edit: 07.07.2021
 
 """# str_load
 
@@ -102,11 +102,17 @@ function str_load(F::Array{T,1};verbose::Bool=false,cols::Array{String,1}=String
 	(Ftime,F) = aerodyne_parsetime(F)
 	
 	# Load and concatinate data
-	(t,D) = str_load(F[1],verbose=verbose,cols=cols) # Initial load
-	for i=2:1:length(F)
-		(tempT,tempD) = str_load(F[i],verbose=verbose,cols=cols)
-		t = [t;tempT]
-		D = [D;tempD]
+	if !isempty(F)
+		(t,D) = str_load(F[1],verbose=verbose,cols=cols) # Initial load
+		for i=2:1:length(F)
+			(tempT,tempD) = str_load(F[i],verbose=verbose,cols=cols)
+			t = [t;tempT]
+			D = [D;tempD]
+		end
+	else
+		# No Files Found
+		t = Vector{DateTime}(undef,0)
+		D = DataFrame()
 	end
 	
 	return t,D
