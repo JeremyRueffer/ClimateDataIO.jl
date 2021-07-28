@@ -3,7 +3,7 @@ using Test
 using Dates
 # using DataFrames
 
-# Last Edit: 17.07.2020
+# Last Edit: 28.07.2021
 
 # Define 7zip location constant
 if Sys.iswindows() & (VERSION >= VersionNumber("1.3.0"))
@@ -266,6 +266,15 @@ end
 	println("CSCI_TEXTREAD Test Complete")
 	
 	
+	Data = ClimateDataIO.csci_textread(src,verbose=true,headeroutput=false,select=[:Timestamp,:AirTemp_HC2S3_S01,:RelHum_HC2S3_S02])
+	@test size(Data) == (11520,3) || "CSCI_TEXTREAD: Data output size incorrect, should be (11520,3)"
+	@test names(Data) == ["Timestamp","AirTemp_HC2S3_S01","RelHum_HC2S3_S02"] || "CSCI_TEXTREAD: Columns should be \"Timestamp\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S02\""
+	
+	
+	Data = ClimateDataIO.csci_textread(src,verbose=true,headeroutput=false,select=[:AirTemp_HC2S3_S01,:RelHum_HC2S3_S02])
+	@test size(Data) == (11520,3) || "CSCI_TEXTREAD: Data output size incorrect, should be (11520,3)"
+	@test names(Data) == ["Timestamp","AirTemp_HC2S3_S01","RelHum_HC2S3_S02"] || "CSCI_TEXTREAD: Columns should be \"Timestamp\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S02\""
+	
 	
 	println("\n===  CSCI_TEXTLOAD  ===")
 	src = splitdir(@__FILE__)[1]
@@ -282,8 +291,7 @@ end
 	@test h2 == HeaderColumns || "CSCI_TEXTLOAD: HeaderColumns should be \"\"TIMESTAMP\",\"RECORD\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S01\",\"AirTemp_HC2S3_S02\",\"RelHum_HC2S3_S02\",\"AirTemp_HC2S3_S03\",\"RelHum_HC2S3_S03\",\"AirTemp_HC2S3_S04\",\"RelHum_HC2S3_S04\"\""
 	@test h3 == HeaderUnits || "CSCI_TEXTLOAD: HeaderUnits should be \"\"TS\",\"RN\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\",\"Deg C\",\"%\"\""
 	@test h4 == HeaderSample || "CSCI_TEXTLOAD: HeaderSample should be \"\"\",\"\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\",\"Smp\"\""
-	
-	
+		
 	
 	src = splitdir(@__FILE__)[1]
 	rootname = "CampbellScientific"
@@ -294,6 +302,10 @@ end
 	println("CSCI_TEXTLOAD Test Complete")
 	
 	
+	Data = ClimateDataIO.csci_textload(src,rootname,DateTime(2016,12),DateTime(2017,1),select=[:Timestamp,:AirTemp_HC2S3_S01,:RelHum_HC2S3_S02])
+	@test size(Data) == (11520,3) || "CSCI_TEXTLOAD: Data output size incorrect, should be (11520,3)"
+	@test names(Data) == ["Timestamp","AirTemp_HC2S3_S01","RelHum_HC2S3_S02"] || "CSCI_TEXTLOAD: Columns should be \"Timestamp\",\"AirTemp_HC2S3_S01\",\"RelHum_HC2S3_S02\""
+		
 	
 	println("\n===  CSCI_TIMES  ===")
 	src = splitdir(@__FILE__)[1]
