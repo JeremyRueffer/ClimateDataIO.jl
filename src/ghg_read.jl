@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.6.0
 # 18.11.2014
-# Last Edit: 04.06.2021
+# Last Edit: 29.07.2021
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -20,8 +20,16 @@
 #### Keywords:\n
 * verbose::Bool = Display information as the function runs, TRUE is default
 * filetype::String = Data file type to load, \"primary\" is default and loads the primary high frequency file. \"biomet\" would load the BIOMET file if it is present.
-* errorlog::String = Log each loading error, \"\" is default\n\n"
-function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",errorlog::String="")
+* errorlog::String = Log each loading error, \"\" is default
+* select::Vector{Symbol} (optional) = List of column names to be loaded, names not included will not be loaded. [] is default\n\n"
+function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",errorlog::String="",select::Vector{Symbol}=Symbol[])
+	####################
+	##  SELECT Check  ##
+	####################
+	if !isempty(select)
+		select = [setdiff([:Date,:Time]);select] # Date and Time must be included
+	end
+	
 	##################
 	##  Initialize  ##
 	##################
@@ -170,7 +178,11 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 		col_types[cols .∈ (intCols,)] .= Int32
 		
 		# Load Data
-		D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',datarow = header_line) # # ZipFile.jl temporary fix
+		if isempty(select)
+			D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',datarow = header_line) # # ZipFile.jl temporary fix
+		else
+			D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',datarow = header_line,select = select)
+		end
 		
 		# Convert Time
 		t = Array{DateTime}(undef,size(D,1)) # Preallocate
