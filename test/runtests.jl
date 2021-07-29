@@ -3,7 +3,7 @@ using Test
 using Dates
 # using DataFrames
 
-# Last Edit: 28.07.2021
+# Last Edit: 29.07.2021
 
 # Define 7zip location constant
 if Sys.iswindows() & (VERSION >= VersionNumber("1.3.0"))
@@ -332,6 +332,9 @@ end
 	@test size(Data) == (36000,48) || "GHGREAD: Data output size incorrect, should be (36000,48)"
 	
 	
+	Time,Data = ClimateDataIO.ghg_read(src,verbose=true,filetype="primary",select=[:Dew_Point_C,:Flow_Drive_])
+	@test size(Data) == (36000,4) || "GHGREAD: Data output size incorrect, should be (36000,4)"
+	
 	
 	# GHGLOAD: Load one file
 	println("\n====  GHGLOAD Tests  ====")
@@ -340,13 +343,18 @@ end
 	@test Time[1] == DateTime(2016,12,11,20,0,0) || "GHGLOAD: Time[1] first timestamp should be 2016-12-11T20:00:00"
 	@test Time[end] == DateTime(2016,12,11,21,59,59,950) || "GHGLOAD: Time[end] last timestamp should be 2016-12-04T21:59:59.95"
 	@test size(Data) == (144000,48) || "GHGLOAD: Data output size incorrect, should be (144000,48)"
-	
-	
+		
 	
 	Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=true,filetype="primary")
 	@test Time[1] == DateTime(2016,12,11,20,0,0) || "GHGLOAD: Time[1] first timestamp should be 2016-12-11T20:00:00"
 	@test Time[end] == DateTime(2016,12,11,21,30) || "GHGLOAD: Time[end] last timestamp should be 2016-12-04T21:30:00"
 	@test size(Data) == (4,48) || "GHGLOAD: Data output size incorrect, should be (4,48)"
+	
+	
+	Time,Data = ClimateDataIO.ghg_load(src,verbose=true,average=true,filetype="primary",select=[:Dew_Point_C,:Flow_Drive_])
+	@test size(Data) == (4,4) || "GHGLOAD: Data output size incorrect, should be (4,4)"
+	
+	
 end
 
 
