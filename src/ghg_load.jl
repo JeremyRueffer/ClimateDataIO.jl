@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.6.0
 # 18.11.2014
-# Last Edit: 28.04.2021
+# Last Edit: 29.07.2021
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -33,15 +33,16 @@
 #### Keywords:\n
 * recur::Int = Subdirectory recursion depth. 1 is the root directory.
 * verbose::Bool = Display information as the function runs, TRUE is default
-* average::Bool = Half hour average the data starting at the first data point, TRUE is default
+* average::Bool = Half hour average the data starting at the first data point, FALSE is default
 * filetype::String = Data file type to load, \"primary\" is default and loads the primary high frequency file. \"biomet\" would load the BIOMET file if it is present.
-* errorlog::String = Log each loading error, \"\" is default\n\n"
-function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);filetype::String="primary",recur::Int=1,verbose::Bool=true,average::Bool=true,errorlog::String="",multithread::Bool=false,nThreads::Int=Threads.nthreads())
+* errorlog::String = Log each loading error, \"\" is default
+* select::Vector{Symbol} (optional) = List of column names to be loaded, names not included will not be loaded. [] is default\n\n"
+function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime=DateTime(9999);filetype::String="primary",recur::Int=1,verbose::Bool=true,average::Bool=false,errorlog::String="",multithread::Bool=false,nThreads::Int=Threads.nthreads(),select::Vector{Symbol}=Symbol[])
 	##############
 	##  Checks  ##
 	##############
 	if isfile(source)
-		return ghg_read(source,verbose=verbose,filetype=filetype,errorlog=errorlog)
+		return ghg_read(source,verbose=verbose,filetype=filetype,errorlog=errorlog,select=select)
 	end
 	
 	!isdir(source) ? error("Date Ranges can only be used when a directory is given as an input") : nothing
@@ -106,7 +107,7 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 			end
 			
 			# Single-threaded load
-			(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose,filetype=filetype,errorlog=errorlog)
+			(t_temp,D_temp,cols) = ghg_read(files[i],verbose=verbose,filetype=filetype,errorlog=errorlog,select=select)
 		else
 			# Multi-threaded load
 			current_thread[1] = 1 # Reset the thread tracker
@@ -265,7 +266,7 @@ function multithreadLoad(timeOut::Array{Array{DateTime,1},1},dataOut::Array{Data
 	dt = Minute(1) # Time to timeout
 	
 	# Load the data
-	time, data, cols = ghg_read(files[Threads.threadid()],verbose=verbose,filetype=filetype,errorlog=errorlog)
+	time, data, cols = ghg_read(files[Threads.threadid()],verbose=verbose,filetype=filetype,errorlog=errorlog,select=select)
 	
 	# Once the data is loaded, wait until it's this thread's turn to append the data
 	while current_thread[1] != Threads.threadid() || now() - thread_start >= dt
