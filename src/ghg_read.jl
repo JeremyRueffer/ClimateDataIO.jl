@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.6.0
 # 18.11.2014
-# Last Edit: 29.07.2021
+# Last Edit: 03.08.2021
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -27,7 +27,11 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 	##  SELECT Check  ##
 	####################
 	if !isempty(select)
-		select = [setdiff([:Date,:Time]);select] # Date and Time must be included
+		if filetype == "primary"
+			select = [setdiff([:Date,:Time]);select] # Date and Time must be included
+		elseif filetype == "biomet"
+			select = [setdiff([:DATE,:TIME]);select] # Date and Time must be included
+		end
 	end
 	
 	##################
