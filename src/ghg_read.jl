@@ -8,7 +8,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.6.0
 # 18.11.2014
-# Last Edit: 03.08.2021
+# Last Edit: 10.08.2021
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -179,7 +179,7 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 		end
 		intCols = ["Seconds","Nanoseconds","Diagnostic Value","Diagnostic Value 2","CHK"]
 		col_types[cols .∈ (stringCols,)] .= String
-		col_types[cols .∈ (intCols,)] .= Int32
+		col_types[cols .∈ (intCols,)] .= Int
 		
 		# Load Data
 		if isempty(select)
