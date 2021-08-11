@@ -7,9 +7,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.5.4
+# Julia 1.6.2
 # 09.12.2016
-# Last Edit: 07.01.2021
+# Last Edit: 11.08.2021
 
 __precompile__(true)
 
@@ -68,6 +68,7 @@ For more specific information see each functions' help.
 
 #### Requirements
 * CSV
+* Crayons.Box
 * DataFrames
 * Dates
 * DelimitedFiles
@@ -85,6 +86,7 @@ module ClimateDataIO
 	using CSV
 	using Statistics
 	using Test
+	using Crayons.Box
 	
 	export AerodyneStatus,
 		str_load,
