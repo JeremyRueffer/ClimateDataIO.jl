@@ -7,9 +7,9 @@
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
 #
-# Julia 1.5.4
+# Julia 1.6.2
 # 17.12.2020
-# Last Edit: 07.01.2021
+# Last Edit: 11.08.2021
 
 """# LI7200Diagnostic
 
@@ -22,19 +22,20 @@ Parse the LI-7200 diagnostic values
 ```jldoctest
 julia> x = LI7200Diagnostic(8190)
 LI-7200 Diagnistic Values (8190)
-        Sync OK
-        PLL OK - Optical wheel rotating correctly
-        Detector Temperature OK
-        Chopper OK - Wheel temperature OK
-        Pressure OK - Differential pressure sensor OK
-        Voltages OK - Internal reference voltages OK
-        Tinlet OK - Inlet temperature OK
-        Toutlet OK - Outlet temperature OK
-        Head detected
+		AGC (dirtiness): 87.5% - Optics need cleaning
+		Sync OK
+		PLL OK - Optical wheel rotating correctly
+		Detector Temperature OK
+		Chopper OK - Wheel temperature OK
+		Pressure OK - Differential pressure sensor OK
+		Voltages OK - Internal reference voltages OK
+		Tinlet OK - Inlet temperature OK
+		Toutlet OK - Outlet temperature OK
+		Head detected
 ```
 
 ```jldoctest
-julia> x.Value
+julia> x.value
 8190
 ```
 
@@ -45,14 +46,14 @@ true
 
 ---
 
-`diag = LI7200Diagnostic(x)`\n
+`diag = LI7200Diagnostic(x);`\n
 * **x**::Int or Float64 = Unparsed diagnostic value
 * **diag**::LI7200Diagnostic = Parsed diagnostic value
 
 ---
 
 ## Fields
-* **Value**::Int
+* **value**::Int
 * **SyncError**::Bool
 * **PLL_OK**::Bool
 * **DetectorOK**::Bool
@@ -62,10 +63,13 @@ true
 * **TinletOK**::Bool
 * **ToutletOK**::Bool
 * **HeadDetected**::Bool
+* **AGC**::Int
 """
 mutable struct LI7200Diagnostic
 	"Original diagnostic value"
-	Value::Int
+	value::Int
+	"AGC - Automatic Gain Control (dirtiness)"
+	AGC::Int
 	"Sync Error"
 	SyncError::Bool
 	"Optical wheel rotation"
@@ -90,31 +94,33 @@ mutable struct LI7200Diagnostic
 	end
 	
 	function LI7200Diagnostic(val::Int)
-		Value = val
+		value = val
 		
-		SyncError = val & 2^(11-1) > 0
-		PLL_OK = val & 2^(10-1) > 0
-		DetectorOK = val & 2^(9-1) > 0
-		ChopperWheelOK = val & 2^(8-1) > 0
-		PressureOK = val & 2^(7-1) > 0
-		VoltageOK = val & 2^(6-1) > 0
-		TinletOK = val & 2^(5-1) > 0
-		ToutletOK = val & 2^(4-1) > 0
-		HeadDetected = val & 2^(3-1) > 0
+		AGC = Int(UInt16(val & 2^(0) > 0) << 0 | UInt16(val & 2^(1) > 0) << 1 | UInt16(val & 2^(2) > 0) << 2 | UInt16(val & 2^(3) > 0) << 3)
+		SyncError = val & 2^(4) > 0
+		PLL_OK = val & 2^(5) > 0
+		DetectorOK = val & 2^(6) > 0
+		ChopperWheelOK = val & 2^(7) > 0
+		PressureOK = val & 2^(8) > 0
+		VoltageOK = val & 2^(9) > 0
+		TinletOK = val & 2^(10) > 0
+		ToutletOK = val & 2^(11) > 0
+		HeadDetected = val & 2^(12) > 0
 		
-		new(Value,SyncError, PLL_OK, DetectorOK, ChopperWheelOK, PressureOK, VoltageOK, TinletOK, ToutletOK, HeadDetected)
+		new(value ,AGC, SyncError, PLL_OK, DetectorOK, ChopperWheelOK, PressureOK, VoltageOK, TinletOK, ToutletOK, HeadDetected)
 	end # End of constructor
 end # End of type
 
 function Base.show(io::IO, diag::LI7200Diagnostic)
-	println("LI-7200 Diagnistic Values (" * string(diag.Value) * ")")
-	diag.SyncError ? println("\tSync OK") : println("\tSync ERROR")
-	diag.PLL_OK ? println("\tPLL OK - Optical wheel rotating correctly") : println("\tPLL ERROR - Optical wheel not rotating correctly")
-	diag.DetectorOK ? println("\tDetector Temperature OK")  : println("\tDetector ERROR - Temperature not near setpoint")
-	diag.ChopperWheelOK ? println("\tChopper OK - Wheel temperature OK") : println("\tChopper ERROR - Wheel temperature not near setpoint")
-	diag.PressureOK ? println("\tPressure OK - Differential pressure sensor OK") : println("\tPressure ERROR - Differential pressure sensor out of range")
-	diag.VoltageOK ? println("\tVoltages OK - Internal reference voltages OK") : println("\tVoltage ERROR - Internal reference voltages NOT OK")
-	diag.TinletOK ? println("\tTinlet OK - Inlet temperature OK") : println("\tTinlet ERROR - Open circuit")
-	diag.ToutletOK ? println("\tToutlet OK - Outlet temperature OK") : println("\tToutlet ERROR - Open circuit")
-	diag.HeadDetected ? println("\tHead detected") : println("\tHead NOT detected")
+	println("LI-7200 Diagnistic Values (" * string(diag.value) * ")")
+	diag.AGC < 14 ? println("\tAGC (dirtiness): " * string(diag.AGC * 6.25) * "%") : println("\tAGC (dirtiness): ", RED_FG(string(diag.AGC * 6.25)),RED_FG("% - Optics need cleaning"))
+	diag.SyncError ? println("\tSync OK") : println("\tSync ",RED_FG("ERROR"))
+	diag.PLL_OK ? println("\tPLL OK - Optical wheel rotating correctly") : println("\tPLL ",RED_FG("ERROR - Optical wheel not rotating correctly"))
+	diag.DetectorOK ? println("\tDetector Temperature OK")  : println("\tDetector ",RED_FG("ERROR - Temperature not near setpoint"))
+	diag.ChopperWheelOK ? println("\tChopper OK - Wheel temperature OK") : println("\tChopper ",RED_FG("ERROR - Wheel temperature not near setpoint"))
+	diag.PressureOK ? println("\tPressure OK - Differential pressure sensor OK") : println("\tPressure ",RED_FG("ERROR - Differential pressure sensor out of range"))
+	diag.VoltageOK ? println("\tVoltages OK - Internal reference voltages OK") : println("\tVoltage ",RED_FG("ERROR - Internal reference voltages NOT OK"))
+	diag.TinletOK ? println("\tTinlet OK - Inlet temperature OK") : println("\tTinlet ",RED_FG("ERROR - Open circuit"))
+	diag.ToutletOK ? println("\tToutlet OK - Outlet temperature OK") : println("\tToutlet ",RED_FG("ERROR - Open circuit"))
+	diag.HeadDetected ? println("\tHead detected") : println(RED_FG("\tHead NOT detected"))
 end
