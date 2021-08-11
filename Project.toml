@@ -1,9 +1,10 @@
 name = "ClimateDataIO"
 uuid = "e67dfa1b-f25f-5711-997b-b3966e4ac85c"
-version = "0.8.18"
+version = "0.8.19"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+Crayons = "a8cc5b0e-0ffa-5ad4-8c14-923d3ee1735f"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
