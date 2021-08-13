@@ -9,7 +9,7 @@
 # Junior Research Group NITROSPHERE
 # Julia 1.6.2
 # 09.12.2016
-# Last Edit: 11.08.2021
+# Last Edit: 13.08.2021
 
 __precompile__(true)
 
@@ -87,6 +87,8 @@ module ClimateDataIO
 	using Statistics
 	using Test
 	using Crayons.Box
+	
+	import Base.show
 	
 	export AerodyneStatus,
 		str_load,
