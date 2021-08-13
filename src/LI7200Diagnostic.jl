@@ -9,7 +9,7 @@
 #
 # Julia 1.6.2
 # 17.12.2020
-# Last Edit: 11.08.2021
+# Last Edit: 13.08.2021
 
 """# LI7200Diagnostic
 
@@ -54,6 +54,7 @@ true
 
 ## Fields
 * **value**::Int
+* **AGC**::Int
 * **SyncError**::Bool
 * **PLL_OK**::Bool
 * **DetectorOK**::Bool
@@ -65,7 +66,7 @@ true
 * **HeadDetected**::Bool
 * **AGC**::Int
 """
-mutable struct LI7200Diagnostic
+struct LI7200Diagnostic
 	"Original diagnostic value"
 	value::Int
 	"AGC - Automatic Gain Control (dirtiness)"
@@ -111,16 +112,30 @@ mutable struct LI7200Diagnostic
 	end # End of constructor
 end # End of type
 
-function Base.show(io::IO, diag::LI7200Diagnostic)
-	println("LI-7200 Diagnistic Values (" * string(diag.value) * ")")
-	diag.AGC < 14 ? println("\tAGC (dirtiness): " * string(diag.AGC * 6.25) * "%") : println("\tAGC (dirtiness): ", RED_FG(string(diag.AGC * 6.25)),RED_FG("% - Optics need cleaning"))
-	diag.SyncError ? println("\tSync OK") : println("\tSync ",RED_FG("ERROR"))
-	diag.PLL_OK ? println("\tPLL OK - Optical wheel rotating correctly") : println("\tPLL ",RED_FG("ERROR - Optical wheel not rotating correctly"))
-	diag.DetectorOK ? println("\tDetector Temperature OK")  : println("\tDetector ",RED_FG("ERROR - Temperature not near setpoint"))
-	diag.ChopperWheelOK ? println("\tChopper OK - Wheel temperature OK") : println("\tChopper ",RED_FG("ERROR - Wheel temperature not near setpoint"))
-	diag.PressureOK ? println("\tPressure OK - Differential pressure sensor OK") : println("\tPressure ",RED_FG("ERROR - Differential pressure sensor out of range"))
-	diag.VoltageOK ? println("\tVoltages OK - Internal reference voltages OK") : println("\tVoltage ",RED_FG("ERROR - Internal reference voltages NOT OK"))
-	diag.TinletOK ? println("\tTinlet OK - Inlet temperature OK") : println("\tTinlet ",RED_FG("ERROR - Open circuit"))
-	diag.ToutletOK ? println("\tToutlet OK - Outlet temperature OK") : println("\tToutlet ",RED_FG("ERROR - Open circuit"))
-	diag.HeadDetected ? println("\tHead detected") : println(RED_FG("\tHead NOT detected"))
+function Base.show(io::IO,::MIME"text/plain", diag::LI7200Diagnostic)
+	# AGC and Errors only
+	print(string(diag.value),
+		" - AGC(" * string(diag.AGC) * "): ",diag.AGC < 14 ? @sprintf("%2.0f",diag.AGC * 6.25) * "%" : RED_FG(@sprintf("%2.0f",diag.AGC * 6.25) * "% - Optics need cleaning"))
+	diag.SyncError ? nothing : print(", Sync: ",RED_FG("Error"))
+	diag.PLL_OK ? nothing : print(", PLL: ",RED_FG("Error"))
+	diag.DetectorOK ? nothing : print(", Detector: ",RED_FG("Error"))
+	diag.ChopperWheelOK ? nothing : print(", Chopper: ",RED_FG("Error"))
+	diag.PressureOK ? nothing : print(", Pressure: ",RED_FG("Error"))
+	diag.VoltageOK ? nothing : print(", Voltage: ",RED_FG("Error"))
+	diag.TinletOK ? nothing : print(", Tinlet: ",RED_FG("Error"))
+	diag.ToutletOK ? nothing : print(", Toutlet: ",RED_FG("Error"))
+	diag.HeadDetected ? nothing : print(", Head: ",RED_FG("Absent"))
+	
+	# Full Report Version
+	#=println(string(diag.value),
+		" - AGC: ",diag.AGC < 14 ? @sprintf("%2.0f",diag.AGC * 6.25) * "%" : RED_FG(@sprintf("%2.0f",diag.AGC * 6.25) * "% - Optics need cleaning"),
+		", Sync: ",diag.SyncError ? GREEN_FG("+") : RED_FG("Error"),
+		", PLL: ",diag.PLL_OK ? GREEN_FG("+") : RED_FG("Error"),
+		", Detector: ",diag.DetectorOK ? GREEN_FG("+") : RED_FG("Error"),
+		", Chopper: ",diag.ChopperWheelOK ? GREEN_FG("+") : RED_FG("Error"),
+		", Pressure: ",diag.PressureOK ? GREEN_FG("+") : RED_FG("Error"),
+		", Volt: ",diag.VoltageOK ? GREEN_FG("+") : RED_FG("Error"),
+		", Tin:",diag.TinletOK ? GREEN_FG("+") : RED_FG("Error"),
+		", Tout: ",diag.ToutletOK ? GREEN_FG("+") : RED_FG("Error"),
+		", Head: ",diag.HeadDetected ? GREEN_FG("Present") : RED_FG("Absent"))=#
 end
