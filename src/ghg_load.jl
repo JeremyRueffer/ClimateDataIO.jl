@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.6.0
+# Julia 1.6.2
 # 18.11.2014
-# Last Edit: 29.07.2021
+# Last Edit: 31.08.2021
 
 # General TODOs
 #	- Limit the output to the actual min and max dates (currently not trimmed)
@@ -178,6 +178,17 @@ function ghg_load(source::String,mindate::DateTime=DateTime(0),maxdate::DateTime
 						D_std_temp[j,k] = tempStr[1]
 						D_min_temp[j,k] = tempStr[1]
 						D_max_temp[j,k] = tempStr[1]
+					elseif type_list[k] == LI7200Diagnostic
+						tempDiag = unique(D_temp[f[j]:f[j+1]-1,k])
+						D_mean_temp[j,k] = tempDiag[1]
+						D_std_temp[j,k] = tempDiag[1]
+						if length(tempDiag) > 1
+							D_min_temp[j,k] = minimum(getfield.(D_temp[f[j]:f[j+1]-1,k],:value))
+							D_max_temp[j,k] = maximum(getfield.(D_temp[f[j]:f[j+1]-1,k],:value))
+						else
+							D_min_temp[j,k] = D_temp[f[j]:f[j+1]-1,k][1]
+							D_max_temp[j,k] = D_temp[f[j]:f[j+1]-1,k][1]
+						end
 					else
 						D_mean_temp[j,k] = mean(convert(Array,D_temp[f[j]:f[j+1]-1,k]))
 						D_std_temp[j,k] = std(convert(Array,D_temp[f[j]:f[j+1]-1,k]))
