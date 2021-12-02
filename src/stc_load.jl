@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.6.0
+# Julia 1.7.0
 # 16.12.2016
-# Last Edit: 07.07.2021
+# Last Edit: 02.12.2021
 
 """# stc_load
 
@@ -185,7 +185,7 @@ function stc_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	## Load data
 	D = DataFrame()
 	try
-		D = CSV.read(F,DataFrame;delim=",",types=coltypes,header=h,datarow=3,missingstring="-")
+		D = CSV.read(F,DataFrame;delim=",",types=coltypes,header=h,skipto=3,missingstring="-")
 	catch
 		println("Cannot load " * F)
 		error("ERROR loading file")
