@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.6.2
+# Julia 1.7.0
 # 18.11.2014
-# Last Edit: 13.08.2021
+# Last Edit: 02.12.2021
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -183,9 +183,9 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 		
 		# Load Data
 		if isempty(select)
-			D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',datarow = header_line) # # ZipFile.jl temporary fix
+			D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',skipto = header_line) # # ZipFile.jl temporary fix
 		else
-			D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',datarow = header_line,select = select)
+			D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',skipto = header_line,select = select)
 		end
 		
 		# Convert Diagnostic_Value Column
