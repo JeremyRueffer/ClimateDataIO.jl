@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.6.0
+# Julia 1.7.0
 # Created: 04.11.2013
-# Last Edit: 28.07.2021
+# Last Edit: 02.12.2021
 
 """# csci_textread
 
@@ -105,9 +105,9 @@ function csci_textread(F::String;headerlines::Int=4,headeroutput::Bool=false,ver
 	
 	## Load Data
 	if isempty(select)
-		D = CSV.read(F,DataFrame;types = types,header=cols,delim = ',',datarow = headerlines,dateformat = df)
+		D = CSV.read(F,DataFrame;types = types,header=cols,delim = ',',skipto = headerlines,dateformat = df)
 	else
-		D = CSV.read(F,DataFrame;types = types,header=cols,delim = ',',datarow = headerlines,dateformat = df,select = select)
+		D = CSV.read(F,DataFrame;types = types,header=cols,delim = ',',skipto = headerlines,dateformat = df,select = select)
 	end
 	
 	if headeroutput
