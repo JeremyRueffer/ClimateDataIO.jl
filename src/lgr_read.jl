@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.6.0
+# Julia 1.7.0
 # 07.11.2014
-# Last Edit: 28.04.2021
+# Last Edit: 02.12.2021
 
 # - Programmatically zipped data files have a PGP signature at the end after the last line of data
 # - Data files are TXT files withing a ZIP file
@@ -72,7 +72,7 @@ function lgr_read(source::String;verbose::Bool=false)
 	#####################
 	D = CSV.read(source,
 		DataFrame,
-		datarow=3,
+		skipto=3,
 		dateformat=dfmt,
 		delim=',',
 		header=col_names,
