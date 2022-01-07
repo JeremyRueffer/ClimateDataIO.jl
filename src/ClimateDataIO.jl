@@ -7,9 +7,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.6.2
+# Julia 1.7.0
 # 09.12.2016
-# Last Edit: 13.08.2021
+# Last Edit: 07.01.2022
 
 __precompile__(true)
 
@@ -78,73 +78,75 @@ For more specific information see each functions' help.
 * Test"""
 module ClimateDataIO
 
-	using DataFrames
-	using Dates
-	using Printf
-	using DelimitedFiles
-	using StatsBase
-	using CSV
-	using Statistics
-	using Test
-	using Crayons.Box
-	
-	import Base.show
-	
-	export AerodyneStatus,
-		str_load,
-		stc_load,
-		slt_read,
-		slt_load,
-		slt_header,
-		slt_config,
-		slt_timeshift,
-		slt_write,
-		slt_trim,
-		csci_textload,
-		csci_textread,
-		csci_times,
-		lgr_load,
-		lgr_read,
-		LI7200Diagnostic,
-		ghg_load,
-		ghg_read,
-		licor_split,
-		show
-	
-	dir = splitdir(@__FILE__)[1]
-	include(joinpath(dir,"aerodyne_parsetime.jl"))
-	include(joinpath(dir,"AerodyneStatus.jl"))
-	include(joinpath(dir,"ghg_load.jl"))
-	include(joinpath(dir,"ghg_read.jl"))
-	include(joinpath(dir,"str_load.jl"))
-	include(joinpath(dir,"stc_load.jl"))
-	include(joinpath(dir,"slt_read.jl"))
-	include(joinpath(dir,"slt_load.jl"))
-	include(joinpath(dir,"slt_header.jl"))
-	include(joinpath(dir,"slt_config.jl"))
-	include(joinpath(dir,"slt_configload.jl"))
-	include(joinpath(dir,"slt_timeshift.jl"))
-	include(joinpath(dir,"slt_write.jl"))
-	include(joinpath(dir,"slt_trim.jl"))
-	include(joinpath(dir,"dirlist.jl"))
-	include(joinpath(dir,"findnewton.jl"))
-	include(joinpath(dir,"csci_textload.jl"))
-	include(joinpath(dir,"csci_textread.jl"))
-	include(joinpath(dir,"csci_times.jl"))
-	include(joinpath(dir,"lgr_load.jl"))
-	include(joinpath(dir,"lgr_read.jl"))
-	include(joinpath(dir,"LI7200Diagnostic.jl"))
-	include(joinpath(dir,"licor_split.jl"))
-	include(joinpath(dir,"ziptextfiles.jl"))
-	
-	# Define 7zip location constant
-	if Sys.iswindows() & (VERSION >= VersionNumber("1.3.0"))
-		const exe7z = joinpath(splitdir(Sys.BINDIR)[1],"libexec","7z.exe")
-	elseif Sys.iswindows() & (VERSION < VersionNumber("1.3.0"))
-		const exe7z = joinpath(splitdir(Sys.BINDIR)[1],"7z.exe")
-	elseif Sys.isunix() & (VERSION >= VersionNumber("1.3.0"))
-		const exe7z = joinpath(splitdir(Sys.BINDIR)[1],"libexec","7z")
-	elseif Sys.isunix() & (VERSION < VersionNumber("1.3.0"))
-		const exe7z = joinpath(splitdir(Sys.BINDIR)[1],"7z")
-	end
+using Crayons.Box
+using CSV
+using DataFrames
+using Dates
+using DelimitedFiles
+using Printf
+using Statistics
+using StatsBase
+using Test
+
+import Base.show
+
+export AerodyneStatus,
+    csci_textload,
+    csci_textread,
+    csci_times,
+    ghg_load,
+    ghg_pack,
+    ghg_read,
+    LI7200Diagnostic,
+    licor_split,
+    lgr_load,
+    lgr_read,
+    show,
+    slt_config,
+    slt_header,
+    slt_load,
+    slt_read,
+    slt_timeshift,
+    slt_write,
+    slt_trim,
+    stc_load,
+    str_load
+
+dir = splitdir(@__FILE__)[1]
+include(joinpath(dir, "aerodyne_parsetime.jl"))
+include(joinpath(dir, "AerodyneStatus.jl"))
+include(joinpath(dir, "csci_textload.jl"))
+include(joinpath(dir, "csci_textread.jl"))
+include(joinpath(dir, "csci_times.jl"))
+include(joinpath(dir, "dirlist.jl"))
+include(joinpath(dir, "findnewton.jl"))
+include(joinpath(dir, "ghg_load.jl"))
+include(joinpath(dir, "ghg_pack.jl"))
+include(joinpath(dir, "ghg_read.jl"))
+include(joinpath(dir, "lgr_load.jl"))
+include(joinpath(dir, "lgr_read.jl"))
+include(joinpath(dir, "LI7200Diagnostic.jl"))
+include(joinpath(dir, "licor_split.jl"))
+include(joinpath(dir, "str_load.jl"))
+include(joinpath(dir, "stc_load.jl"))
+include(joinpath(dir, "slt_read.jl"))
+include(joinpath(dir, "slt_load.jl"))
+include(joinpath(dir, "slt_header.jl"))
+include(joinpath(dir, "slt_config.jl"))
+include(joinpath(dir, "slt_configload.jl"))
+include(joinpath(dir, "slt_timeshift.jl"))
+include(joinpath(dir, "slt_write.jl"))
+include(joinpath(dir, "slt_trim.jl"))
+include(joinpath(dir, "ziptextfiles.jl"))
+
+# Define 7zip location constant
+if Sys.iswindows() & (VERSION >= VersionNumber("1.3.0"))
+    const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "libexec", "7z.exe")
+elseif Sys.iswindows() & (VERSION < VersionNumber("1.3.0"))
+    const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "7z.exe")
+elseif Sys.isunix() & (VERSION >= VersionNumber("1.3.0"))
+    const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "libexec", "7z")
+elseif Sys.isunix() & (VERSION < VersionNumber("1.3.0"))
+    const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "7z")
 end
+end # End of module
