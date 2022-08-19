@@ -4,9 +4,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.7.0
+# Julia 1.7.2
 # 16.12.2016
-# Last Edit: 02.12.2021
+# Last Edit: 19.08.2022
 
 """# str_load
 
@@ -140,7 +140,7 @@ function str_load(F::String;verbose::Bool=false,cols::Array{String,1}=String[])
 	fid = open(F,"r")
 	h1 = readline(fid)
 	h1 = split(h1,"SPEC:")[2] # Remove everything including and before the SPEC:
-	h2 = readdlm(IOBuffer("\"" * replace(h1,"," => "\",\"") * "\""),',')
+	h2 = readdlm(IOBuffer("\"" * replace(h1,"," => "\",\"") * "\""),',',String)
 	h = Array{String}(undef,length(h2) + 2)
 	h[1] = "time"
 	h[end] = "Empty"
