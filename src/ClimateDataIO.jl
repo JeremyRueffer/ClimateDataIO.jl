@@ -142,7 +142,7 @@ include(joinpath(dir, "ziptextfiles.jl"))
 # Define 7zip location constant
 if Sys.iswindows() & (VERSION >= VersionNumber("1.9"))
 	const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "libexec", "julia", "7z.exe")
-if Sys.iswindows() & (VersionNumber("1.9") > VERSION >= VersionNumber("1.3.0"))
+elseif Sys.iswindows() & (VersionNumber("1.9") > VERSION >= VersionNumber("1.3.0"))
     const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "libexec", "7z.exe")
 elseif Sys.iswindows() & (VERSION < VersionNumber("1.3.0"))
     const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "7z.exe")
