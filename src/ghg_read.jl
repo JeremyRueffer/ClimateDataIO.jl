@@ -6,9 +6,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.7.0
+# Julia 1.9.3
 # 18.11.2014
-# Last Edit: 02.12.2021
+# Last Edit: 20.09.2023
 
 "# ghg_read(source::String,verbose::Bool,filetype::String)
 
@@ -21,16 +21,16 @@
 * verbose::Bool = Display information as the function runs, TRUE is default
 * filetype::String = Data file type to load, \"primary\" is default and loads the primary high frequency file. \"biomet\" would load the BIOMET file if it is present.
 * errorlog::String = Log each loading error, \"\" is default
-* select::Vector{Symbol} (optional) = List of column names to be loaded, names not included will not be loaded. [] is default\n\n"
-function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",errorlog::String="",select::Vector{Symbol}=Symbol[])
+* selection::Vector{Symbol} (optional) = List of column names to be loaded, names not included will not be loaded. [] is default\n\n"
+function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",errorlog::String="",selection::Vector{Symbol}=Symbol[])
 	####################
 	##  SELECT Check  ##
 	####################
-	if !isempty(select)
+	if !isempty(selection)
 		if filetype == "primary"
-			select = [setdiff([:Date,:Time]);select] # Date and Time must be included
+			selection = [setdiff([:Date,:Time]);selection] # Date and Time must be included
 		elseif filetype == "biomet"
-			select = [setdiff([:DATE,:TIME]);select] # Date and Time must be included
+			selection = [setdiff([:DATE,:TIME]);selection] # Date and Time must be included
 		end
 	end
 	
@@ -182,10 +182,10 @@ function ghg_read(source::String;verbose::Bool=false,filetype::String="primary",
 		col_types[cols .∈ (intCols,)] .= Int
 		
 		# Load Data
-		if isempty(select)
+		if isempty(selection)
 			D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',skipto = header_line) # # ZipFile.jl temporary fix
 		else
-			D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',skipto = header_line,select = select)
+			D = CSV.read(joinpath(temp_dir,list[iData]),DataFrame,types = col_types,header = new_names,delim = '\t',skipto = header_line,selection = selection)
 		end
 		
 		# Convert Diagnostic_Value Column
