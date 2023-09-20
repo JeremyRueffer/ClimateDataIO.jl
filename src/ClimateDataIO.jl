@@ -7,9 +7,9 @@
 # Thünen Institut
 # Institut für Agrarklimaschutz
 # Junior Research Group NITROSPHERE
-# Julia 1.7.0
+# Julia 1.9.3
 # 09.12.2016
-# Last Edit: 07.01.2022
+# Last Edit: 20.09.2023
 
 __precompile__(true)
 
@@ -144,7 +144,9 @@ if Sys.iswindows() & (VERSION >= VersionNumber("1.3.0"))
     const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "libexec", "7z.exe")
 elseif Sys.iswindows() & (VERSION < VersionNumber("1.3.0"))
     const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "7z.exe")
-elseif Sys.isunix() & (VERSION >= VersionNumber("1.3.0"))
+elseif Sys.isunix() & (VERSION >= VersionNumber("1.9"))
+    const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "libexec", "julia", "7z")
+elseif Sys.isunix() & (VersionNumber("1.9") > VERSION >= VersionNumber("1.3.0"))
     const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "libexec", "7z")
 elseif Sys.isunix() & (VERSION < VersionNumber("1.3.0"))
     const exe7z = joinpath(splitdir(Sys.BINDIR)[1], "7z")
